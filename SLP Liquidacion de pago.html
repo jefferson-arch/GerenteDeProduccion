@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Oceantreasure — Liquidación de Pago (Web)</title>
+  <style>
+    :root { --navy:#0b2d4d; --teal:#0ea5a4; --soft:#f3f6fb; --card:#ffffff; --grid:#cbd5e1; --grid2:#94a3b8; --bg:var(--soft); --muted:#64748b; }
+    body{ margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:#111827;}
+    .top{ border-bottom:1px solid var(--grid); }
+    .wrap{ max-width: 1150px; margin:0 auto; padding:0 12px; }
+    .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0;}
+    .brand{ display:flex; align-items:center; gap:12px;}
+    .brand .t{ font-weight:700; letter-spacing:.5px; font-size:12px;}
+    .brand .s{ color:var(--muted); font-size:12px;}
+    .btn{ border:1px solid var(--muted); background:#f3f4f6; padding:7px 12px; font-size:12px; font-weight:700; border-radius:0; cursor:pointer;}
+    .btn:hover{ background:#e5e7eb;}
+    .tabs{ display:flex; gap:6px; border-bottom:1px solid var(--grid); padding-top:10px;}
+    .tab{ border:1px solid var(--grid); border-bottom:0; padding:7px 10px; font-size:12px; font-weight:700; background:#f9fafb; cursor:pointer; border-radius:0;}
+    .tab.active{ background:#fff; border-color:var(--grid2); position:relative; top:1px;}
+    .panel{ padding:12px 0 20px;} /* tighter */
+    .card{ border:1px solid var(--grid); padding:10px; } /* tighter */
+    .grid{ display:grid; gap:10px; } /* tighter */
+    .grid-2{ grid-template-columns: 1fr 1fr; }
+    .grid-3{ grid-template-columns: 1.25fr 1fr 1fr; }
+    @media (max-width: 1024px){
+      .grid-3{ grid-template-columns: 1fr; }
+      .grid-2{ grid-template-columns: 1fr; }
+    }
+    .h{ font-size:13px; font-weight:700; margin:0 0 8px;}
+    .muted{ color:var(--muted); font-size:12px;}
+    label{ font-size:11px; color:var(--muted); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    input{ width:100%; border:1px solid var(--grid); padding:6px 8px; font-size:12px; border-radius:0; outline:none; background:#fff;}
+    input:focus{ border-color:var(--muted); }
+
+    /* ---- Compact rows (DATOS table) ---- */
+    .inp-cell{ padding:2px 6px; height:20px; } /* smaller input height */
+    table{ border-collapse:collapse; table-layout:fixed; font-size:12px; }
+    th,td{ border:1px solid var(--grid); padding:3px 5px; vertical-align:middle;}
+    th{ background:#fff; font-weight:700; text-align:left; position:relative; }
+    .compact th, .compact td{ padding:2px 4px; }
+    .compact { font-size:11px; }
+    .compact input{ font-size:11px; }
+
+    .resize-handle{ position:absolute; top:0; right:0; width:8px; height:100%; cursor:col-resize; user-select:none;}
+    .right{ text-align:right;}
+    .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:18px; z-index:9999;}
+    .toastbox{ background:#111; color:#fff; border:1px solid #444; padding:8px 10px; font-size:12px; display:flex; gap:12px; align-items:center;}
+    .link{ color:#fff; text-decoration:underline; cursor:pointer; opacity:.85;}
+    .link:hover{ opacity:1;}
+
+    /* ---- LIQUIDACION (print look) ---- */
+    .liq{ width:430px; background:#fff; border:1px solid #9ca3af; padding:8px;} /* narrower */
+    .liqHeaderRow{ display:grid; grid-template-columns: 1fr 1fr 1fr; border-bottom:1px solid var(--grid); padding:3px 0; font-size:11px;}
+    .liqHeaderRow .lab{ font-weight:700;}
+    .liqHeaderRow .val{ grid-column:2 / 4; text-align:right; font-weight:700;}
+    .pdfbox{ border:1px solid #6b7280; padding:18px 40px; font-size:11px; } /* compact */
+    .classTitle{ background:#d1d5db; border:1px solid #6b7280; font-weight:700; text-align:center; padding:3px 0; font-size:11px;}
+    .classHead{ display:grid; grid-template-columns: 1fr 1fr 1fr; background:#6b7280; color:#fff; font-weight:700; font-size:11px; border-left:1px solid #6b7280; border-right:1px solid #6b7280;}
+    .classHead div{ padding:3px 5px; border-right:1px solid #6b7280;}
+    .classHead div:last-child{ border-right:0;}
+    .classBody{ border:1px solid #6b7280; border-top:0;}
+    .classRow{ display:grid; grid-template-columns: 1fr 1fr 1fr; font-size:11px;}
+    .classRow div{ padding:3px 5px;}
+    .classRow .r{ text-align:right;}
+    .subRow{ border-top:1px solid #6b7280; font-weight:700;}
+  
+    .top{ background: var(--navy); border-bottom:1px solid var(--grid2); }
+    .brand .t, .brand .s{ color:#fff; }
+    .btn{ border:1px solid rgba(255,255,255,.35); background:#ffffff; color:var(--navy); }
+    .btn:hover{ background:#e2e8f0; }
+    .tabs{ background:transparent; }
+    .tab{ background: #e8eef7; color: var(--navy); }
+    .tab.active{ border-top:2px solid var(--teal); }
+    .card{ background: var(--card); box-shadow: 0 1px 0 rgba(15,23,42,.04); }
+    .h{ color: var(--navy); }
+
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React + Babel (CDN) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- PDF libs (CDN) -->
+  <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
+
+    const LB_PER_KG = 2.2;
+
+    const TALLAS_A_B = ["U12","U15","16-20","21-25","26-30","31-35","36-40","41-50","51-60","61-70","71-90","91-110"];
+    const TALLAS_C = ["BL","BM","BS","BVS","JUVENIL","ROJO"];
+    const ALL_TALLAS = [...TALLAS_A_B, ...TALLAS_C];
+
+    // Promedio "talla cola" (conteo por libra) usado en el Excel para cálculos de gramos
+    const TALLA_MID = {
+      "U12": 11,
+      "U15": 13,
+      "16-20": 18,
+      "21-25": 23,
+      "26-30": 28,
+      "31-35": 33,
+      "36-40": 38,
+      "41-50": 45.5,
+      "51-60": 55.5,
+      "61-70": 65.5,
+      "71-90": 80.5,
+      "91-110": 100.5,
+    };
+
+
+    const DEFAULT_PRICES = {
+      "U12": { A: 2.8 },
+      "U15": { A: 2.6 },
+      "16-20": { A: 2.4 },
+      "21-25": { A: 2.2 },
+      "26-30": { A: 2.15 },
+      "31-35": { A: 2.05 },
+      "36-40": { A: 2.0 },
+      "41-50": { A: 1.9 },
+      "51-60": { A: 1.65 },
+      "61-70": { A: 1.4 },
+      "71-90": { A: 1.35 },
+      "91-110": { A: 0.9 },
+      "BL": { C: 0.55 },
+      "BM": { C: 0.50 },
+      "BS": { C: 0.45 },
+      "BVS": { C: 0.40 },
+      "JUVENIL": { C: 0.35 },
+      "ROJO": { C: 0.30 },
+    };
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function nowStamp(){
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}_${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`;
+    }
+    function cleanFileName(s){
+      return (s||"").toString().trim().replace(/[\\/:*?"<>|]/g," ").replace(/\s+/g," ").trim();
+    }
+    function fmtNumEC(n, decimals=2){
+      if (n===null || n===undefined || Number.isNaN(n)) return "";
+      const sign = n<0 ? "-" : "";
+      const abs = Math.abs(n);
+      const fixed = abs.toFixed(decimals);
+      const [intPart, decPart] = fixed.split(".");
+      const withThousands = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      return decimals>0 ? `${sign}${withThousands},${decPart}` : `${sign}${withThousands}`;
+    }
+    function toNum(v){
+      if (v==="" || v===null || v===undefined) return 0;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function Toast({msg, onClose}){
+      if (!msg) return null;
+      return (
+        <div className="toast">
+          <div className="toastbox">
+            <span>{msg}</span>
+            <span className="link" onClick={onClose}>Cerrar</span>
+          </div>
+        </div>
+      );
+    }
+
+    function ResizableTable({columns, rows, rowKey, tableClassName}){
+      const [widths, setWidths] = useState(() => columns.map(c => c.width || 120));
+
+      useEffect(() => {
+        setWidths(columns.map(c => c.width || 120));
+      }, [columns.length]);
+
+      const onMouseDown = (idx, e) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startW = widths[idx];
+        const move = (ev) => {
+          const dx = ev.clientX - startX;
+          setWidths(w => {
+            const next = [...w];
+            next[idx] = Math.max(55, startW + dx);
+            return next;
+          });
+        };
+        const up = () => {
+          window.removeEventListener("mousemove", move);
+          window.removeEventListener("mouseup", up);
+        };
+        window.addEventListener("mousemove", move);
+        window.addEventListener("mouseup", up);
+      };
+
+      return (
+        <div style={{overflow:"auto"}}>
+          <table className={tableClassName || ""}>
+            <thead>
+              <tr>
+                {columns.map((c,i)=>(
+                  <th key={c.key} style={{width: widths[i]}}>
+                    <span style={{display:"inline-block", maxWidth:"100%", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>
+                      {c.title}
+                    </span>
+                    <span className="resize-handle" onMouseDown={(e)=>onMouseDown(i,e)} title="Arrastra para ajustar ancho"></span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r,ri)=>(
+                <tr key={rowKey ? rowKey(r,ri) : ri}>
+                  {columns.map((c,ci)=>(
+                    <td key={c.key} style={{width: widths[ci]}} className={c.tdClassName || ""}>
+                      {c.render ? c.render(r,ri) : r[c.key]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    const TABS = ["DATOS","PRECIO","CALCULO","LIQUIDACION"];
+
+    function App(){
+      const [proveedor, setProveedor] = useState("HENGYANG");
+      const [secuencial, setSecuencial] = useState("4372");
+      const [piscina, setPiscina] = useState("9");
+      const [guia, setGuia] = useState(12000);
+      const [planta, setPlanta] = useState(11599);
+      const [basura, setBasura] = useState(28);
+
+      const [pesoAkg, setPesoAkg] = useState(1.98);
+      const [pesoBkg, setPesoBkg] = useState(1.98);
+      const [pesoClbs, setPesoClbs] = useState(5.0);
+
+      const zeroAll = useMemo(()=>Object.fromEntries(ALL_TALLAS.map(t=>[t,0])), []);
+      const [invA, setInvA] = useState(()=>({...zeroAll}));
+      const [invB, setInvB] = useState(()=>({...zeroAll}));
+      const [invC, setInvC] = useState(()=>({...zeroAll}));
+      const [payA, setPayA] = useState(()=>({...zeroAll}));
+      const [payB, setPayB] = useState(()=>({...zeroAll}));
+      const [payC, setPayC] = useState(()=>({...zeroAll}));
+
+      const [prices, setPrices] = useState(()=>{
+        const out = {};
+        for (const t of ALL_TALLAS){
+          const base = DEFAULT_PRICES[t] || {};
+          const A = base.A ?? (TALLAS_A_B.includes(t) ? 0 : undefined);
+          const B = TALLAS_A_B.includes(t) ? (A ?? 0) - 0.2 : undefined;
+          const C = base.C ?? (TALLAS_C.includes(t) ? 0 : undefined);
+          out[t] = { A, B, C };
+        }
+        return out;
+      });
+
+      const [tab, setTab] = useState("DATOS");
+      const [toast, setToast] = useState("");
+      const [liquidacionSnap, setLiquidacionSnap] = useState(null);
+      const liqRef = useRef(null);
+
+      const enLbsA = useMemo(()=>toNum(pesoAkg)*LB_PER_KG, [pesoAkg]);
+      const enLbsB = useMemo(()=>toNum(pesoBkg)*LB_PER_KG, [pesoBkg]);
+      const enLbsC = useMemo(()=>toNum(pesoClbs), [pesoClbs]);
+
+      const recibido = useMemo(()=>toNum(planta)-toNum(basura), [planta, basura]);
+
+      const buildBlock = (mode) => {
+        const qA = mode==="inv" ? invA : payA;
+        const qB = mode==="inv" ? invB : payB;
+        const qC = mode==="inv" ? invC : payC;
+
+        const rowsA = TALLAS_A_B.map(t=>{
+          const qty = toNum(qA[t]);
+          const lbs = qty * enLbsA;
+          const price = toNum(prices[t]?.A);
+          const dollars = lbs * price;
+          return { classKey:"A", talla:t, qty, lbs, price, dollars };
+        });
+        const rowsB = TALLAS_A_B.map(t=>{
+          const qty = toNum(qB[t]);
+          const lbs = qty * enLbsB;
+          const price = toNum(prices[t]?.B);
+          const dollars = lbs * price;
+          return { classKey:"B", talla:t, qty, lbs, price, dollars };
+        });
+        const rowsC = TALLAS_C.map(t=>{
+          const qty = toNum(qC[t]);
+          const lbs = qty * enLbsC;
+          const price = toNum(prices[t]?.C);
+          const dollars = lbs * price;
+          return { classKey:"C", talla:t, qty, lbs, price, dollars };
+        });
+
+        const totals = {
+          qtyA: rowsA.reduce((s,r)=>s+r.qty,0), lbsA: rowsA.reduce((s,r)=>s+r.lbs,0), dollarsA: rowsA.reduce((s,r)=>s+r.dollars,0),
+          qtyB: rowsB.reduce((s,r)=>s+r.qty,0), lbsB: rowsB.reduce((s,r)=>s+r.lbs,0), dollarsB: rowsB.reduce((s,r)=>s+r.dollars,0),
+          qtyC: rowsC.reduce((s,r)=>s+r.qty,0), lbsC: rowsC.reduce((s,r)=>s+r.lbs,0), dollarsC: rowsC.reduce((s,r)=>s+r.dollars,0),
+        };
+        const grand = { qty: totals.qtyA+totals.qtyB+totals.qtyC, lbs: totals.lbsA+totals.lbsB+totals.lbsC, dollars: totals.dollarsA+totals.dollarsB+totals.dollarsC };
+        return { rowsA, rowsB, rowsC, totals, grand };
+      };
+
+      const calcInv = useMemo(()=>buildBlock("inv"), [invA, invB, invC, prices, enLbsA, enLbsB, enLbsC]);
+      const calcPay = useMemo(()=>buildBlock("pay"), [payA, payB, payC, prices, enLbsA, enLbsB, enLbsC]);
+
+      const empacado = useMemo(()=>calcPay.grand.lbs, [calcPay.grand.lbs]);
+      const rendimiento = useMemo(()=> (recibido!==0 ? empacado/recibido : 0), [empacado, recibido]);
+
+      const diffLbs = useMemo(()=>calcInv.grand.lbs - calcPay.grand.lbs, [calcInv.grand.lbs, calcPay.grand.lbs]);
+      const diffDollars = useMemo(()=>calcInv.grand.dollars - calcPay.grand.dollars, [calcInv.grand.dollars, calcPay.grand.dollars]);
+
+      // ---- Tabla de control: Gramo Entero / Gramo Cola / Talla Cola (como en Excel DATOS!M13:M15) ----
+      // Q32 = SUM(Q2:Q25) = sumatoria de (lbs de A y B) * (454 / tallaPromedio)
+      const gramosColaTotal = useMemo(()=>{
+        let sum = 0;
+        // Clase A
+        for (const r of calcPay.rowsA){
+          const mid = TALLA_MID[r.talla];
+          if (!mid) continue;
+          sum += toNum(r.lbs) * (454 / mid);
+        }
+        // Clase B
+        for (const r of calcPay.rowsB){
+          const mid = TALLA_MID[r.talla];
+          if (!mid) continue;
+          sum += toNum(r.lbs) * (454 / mid);
+        }
+        return sum;
+      }, [calcPay.rowsA, calcPay.rowsB]);
+
+      // M14 = Q32 / L32  (L32 incluye también Clase C, tal como está armado en el Excel)
+      const gramoCola = useMemo(()=>{
+        const denom = toNum(calcPay.grand.lbs);
+        if (denom===0) return null;
+        return gramosColaTotal / denom;
+      }, [gramosColaTotal, calcPay.grand.lbs]);
+
+      // M13 = M14 / 0.66
+      const gramoEntero = useMemo(()=>{
+        if (gramoCola===null) return null;
+        return gramoCola / 0.66;
+      }, [gramoCola]);
+
+      // M15 = 454 / M14
+      const tallaCola = useMemo(()=>{
+        if (!gramoCola || gramoCola===0) return null;
+        return 454 / gramoCola;
+      }, [gramoCola]);
+
+
+      const liquidacionData = useMemo(()=>{
+        const a = calcPay.rowsA.filter(r=>r.qty!==0 || r.lbs!==0);
+        const b = calcPay.rowsB.filter(r=>r.qty!==0 || r.lbs!==0);
+        const c = calcPay.rowsC.filter(r=>r.qty!==0 || r.lbs!==0);
+
+        const subtotal = (rows)=>({ qty: rows.reduce((s,r)=>s+r.qty,0), lbs: rows.reduce((s,r)=>s+r.lbs,0) });
+
+        return {
+          header: { proveedor, secuencial, piscina, guia, planta, basura, recibido, empacado, rendimiento },
+          classA: { rows: a, sub: subtotal(a) },
+          classB: { rows: b, sub: subtotal(b) },
+          classC: { rows: c, sub: subtotal(c) },
+          totals: subtotal([...a,...b,...c])
+        };
+      }, [calcPay, proveedor, secuencial, piscina, guia, planta, basura, recibido, empacado, rendimiento]);
+
+      const snap = liquidacionSnap || liquidacionData;
+
+      const setQty = (setter, obj, talla, v) => {
+        const n = (v==="" ? 0 : Number(v));
+        setter({ ...obj, [talla]: Number.isFinite(n) ? n : 0 });
+      };
+
+      const setPrice = (talla, key, v) => {
+        const n = (v==="" ? 0 : Number(v));
+        setPrices(p=>({ ...p, [talla]: { ...p[talla], [key]: Number.isFinite(n) ? n : 0 } }));
+      };
+
+      const onNuevo = () => {
+        setProveedor("");
+        setSecuencial("");
+        setPiscina("");
+        setGuia(0);
+        setPlanta(0);
+        setBasura(0);
+
+        const z = Object.fromEntries(ALL_TALLAS.map(t=>[t,0]));
+        setInvA(z); setInvB(z); setInvC(z);
+        setPayA(z); setPayB(z); setPayC(z);
+
+        setLiquidacionSnap(null);
+        setToast("DATOS limpiados (NUEVO)");
+        setTab("DATOS");
+      };
+
+      const onLiquidar = () => {
+        const stamp = nowStamp();
+        setLiquidacionSnap({ ...liquidacionData, stamp });
+        setToast("Liquidación generada.");
+        setTab("LIQUIDACION");
+      };
+
+      const onPdf = async () => {
+        const stamp = (liquidacionSnap && liquidacionSnap.stamp) ? liquidacionSnap.stamp : nowStamp();
+        const prov = cleanFileName(snap?.header?.proveedor || "PROVEEDOR") || "PROVEEDOR";
+        const sec = cleanFileName(snap?.header?.secuencial || "SECUENCIAL") || "SECUENCIAL";
+        const suggested = `${prov}_${sec}_${stamp}.pdf`;
+
+        if (!liqRef.current){
+          setToast("No se pudo encontrar el área de LIQUIDACION para exportar.");
+          return;
+        }
+
+        const canvas = await window.html2canvas(liqRef.current, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+        const imgData = canvas.toDataURL("image/png");
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation:"portrait", unit:"pt", format:"a4" });
+
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+
+        const imgW = canvas.width;
+        const imgH = canvas.height;
+
+        const margin = 24; // tighter margin
+        const maxW = pageW - margin*2;
+        const maxH = pageH - margin*2;
+
+        const ratio = Math.min(maxW/imgW, maxH/imgH);
+        const w = imgW * ratio;
+        const h = imgH * ratio;
+        const x = (pageW - w)/2;
+        const y = margin; // start from top (less header space)
+
+        pdf.addImage(imgData, "PNG", x, y, w, h);
+
+        const blob = pdf.output("blob");
+
+        try{
+          if (window.showSaveFilePicker){
+            const handle = await window.showSaveFilePicker({
+              suggestedName: suggested,
+              types: [{ description:"PDF", accept: { "application/pdf": [".pdf"] } }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank", "noopener,noreferrer");
+            setToast("PDF guardado y abierto.");
+            return;
+          }
+        }catch(e){}
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = suggested;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.open(url, "_blank", "noopener,noreferrer");
+        setToast("PDF descargado y abierto.");
+      };
+
+      return (
+        <div>
+          <div className="top">
+            <div className="wrap">
+              <div className="topbar">
+                <div className="brand">
+                  <div className="t">OCEANTREASURE</div>
+                  <div className="s">Liquidación de Pago (Web)</div>
+                </div>
+                <div style={{display:"flex", gap:"8px"}}>
+                  <button className="btn" onClick={onNuevo}>NUEVO</button>
+                  <button className="btn" onClick={onLiquidar}>LIQUIDAR</button>
+                  <button className="btn" onClick={onPdf}>PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="wrap">
+            <div className="tabs">
+              {TABS.map(t=>(
+                <button key={t} className={"tab " + (tab===t ? "active" : "")} onClick={()=>setTab(t)}>{t}</button>
+              ))}
+            </div>
+
+            <div className="panel">
+              {tab==="DATOS" && (
+                <DatosTab
+                  proveedor={proveedor} secuencial={secuencial} piscina={piscina} guia={guia} planta={planta} basura={basura}
+                  setProveedor={setProveedor} setSecuencial={setSecuencial} setPiscina={setPiscina}
+                  setGuia={(v)=>setGuia(Number(v))} setPlanta={(v)=>setPlanta(Number(v))} setBasura={(v)=>setBasura(Number(v))}
+                  invA={invA} invB={invB} invC={invC} payA={payA} payB={payB} payC={payC}
+                  setInvA={(t,v)=>setQty(setInvA, invA, t, v)}
+                  setInvB={(t,v)=>setQty(setInvB, invB, t, v)}
+                  setInvC={(t,v)=>setQty(setInvC, invC, t, v)}
+                  setPayA={(t,v)=>setQty(setPayA, payA, t, v)}
+                  setPayB={(t,v)=>setQty(setPayB, payB, t, v)}
+                  setPayC={(t,v)=>setQty(setPayC, payC, t, v)}
+                  pesoAkg={pesoAkg} pesoBkg={pesoBkg} pesoClbs={pesoClbs}
+                  setPesoAkg={(v)=>setPesoAkg(Number(v))}
+                  setPesoBkg={(v)=>setPesoBkg(Number(v))}
+                  setPesoClbs={(v)=>setPesoClbs(Number(v))}
+                  enLbsA={enLbsA} enLbsB={enLbsB} enLbsC={enLbsC}
+                  recibido={recibido} empacado={empacado} rendimiento={rendimiento}
+                  diffLbs={diffLbs} diffDollars={diffDollars}
+                  gramoEntero={gramoEntero} gramoCola={gramoCola} tallaCola={tallaCola}
+                />
+              )}
+
+              {tab==="PRECIO" && (
+                <PrecioTab prices={prices} setPrice={setPrice} />
+              )}
+
+              {tab==="CALCULO" && (
+                <CalculoTab calcInv={calcInv} calcPay={calcPay} enLbsA={enLbsA} enLbsB={enLbsB} enLbsC={enLbsC} />
+              )}
+
+              {tab==="LIQUIDACION" && (
+                <LiquidacionTab snap={snap} liqRef={liqRef} />
+              )}
+            </div>
+          </div>
+
+          <Toast msg={toast} onClose={()=>setToast("")} />
+        </div>
+      );
+    }
+
+    function LabelInput({label, value, onChange, type="text"}){
+      const isNum = type === "number";
+      const displayValue = (isNum && (value===0 || value==="0")) ? "" : value;
+      return (
+        <label>
+          <div>{label}</div>
+          <input value={displayValue} onChange={(e)=>onChange(e.target.value)} type={type} />
+        </label>
+      );
+    }
+
+    function NumCell({value, onChange, rowIndex, colKey, register, move}){
+      const displayValue = (Number(value)===0 ? "" : value);
+
+      const onKeyDown = (e) => {
+        if (e.key === "Tab"){
+          e.preventDefault();
+          if (typeof move === "function"){
+            move(rowIndex, colKey, { dRow: 0, dCol: e.shiftKey ? -1 : 1, wrap: true });
+          }
+          return;
+        }
+        if (e.key === "Enter"){
+          e.preventDefault();
+          if (typeof move === "function"){
+            move(rowIndex, colKey, { dRow: e.shiftKey ? -1 : 1, dCol: 0, wrap: false });
+          }
+          return;
+        }
+      };
+
+      return (
+        <input
+          className="inp-cell"
+          type="number"
+          value={displayValue}
+          ref={typeof register === "function" ? register(rowIndex, colKey) : null}
+          onKeyDown={onKeyDown}
+          onChange={(e)=>onChange(e.target.value)}
+        />
+      );
+    }
+
+
+    function DatosTab(props){
+      const {
+        proveedor,secuencial,piscina,guia,planta,basura,
+        setProveedor,setSecuencial,setPiscina,setGuia,setPlanta,setBasura,
+        invA,invB,invC,payA,payB,payC,
+        setInvA,setInvB,setInvC,setPayA,setPayB,setPayC,
+        pesoAkg,pesoBkg,pesoClbs,setPesoAkg,setPesoBkg,setPesoClbs,
+        enLbsA,enLbsB,enLbsC,recibido,empacado,rendimiento,diffLbs,diffDollars,gramoEntero,gramoCola,tallaCola
+      } = props;
+
+      const rows = ALL_TALLAS.map(t=>({ talla:t, invA:invA[t], invB:invB[t], invC:invC[t], payA:payA[t], payB:payB[t], payC:payC[t] }));
+
+      const cellRefs = useRef({});
+
+      const registerCell = (r, c) => (el) => {
+        const k = `${r}:${c}`;
+        if (el) cellRefs.current[k] = el;
+        else delete cellRefs.current[k];
+      };
+
+      const INPUT_COLS = ["invA","invB","invC","payA","payB","payC"];
+
+      const moveCell = (r, c, delta) => {
+        const dRow = delta?.dRow ?? 0;
+        const dCol = delta?.dCol ?? 0;
+        const wrap = !!delta?.wrap;
+
+        const rowCount = rows.length;
+        const colCount = INPUT_COLS.length;
+
+        const cIdx0 = Math.max(0, INPUT_COLS.indexOf(c));
+        let nr = r + dRow;
+        let ncIdx = cIdx0 + dCol;
+
+        if (wrap && dCol !== 0){
+          if (ncIdx >= colCount){
+            nr += 1;
+            ncIdx = 0;
+          }else if (ncIdx < 0){
+            nr -= 1;
+            ncIdx = colCount - 1;
+          }
+        }
+
+        if (nr < 0) nr = 0;
+        if (nr >= rowCount) nr = rowCount - 1;
+        if (ncIdx < 0) ncIdx = 0;
+        if (ncIdx >= colCount) ncIdx = colCount - 1;
+
+        const key = `${nr}:${INPUT_COLS[ncIdx]}`;
+        const el = cellRefs.current[key];
+
+        if (el){
+          el.focus();
+          if (el.scrollIntoView) el.scrollIntoView({block:"nearest", inline:"nearest"});
+          if (el.select) el.select();
+        }
+      };
+
+
+
+      return (
+        <div className="grid grid-3">
+          <div className="card">
+            <div className="h">DATOS</div>
+            <div className="grid grid-2">
+              <LabelInput label="PROVEEDOR" value={proveedor} onChange={setProveedor} />
+              <LabelInput label="SECUENCIAL" value={secuencial} onChange={setSecuencial} />
+              <LabelInput label="PISCINA" value={piscina} onChange={setPiscina} />
+              <LabelInput label="GUIA" type="number" value={guia} onChange={setGuia} />
+              <LabelInput label="PLANTA" type="number" value={planta} onChange={setPlanta} />
+              <LabelInput label="BASURA" type="number" value={basura} onChange={setBasura} />
+            </div>
+
+            <div className="grid grid-2" style={{marginTop:10, gridTemplateColumns:"1fr 1.75fr"}}>
+              <div className="card" style={{padding:8}}>
+                <div className="muted" style={{fontWeight:700, marginBottom:6, whiteSpace:"nowrap"}}>PESOS (editable)</div>
+                <div className="grid grid-2">
+                  <LabelInput label='PESO \"A\" (kg)' type="number" value={pesoAkg} onChange={setPesoAkg} />
+                  <div className="muted"><div>EN LIBRAS</div><div style={{fontWeight:700, color:"#111"}}>{fmtNumEC(enLbsA,3)}</div></div>
+                  <LabelInput label='PESO \"B\" (kg)' type="number" value={pesoBkg} onChange={setPesoBkg} />
+                  <div className="muted"><div>EN LIBRAS</div><div style={{fontWeight:700, color:"#111"}}>{fmtNumEC(enLbsB,3)}</div></div>
+                  <LabelInput label='PESO \"C\" (lb)' type="number" value={pesoClbs} onChange={setPesoClbs} />
+                  <div className="muted"><div>EN LIBRAS</div><div style={{fontWeight:700, color:"#111"}}>{fmtNumEC(enLbsC,2)}</div></div>
+                </div>
+              </div>
+
+              <div className="card" style={{padding:8}}>
+                <div className="muted" style={{fontWeight:700, marginBottom:6, whiteSpace:"nowrap"}}>RESUMEN</div>
+                <div style={{display:"grid", gridTemplateColumns:"2.4fr 0.6fr", gap:"5px", fontSize:"12px", whiteSpace:"nowrap"}}>
+                  <div className="muted">RECIBIDO</div><div className="right" style={{fontWeight:700}}>{fmtNumEC(recibido,2)}</div>
+                  <div className="muted">EMPACADO</div><div className="right" style={{fontWeight:700}}>{fmtNumEC(empacado,2)}</div>
+                  <div className="muted">RENDIMIENTO</div><div className="right" style={{fontWeight:700}}>{fmtNumEC(rendimiento*100,2)}%</div>
+                  <div className="muted">LIBRAS (Inv - Pago)</div><div className="right" style={{fontWeight:700}}>{fmtNumEC(diffLbs,2)}</div>
+                  <div className="muted">DOLARES (Inv - Pago)</div><div className="right" style={{fontWeight:700}}>$ {fmtNumEC(diffDollars,2)}</div>
+                  <div className="muted">GRAMO ENTERO</div><div className="right" style={{fontWeight:700}}>{fmtNumEC(gramoEntero,2)}</div>
+                  <div className="muted">GRAMO COLA</div><div className="right" style={{fontWeight:700}}>{fmtNumEC(gramoCola,2)}</div>
+                  <div className="muted">TALLA COLA</div><div className="right" style={{fontWeight:700}}>{fmtNumEC(tallaCola,2)}</div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card" style={{gridColumn:"span 2"}}>
+            <div className="h">CANTIDADES (Inventario y Pago)</div>
+            <ResizableTable
+              tableClassName="compact"
+              columns={[
+                { key:"talla", title:"TALLA", width:95 },
+                { key:"invA", title:"INV A", width:78, render:(r,ri)=> <NumCell value={r.invA} rowIndex={ri} colKey="invA" register={registerCell} move={moveCell} onChange={(v)=>setInvA(r.talla,v)} /> },
+                { key:"invB", title:"INV B", width:78, render:(r,ri)=> <NumCell value={r.invB} rowIndex={ri} colKey="invB" register={registerCell} move={moveCell} onChange={(v)=>setInvB(r.talla,v)} /> },
+                { key:"invC", title:"INV C", width:78, render:(r,ri)=> <NumCell value={r.invC} rowIndex={ri} colKey="invC" register={registerCell} move={moveCell} onChange={(v)=>setInvC(r.talla,v)} /> },
+                { key:"payA", title:"PAGO A", width:78, render:(r,ri)=> <NumCell value={r.payA} rowIndex={ri} colKey="payA" register={registerCell} move={moveCell} onChange={(v)=>setPayA(r.talla,v)} /> },
+                { key:"payB", title:"PAGO B", width:78, render:(r,ri)=> <NumCell value={r.payB} rowIndex={ri} colKey="payB" register={registerCell} move={moveCell} onChange={(v)=>setPayB(r.talla,v)} /> },
+                { key:"payC", title:"PAGO C", width:78, render:(r,ri)=> <NumCell value={r.payC} rowIndex={ri} colKey="payC" register={registerCell} move={moveCell} onChange={(v)=>setPayC(r.talla,v)} /> },
+              ]}
+              rows={rows}
+            />
+            <div className="muted" style={{marginTop:8}}>
+              Nota: En Excel, Inventario viene de C/D/E y Pago viene de H/I/J. Aquí están ambos en la misma tabla.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PrecioTab({prices, setPrice}){
+      const rows = ALL_TALLAS.map(t=>({ talla:t, A:prices[t]?.A ?? "", B:prices[t]?.B ?? "", C:prices[t]?.C ?? "" }));
+      return (
+        <div className="card">
+          <div className="h">PRECIO</div>
+          <ResizableTable
+            columns={[
+              { key:"talla", title:"TALLA", width:130 },
+              { key:"A", title:"PRECIO A", width:110, render:(r)=>(
+                <input className="inp-cell" type="number" step="0.01" value={(Number(r.A)===0 ? "" : r.A)}
+                  onChange={(e)=>setPrice(r.talla,"A",e.target.value)} disabled={!TALLAS_A_B.includes(r.talla)} />
+              )},
+              { key:"B", title:"PRECIO B", width:110, render:(r)=>(
+                <input className="inp-cell" type="number" step="0.01" value={(Number(r.B)===0 ? "" : r.B)}
+                  onChange={(e)=>setPrice(r.talla,"B",e.target.value)} disabled={!TALLAS_A_B.includes(r.talla)} />
+              )},
+              { key:"C", title:"PRECIO C", width:110, render:(r)=>(
+                <input className="inp-cell" type="number" step="0.01" value={(Number(r.C)===0 ? "" : r.C)}
+                  onChange={(e)=>setPrice(r.talla,"C",e.target.value)} disabled={!TALLAS_C.includes(r.talla)} />
+              )},
+            ]}
+            rows={rows}
+          />
+          <div className="muted" style={{marginTop:8}}>
+            En el Excel, PRECIO B normalmente es A - 0,20. Aquí lo puedes editar si deseas.
+          </div>
+        </div>
+      );
+    }
+
+    function CalculoTab({calcInv, calcPay, enLbsA, enLbsB, enLbsC}){
+      const cols = [
+        { key:"talla", title:"TALLA", width:110 },
+        { key:"qty", title:"EMPAQUE", width:100, render:(r)=>fmtNumEC(r.qty,0), tdClassName:"right" },
+        { key:"lbs", title:"LIBRAS", width:120, render:(r)=>fmtNumEC(r.lbs,2), tdClassName:"right" },
+        { key:"price", title:"PRECIO", width:110, render:(r)=>fmtNumEC(r.price,2), tdClassName:"right" },
+        { key:"dollars", title:"DOLARES", width:130, render:(r)=>"$ "+fmtNumEC(r.dollars,2), tdClassName:"right" },
+        { key:"classKey", title:"CLASE", width:80 }
+      ];
+      const invRows = [...calcInv.rowsA, ...calcInv.rowsB, ...calcInv.rowsC];
+      const payRows = [...calcPay.rowsA, ...calcPay.rowsB, ...calcPay.rowsC];
+
+      return (
+        <div className="grid grid-2">
+          <div className="card">
+            <div className="h">CALCULO — INVENTARIO</div>
+            <div className="muted" style={{marginBottom:8}}>Pesos: A {fmtNumEC(enLbsA,3)} lb, B {fmtNumEC(enLbsB,3)} lb, C {fmtNumEC(enLbsC,2)} lb</div>
+            <ResizableTable columns={cols} rows={invRows} />
+            <div style={{display:"flex", justifyContent:"flex-end", gap:"24px", marginTop:10}}>
+              <div>
+                <div className="muted">TOTAL LIBRAS</div>
+                <div style={{fontWeight:700}} className="right">{fmtNumEC(calcInv.grand.lbs,2)}</div>
+              </div>
+              <div>
+                <div className="muted">TOTAL $</div>
+                <div style={{fontWeight:700}} className="right">$ {fmtNumEC(calcInv.grand.dollars,2)}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="h">CALCULO — PAGO</div>
+            <div className="muted" style={{marginBottom:8}}>(Equivalente a columnas J/K/L en Excel para generar LIQUIDACION)</div>
+            <ResizableTable columns={cols} rows={payRows} />
+            <div style={{display:"flex", justifyContent:"flex-end", gap:"24px", marginTop:10}}>
+              <div>
+                <div className="muted">TOTAL LIBRAS</div>
+                <div style={{fontWeight:700}} className="right">{fmtNumEC(calcPay.grand.lbs,2)}</div>
+              </div>
+              <div>
+                <div className="muted">TOTAL $</div>
+                <div style={{fontWeight:700}} className="right">$ {fmtNumEC(calcPay.grand.dollars,2)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function LiquidacionTab({snap, liqRef}){
+      const H = snap?.header || {};
+      return (
+        <div style={{display:"flex", justifyContent:"center"}}>
+          <div ref={liqRef} className="liq">
+            <div className="grid grid-2" style={{gap:"10px"}}>
+              <div>
+                <HeaderRow label="PROVEEDOR" value={H.proveedor} />
+                <HeaderRow label="SECUENCIAL" value={H.secuencial} />
+                <HeaderRow label="PISCINA" value={H.piscina} />
+                <HeaderRow label="GUIA" value={fmtNumEC(H.guia,2)} />
+                <HeaderRow label="PLANTA" value={fmtNumEC(H.planta,2)} />
+                <HeaderRow label="BASURA" value={fmtNumEC(H.basura,2)} />
+                <HeaderRow label="RECIBIDO" value={fmtNumEC(H.recibido,2)} />
+                <HeaderRow label="EMPACADO" value={fmtNumEC(H.empacado,2)} />
+                <HeaderRow label="RENDIMIENTO" value={fmtNumEC((H.rendimiento||0)*100,2)+"%"} />
+              </div>
+              <div style={{display:"flex", justifyContent:"flex-end"}}>
+                <div className="pdfbox">PDF</div>
+              </div>
+            </div>
+
+            <div style={{marginTop:6}}>
+              <ClassTable title='CLASE \"A\"' rows={snap.classA?.rows || []} sub={snap.classA?.sub} />
+              <div style={{height:10}}></div>
+              <ClassTable title='CLASE \"B\"' rows={snap.classB?.rows || []} sub={snap.classB?.sub} />
+              <div style={{height:10}}></div>
+              <ClassTable title='CLASE \"C\"' rows={snap.classC?.rows || []} sub={snap.classC?.sub} />
+
+              <div style={{marginTop:8, borderTop:"1px solid #6b7280", paddingTop:6}}>
+                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", fontSize:"11px"}}>
+                  <div style={{fontWeight:700}}>TOTAL</div>
+                  <div className="right" style={{fontWeight:700}}>{fmtNumEC(snap.totals?.qty || 0, 0)}</div>
+                  <div className="right" style={{fontWeight:700}}>{fmtNumEC(snap.totals?.lbs || 0, 2)}</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    function HeaderRow({label, value}){
+      return (
+        <div className="liqHeaderRow">
+          <div className="lab">{label}</div>
+          <div className="val">{value ?? ""}</div>
+        </div>
+      );
+    }
+
+    function ClassTable({title, rows, sub}){
+      return (
+        <div>
+          <div className="classTitle">{title}</div>
+          <div className="classHead">
+            <div>TALLA</div>
+            <div style={{textAlign:"right"}}>CAJAS</div>
+            <div style={{textAlign:"right"}}>LIBRAS</div>
+          </div>
+          <div className="classBody">
+            {rows.length===0 ? (
+              <div className="classRow">
+                <div>-</div><div className="r">-</div><div className="r">-</div>
+              </div>
+            ) : rows.map((r,idx)=>(
+              <div key={idx} className="classRow">
+                <div>{r.talla}</div>
+                <div className="r">{fmtNumEC(r.qty,0)}</div>
+                <div className="r">{fmtNumEC(r.lbs,2)}</div>
+              </div>
+            ))}
+            <div className="classRow subRow">
+              <div></div>
+              <div className="r">{fmtNumEC(sub?.qty || 0, 0)}</div>
+              <div className="r">{fmtNumEC(sub?.lbs || 0, 2)}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+
+  <!-- Recomendación: abrir en localhost para que el Guardar como funcione mejor -->
+</body>
+</html>

@@ -1,0 +1,1661 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OCEANTREASURE S.A. — Programa 2025</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#111827;
+    --muted:#374151;
+    --line:#cbd5e1;
+    --header:#1f2f3d;          /* similar a Excel azul oscuro */
+    --headerText:#ffffff;
+    --danger:#c1121f;
+    --soft:#f8fafc;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: Calibri, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .wrap{max-width:1600px;margin:0 auto;padding:10px 12px}
+
+  /* Header simple, plano */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 12px;border:1px solid var(--line);
+    background:var(--soft);
+  }
+  .title h1{margin:0;font-size:16px;letter-spacing:.2px}
+  .title .sub{margin-top:2px;font-size:12px;color:var(--muted)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{
+    border:1px solid var(--line);
+    background:#fff;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn.danger{border-color:#fecaca;background:#fff1f2;color:#9f1239}
+  .btn:active{transform:translateY(1px)}
+  input[type="file"]{display:none}
+
+  /* Tabs planos */
+  .tabs{display:flex;gap:8px;margin:10px 0 8px}
+  .tabbtn{
+    border:1px solid var(--line);
+    background:#fff;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .tabbtn.active{background:#e6f2ff;border-color:#93c5fd}
+
+  .panel{display:none}
+  .panel.active{display:block}
+
+  /* Zona filtros + totales, compacta */
+  .bar{
+    border:1px solid var(--line);
+    background:#fff;
+    padding:8px;
+    display:flex;
+    gap:10px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .bar .label{
+    font-size:12px;font-weight:900;color:var(--muted);
+    margin-right:6px;
+  }
+  .field{display:flex;flex-direction:column;gap:3px}
+  .field label{
+    font-size:10px;font-weight:900;color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.2px;
+  }
+
+  /* Inputs estilo Excel (sin bordes redondeados, compactos) */
+  input, select{
+    height:24px;
+    padding:2px 6px;
+    border:1px solid var(--line);
+    border-radius:0;
+    font-size:12px;
+    outline:none;
+    background:#fff;
+  }
+  input:focus,select:focus{border-color:#60a5fa}
+  input[disabled],select[disabled]{background:#f3f4f6}
+
+  .totalsline{
+    margin-left:auto;
+    display:flex;
+    gap:18px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .tot{
+    display:flex;flex-direction:column;gap:2px;min-width:92px
+  }
+  .tot .k{font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.2px}
+  .tot .v{font-size:12px;font-weight:900;color:#111827;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* Tabla: densa y tipo Excel */
+  .tablewrap{
+    margin-top:8px;
+    border:1px solid var(--line);
+    overflow:auto;
+    max-height: calc(100vh - 220px);
+  }
+  table{border-collapse:collapse;width:100%;min-width:1400px}
+  thead th{
+    position:sticky;top:0;z-index:2;
+    background:var(--header);
+    color:var(--headerText);
+    font-size:11px;
+    font-weight:900;
+    text-transform:none;
+    padding:6px 6px;
+    border-bottom:1px solid #0b1220;
+    white-space:nowrap;
+  }
+  tbody td{
+    border-top:1px solid #e5e7eb;
+    padding:2px 6px;
+    height:24px;
+    white-space:nowrap;
+    vertical-align:middle;
+    font-size:12px;
+  }
+  tbody tr:nth-child(even){background:#fcfcfd}
+  tbody tr.locked{background:#eef2f7}
+  tbody tr.locked:nth-child(even){background:#e9eef6}
+
+  /* Inputs dentro de tabla aún más compactos */
+  tbody td input, tbody td select{
+    height:22px;
+    padding:1px 4px;
+    font-size:12px;
+    border-radius:0;
+  }
+
+  .right{text-align:right;font-variant-numeric:tabular-nums}
+  .center{text-align:center}
+  .delLink{color:var(--danger);font-weight:900;cursor:pointer;text-decoration:underline}
+  .badge{
+    border:1px solid var(--line);
+    background:#fff;
+    padding:2px 8px;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  /* Encabezado de sección */
+  .sectionHead{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:8px;
+    padding:6px 8px;
+    border:1px solid var(--line);
+    background:var(--soft);
+    gap:10px;
+  }
+  .sectionHead .h{font-weight:900;color:#0b3556}
+  .sectionHead .note{font-size:12px;color:var(--muted)}
+
+  /* === Column resize (drag) === */
+  table.resizable{ table-layout: fixed; }
+  table.resizable th, table.resizable td{ overflow:hidden; text-overflow:ellipsis; }
+  table.resizable td > input, table.resizable td > select{ width:100%; }
+  table.resizable th{ position:relative; }
+  .col-resizer{
+    position:absolute;
+    right:-2px; top:0;
+    width:6px;
+    height:100%;
+    cursor:col-resize;
+    user-select:none;
+    touch-action:none;
+  }
+  .col-resizer::after{
+    content:"";
+    position:absolute;
+    right:2px; top:0;
+    width:1px;
+    height:100%;
+    background:rgba(255,255,255,.35);
+  }
+  body.resizing, body.resizing *{ cursor:col-resize !important; user-select:none !important; }
+
+
+  /* === Cinta: rangos (fecha / secuencia) === */
+  .rangebar{display:flex;align-items:center;gap:6px;padding-right:10px;margin-right:6px;border-right:1px solid #d0d7e2}
+  .rangebar .lbl{font-size:11px;color:#334155;font-weight:700}
+  .rangebar .mini{font-size:11px;color:#334155}
+  .rangebar input{
+    height:28px; padding:3px 6px;
+    border:1px solid #cfd8e3; border-radius:0;
+    font:12px Calibri, Arial, sans-serif;
+    min-width:92px;
+  }
+  .rangebar input.seq{min-width:78px; width:78px}
+
+
+  /* === Resaltar columnas clave (Proveedor / Lote / Secuencia / Guías) === */
+  table.resizable[data-resize-key="programa"] th:nth-child(3),
+  table.resizable[data-resize-key="programa"] td:nth-child(3),
+  table.resizable[data-resize-key="programa"] th:nth-child(5),
+  table.resizable[data-resize-key="programa"] td:nth-child(5),
+  table.resizable[data-resize-key="programa"] th:nth-child(9),
+  table.resizable[data-resize-key="programa"] td:nth-child(9),
+  table.resizable[data-resize-key="programa"] th:nth-child(10),
+  table.resizable[data-resize-key="programa"] td:nth-child(10),
+  table.resizable[data-resize-key="programa"] th:nth-child(13),
+  table.resizable[data-resize-key="programa"] td:nth-child(13){
+    font-weight: 700;
+  }
+  table.resizable[data-resize-key="programa"] td:nth-child(3) input,
+  table.resizable[data-resize-key="programa"] td:nth-child(3) select,
+  table.resizable[data-resize-key="programa"] td:nth-child(5) input,
+  table.resizable[data-resize-key="programa"] td:nth-child(5) select,
+  table.resizable[data-resize-key="programa"] td:nth-child(9) input,
+  table.resizable[data-resize-key="programa"] td:nth-child(9) select,
+  table.resizable[data-resize-key="programa"] td:nth-child(10) input,
+  table.resizable[data-resize-key="programa"] td:nth-child(10) select,
+  table.resizable[data-resize-key="programa"] td:nth-child(13) input{
+    font-weight: 700;
+  }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="title">
+      <h1>OCEANTREASURE S. A.</h1>
+      <div class="sub">Programa Oceantreasure 2025 — Web (datos guardados en este navegador)</div>
+    </div>
+    <div class="actions">
+      <div class="rangebar" title="Filtra adicionalmente por rangos (se combina con los filtros de abajo)">
+        <span class="lbl">RANGO</span>
+        <span class="mini">Fecha</span>
+        <input id="r_date_from" />
+        <input id="r_date_to" />
+        <span class="mini">Secuencia</span>
+        <input id="r_seq_from" class="seq" inputmode="numeric" />
+        <input id="r_seq_to" class="seq" inputmode="numeric" />
+      </div>
+      <button class="btn" id="btnExportExcel">Exportar Excel</button>
+      <button class="btn" id="btnExportPDF">Exportar PDF</button>
+      <button class="btn" id="btnExport">Exportar JSON</button>
+      <label class="btn" for="fileImport">Importar JSON</label>
+      <input id="fileImport" type="file" accept="application/json" />
+      <button class="btn danger" id="btnReset">Borrar todo</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tabbtn active" data-tab="programa">PROGRAMA</div>
+    <div class="tabbtn" data-tab="lotes">CREAR LOTE</div>
+    <div class="tabbtn" data-tab="proveedores">CREAR PROVEEDOR</div>
+    <div class="tabbtn" data-tab="sectores">CREAR SECTOR</div>
+  </div>
+
+  <!-- PROGRAMA -->
+  <section class="panel active" id="tab-programa">
+    <div class="bar">
+      <div class="label">FILTRAR</div>
+
+      <div class="field" style="width:110px">
+        <label>Hora</label>
+        <input id="f_hora" inputmode="numeric" />
+      </div>
+
+      <div class="field" style="width:120px">
+        <label>Fecha</label>
+        <input id="f_fecha" inputmode="numeric" />
+      </div>
+
+      <div class="field" style="min-width:260px;flex:1">
+        <label>Proveedor</label>
+        <select id="f_proveedor"></select>
+      </div>
+
+      <div class="field" style="width:120px">
+        <label>OC</label>
+        <input id="f_oc" />
+      </div>
+
+      <div class="field" style="min-width:240px;flex:1">
+        <label>Sector</label>
+        <select id="f_sector"></select>
+      </div>
+
+      <div class="field" style="min-width:240px;flex:1">
+        <label>Lote</label>
+        <select id="f_lote"></select>
+      </div>
+
+      <div class="field" style="width:120px">
+        <label>Secuencia</label>
+        <input id="f_secuencia" inputmode="numeric" />
+      </div>
+
+      <div class="field" style="width:90px">
+        <label>Pisc</label>
+        <input id="f_pisc" inputmode="numeric" />
+      </div>
+
+      <button class="btn" id="btnClearFilters">Limpiar</button>
+
+      <div class="totalsline" title="Equivalente a AGREGAR(9;5;Rango) - solo filas filtradas">
+        <div class="tot"><div class="k">Guía</div><div class="v" id="t_guia">0,00</div></div>
+        <div class="tot"><div class="k">Promedio</div><div class="v" id="t_promedio">0,00</div></div>
+        <div class="tot"><div class="k">Planta</div><div class="v" id="t_planta">0,00</div></div>
+        <div class="tot"><div class="k">Peso cola</div><div class="v" id="t_pesocola">0,00</div></div>
+        <div class="tot"><div class="k">Basura</div><div class="v" id="t_basura">0,00</div></div>
+        <div class="tot"><div class="k">Liquidado</div><div class="v" id="t_liquidado">0,00</div></div>
+      </div>
+    </div>
+
+    <div class="sectionHead">
+      <div>
+        <span class="h">PROGRAMA — INGRESO / LISTADO</span>
+        <span class="note"> &nbsp;|&nbsp; Enter en <b>Guía (lbs)</b> para confirmar y bloquear. Luego <b>Modificar</b> habilita/inhabilita.</span>
+      </div>
+      <span class="badge" id="countRows">0 filas</span>
+    </div>
+
+    <div class="tablewrap">
+      <table class="resizable" data-resize-key="programa">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Fecha</th>
+            <th>Proveedor</th>
+            <th>OC</th>
+            <th>Guía (doc)</th>
+            <th>Bines / Kvt</th>
+            <th>Pisc</th>
+            <th>Sector</th>
+            <th>LOTE</th>
+            <th>SECUENCIA</th>
+            <th class="right">Gramo</th>
+            <th class="center">Talla</th>
+            <th class="right">Guía</th>
+            <th class="right">Promedio</th>
+            <th class="right">Planta</th>
+            <th class="right">Peso cola</th>
+            <th class="right">Basura</th>
+            <th class="right">Liquidado</th>
+            <th class="right">Rend</th>
+            <th class="center">Modificar</th>
+            <th class="center">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyPrograma"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- LOTES -->
+  <section class="panel" id="tab-lotes">
+    <div class="sectionHead">
+      <div>
+        <span class="h">CREAR LOTE</span>
+        <span class="note"> &nbsp;|&nbsp; Registra LOTE y FECHA DE PRODUCCIÓN. En Programa el selector muestra: <b>0191-17/12/2025</b></span>
+      </div>
+      <span class="badge" id="countLotes">0</span>
+    </div>
+    <div class="tablewrap" style="max-height: calc(100vh - 220px); min-width: 900px;">
+      <table class="resizable" data-resize-key="lotes" style="min-width:1100px">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>LOTE</th>
+            <th>Granja</th>
+            <th>N° autorización</th>
+            <th>Fecha producción</th>
+            <th>Ref#</th>
+            <th class="right">Libras</th>
+            <th class="right">Piscina</th>
+            <th class="center">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyLotes"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PROVEEDORES -->
+  <section class="panel" id="tab-proveedores">
+    <div class="sectionHead">
+      <div><span class="h">CREAR PROVEEDOR</span></div>
+      <span class="badge" id="countProv">0</span>
+    </div>
+    <div class="tablewrap" style="max-height: calc(100vh - 220px); min-width: 600px;">
+      <table class="resizable" data-resize-key="proveedores" style="min-width:650px">
+        <thead>
+          <tr><th>Camaronera</th><th class="center">Acción</th></tr>
+        </thead>
+        <tbody id="tbodyProveedores"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTORES -->
+  <section class="panel" id="tab-sectores">
+    <div class="sectionHead">
+      <div><span class="h">CREAR SECTOR</span></div>
+      <span class="badge" id="countSec">0</span>
+    </div>
+    <div class="tablewrap" style="max-height: calc(100vh - 220px); min-width: 700px;">
+      <table class="resizable" data-resize-key="sectores" style="min-width:760px">
+        <thead>
+          <tr><th>Lugar</th><th>Provincia</th><th class="center">Acción</th></tr>
+        </thead>
+        <tbody id="tbodySectores"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ====================== Estado + Persistencia ====================== */
+const STORAGE_KEY = "oceantreasure_programa_2025_v3";
+const state = loadState() ?? { lots: [], providers: [], sectors: [], programaRows: [] };
+
+function loadState(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw): null; }
+  catch(e){ return null; }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* ====================== Utilidades ====================== */
+const nf3 = new Intl.NumberFormat("es-EC", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const nf2 = new Intl.NumberFormat("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pf2 = new Intl.NumberFormat("es-EC", { style:"percent", minimumFractionDigits:2, maximumFractionDigits:2 });
+
+function parseNum(v){
+  if(v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if(!s) return null;
+  if(s.includes(",")){
+    const cleaned = s.replace(/\./g,"").replace(",",".");
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : null;
+  }
+  const cleaned = s.replace(/,/g,"");
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+function fmt3(n){ return (!Number.isFinite(n)) ? "" : nf3.format(n); }
+function fmt2(n){ return (!Number.isFinite(n)) ? "" : nf2.format(n); }
+function fmtPct(n){ return (!Number.isFinite(n)) ? "" : pf2.format(n); }
+
+function normalizeMoneyFields(row){
+  // Formato requerido: 12.000,00 (dos decimales)
+  const keys = ["guia","promedio","pesoCola","basura","liquidado"];
+  for(const k of keys){
+    const n = parseNum(row[k]);
+    if(n === null) continue;
+    row[k] = nf2.format(n);
+  }
+  // Planta se calcula, no se guarda como campo.
+}
+
+function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+/* ====================== Fechas ====================== */
+const MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+function parseDateFlexible(s){
+  // Acepta: YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, DD-MM, DD/MM
+  if(!s) return null;
+  const t = String(s).trim().toLowerCase();
+  if(!t) return null;
+
+  let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m){
+    const y=+m[1], mo=+m[2], d=+m[3];
+    if(mo>=1 && mo<=12 && d>=1 && d<=31) return {y,mo,d};
+  }
+
+  m = t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if(m){
+    const d=+m[1], mo=+m[2], y=+m[3];
+    if(mo>=1 && mo<=12 && d>=1 && d<=31) return {y,mo,d};
+  }
+
+  m = t.match(/^(\d{1,2})[\/-](\d{1,2})$/);
+  if(m){
+    const d=+m[1], mo=+m[2];
+    const y = new Date().getFullYear();
+    if(mo>=1 && mo<=12 && d>=1 && d<=31) return {y,mo,d};
+  }
+
+  return null;
+}
+function toISO(p){ return p ? `${p.y}-${pad2(p.mo)}-${pad2(p.d)}` : ""; }
+function formatDateShortFromInput(value){
+  // si escriben 17-12 -> 17-dic (estilo Excel)
+  const p = parseDateFlexible(value);
+  if(!p) return String(value||"").trim();
+  return `${pad2(p.d)}-${MONTHS[p.mo-1]}`;
+}
+function formatDateLongFromISO(iso){
+  const p = parseDateFlexible(iso);
+  if(!p) return "";
+  return `${pad2(p.d)}/${pad2(p.mo)}/${p.y}`;
+}
+
+/* ====================== Cálculos ====================== */
+const TALLA_RANGES = [
+  {min: 10,  max: 20,  label: "10/20"},
+  {min: 20,  max: 25,  label: "20/25"},
+  {min: 26,  max: 30,  label: "26/30"},
+  {min: 31,  max: 35,  label: "31/35"},
+  {min: 36,  max: 40,  label: "36/40"},
+  {min: 41,  max: 50,  label: "41/50"},
+  {min: 51,  max: 60,  label: "51/60"},
+  {min: 61,  max: 70,  label: "61/70"},
+  {min: 71,  max: 90,  label: "71/90"},
+  {min: 91,  max: 110, label: "91/110"},
+  {min: 111, max: 130, label: "111/130"},
+  {min: 131, max: 150, label: "131/150"},
+  {min: 151, max: 200, label: "151/200"},
+  {min: 201, max: 300, label: "201/300"},
+];
+
+function calcTallaFromGramo(gramo){
+  if(!Number.isFinite(gramo) || gramo<=0) return "";
+  const valor = 454/(gramo*0.66);
+  const range = TALLA_RANGES.find(r=> valor>=r.min && valor<=r.max);
+  if(range) return range.label;
+  let best=TALLA_RANGES[0], bestDist=Infinity;
+  for(const r of TALLA_RANGES){
+    const mid=(r.min+r.max)/2;
+    const dist=Math.abs(valor-mid);
+    if(dist<bestDist){bestDist=dist;best=r;}
+  }
+  return best.label;
+}
+function calcPlanta(pesoCola){ return Number.isFinite(pesoCola)? (pesoCola/0.66): null; }
+function calcRend(liquidado, promedio, basura){
+  if(!Number.isFinite(liquidado)||!Number.isFinite(promedio)||!Number.isFinite(basura)) return null;
+  const denom = (promedio - basura);
+  if(denom===0) return null;
+  return liquidado/denom;
+}
+
+/* ====================== Lookups ====================== */
+function getLotByCode(lote){
+  return state.lots.find(x => x.lote === lote) || null;
+}
+function lotDisplay(loteCode){
+  if(!loteCode) return "";
+  const rec = getLotByCode(loteCode);
+  if(!rec) return loteCode;
+  const long = formatDateLongFromISO(rec.fechaProduccionISO);
+  return `${rec.lote}-${long}`;
+}
+
+/* ====================== Tabs ====================== */
+document.querySelectorAll(".tabbtn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tabbtn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
+    renderAll();
+  });
+});
+
+/* ====================== Export / Import / Reset ====================== */
+document.getElementById("btnExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `oceantreasure_programa_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("fileImport").addEventListener("change", async (e)=>{
+  const file = e.target.files?.[0];
+  if(!file) return;
+  try{
+    const obj = JSON.parse(await file.text());
+    state.lots = Array.isArray(obj.lots) ? obj.lots : [];
+    state.providers = Array.isArray(obj.providers) ? obj.providers : [];
+    state.sectors = Array.isArray(obj.sectors) ? obj.sectors : [];
+    state.programaRows = Array.isArray(obj.programaRows) ? obj.programaRows : [];
+    normalizeData();
+    saveState();
+    renderAll();
+    alert("Importado correctamente.");
+  }catch(err){
+    alert("No se pudo importar: " + err.message);
+  }finally{
+    e.target.value = "";
+  }
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(!confirm("¿Seguro que deseas borrar TODOS los datos guardados en este navegador?")) return;
+  state.lots=[]; state.providers=[]; state.sectors=[]; state.programaRows=[];
+  saveState();
+  renderAll();
+});
+
+/* ====================== Filtros ====================== */
+const filters = { hora:"", fecha:"", proveedor:"", oc:"", sector:"", lote:"", secuencia:"", pisc:"" };
+
+function bindFilter(id, key){
+  const el = document.getElementById(id);
+  el.addEventListener("input", ()=>{ filters[key]=el.value.trim(); renderPrograma(); });
+  el.addEventListener("change", ()=>{ filters[key]=el.value.trim(); renderPrograma(); });
+}
+bindFilter("f_hora","hora");
+bindFilter("f_fecha","fecha");
+bindFilter("f_proveedor","proveedor");
+bindFilter("f_oc","oc");
+bindFilter("f_sector","sector");
+bindFilter("f_lote","lote");
+bindFilter("f_secuencia","secuencia");
+bindFilter("f_pisc","pisc");
+
+document.getElementById("btnClearFilters").addEventListener("click", ()=>{
+  Object.keys(filters).forEach(k=>filters[k]="");
+  ["f_hora","f_fecha","f_oc","f_secuencia","f_pisc"].forEach(id=>document.getElementById(id).value="");
+  ["f_proveedor","f_sector","f_lote"].forEach(id=>document.getElementById(id).value="");
+  renderPrograma();
+});
+
+
+/* ====================== Rango superior: Fecha / Secuencia ====================== */
+const rangeFilters = { dateFrom:"", dateTo:"", seqFrom:"", seqTo:"" };
+
+function parseDateShortEs(s){
+  // Acepta: "17-dic" o "17-dic-2025" (mes en español abreviado)
+  if(!s) return null;
+  const t = String(s).trim().toLowerCase();
+  if(!t) return null;
+  const m = t.match(/^(\d{1,2})-([a-zñ]{3})(?:-(\d{4}))?$/);
+  if(!m) return null;
+  const d = +m[1];
+  const mon = m[2];
+  const y = m[3] ? +m[3] : new Date().getFullYear();
+  const mo = MONTHS.indexOf(mon) + 1;
+  if(mo<1 || d<1 || d>31) return null;
+  return {y, mo, d};
+}
+function parseAnyDateForRange(s){
+  // Acepta: 17-12, 17/12, 2025-12-17, 17-dic
+  return parseDateFlexible(s) || parseDateShortEs(s);
+}
+function normalizeRangeDateInput(value){
+  // Muestra siempre como dd-mmm si se puede
+  const p = parseAnyDateForRange(value);
+  if(!p) return String(value||"").trim();
+  return `${pad2(p.d)}-${MONTHS[p.mo-1]}`;
+}
+function dateKey(p){
+  if(!p) return null;
+  return new Date(p.y, p.mo-1, p.d).getTime();
+}
+
+function bindRangeInputs(){
+  const dFrom = document.getElementById("r_date_from");
+  const dTo   = document.getElementById("r_date_to");
+  const sFrom = document.getElementById("r_seq_from");
+  const sTo   = document.getElementById("r_seq_to");
+
+  const onChange = ()=>{
+    rangeFilters.dateFrom = dFrom.value.trim();
+    rangeFilters.dateTo   = dTo.value.trim();
+    rangeFilters.seqFrom  = sFrom.value.trim();
+    rangeFilters.seqTo    = sTo.value.trim();
+    renderPrograma();
+  };
+
+  [dFrom,dTo,sFrom,sTo].forEach(el=>{
+    el.addEventListener("input", onChange);
+    el.addEventListener("change", onChange);
+  });
+
+  // Normaliza visualmente las fechas al salir
+  dFrom.addEventListener("blur", ()=>{
+    dFrom.value = normalizeRangeDateInput(dFrom.value);
+    onChange();
+  });
+  dTo.addEventListener("blur", ()=>{
+    dTo.value = normalizeRangeDateInput(dTo.value);
+    onChange();
+  });
+}
+bindRangeInputs();
+
+
+// Normaliza inputs de filtros
+document.getElementById("f_hora").addEventListener("blur",(e)=>{
+  const v=String(e.target.value||"").trim();
+  const m=v.match(/^(\d{1,2}):(\d{1,2})$/);
+  if(m){
+    const hh=+m[1], mm=+m[2];
+    if(hh>=0 && hh<=23 && mm>=0 && mm<=59){
+      e.target.value=`${pad2(hh)}:${pad2(mm)}`;
+      filters.hora = e.target.value;
+      renderPrograma();
+    }
+  }
+});
+document.getElementById("f_fecha").addEventListener("blur",(e)=>{
+  const v=String(e.target.value||"").trim();
+  if(!v) return;
+  e.target.value = formatDateShortFromInput(v); // 17-12 -> 17-dic
+  filters.fecha = e.target.value;
+  renderPrograma();
+});
+
+/* ====================== Programa ====================== */
+function buildNewProgramaRow(){
+  return {
+    id: uid(),
+    hora:"",
+    fechaManual:"",      // AHORA: fecha se ingresa manual (estilo 10-dic / 17-dic)
+    proveedor:"",
+    oc:"",
+    guiaDoc:"",
+    binesKvt:"",
+    pisc:"",
+    sector:"",
+    lote:"",
+    secuencia:"",
+    gramo:"",
+    guia:"",
+    promedio:"",
+    pesoCola:"",
+    basura:"",
+    liquidado:"",
+    locked:false,
+    modificar:false
+  };
+}
+let newPrograma = buildNewProgramaRow();
+
+function sortPrograma(){
+  state.programaRows.sort((a,b)=>{
+    const aa = parseNum(a.secuencia) ?? 0;
+    const bb = parseNum(b.secuencia) ?? 0;
+    return aa - bb;
+  });
+}
+
+function applyFilters(rows){
+  const fHora=(filters.hora||"").toLowerCase();
+  const fFecha=(filters.fecha||"").toLowerCase();
+  const fOC=(filters.oc||"").toLowerCase();
+  const fSec=(filters.secuencia||"").toLowerCase();
+  const fPisc=(filters.pisc||"").toLowerCase();
+  return rows.filter(r=>{
+    if(fHora && !String(r.hora||"").toLowerCase().includes(fHora)) return false;
+    if(fFecha){
+      const fm = String(r.fechaManual||"").toLowerCase();
+      if(!fm.includes(fFecha)) return false;
+    }
+    if(filters.proveedor && r.proveedor!==filters.proveedor) return false;
+    if(fOC && !String(r.oc||"").toLowerCase().includes(fOC)) return false;
+    if(filters.sector && r.sector!==filters.sector) return false;
+    if(filters.lote && r.lote!==filters.lote) return false;
+    if(fSec && !String(r.secuencia||"").toLowerCase().includes(fSec)) return false;
+    if(fPisc && !String(r.pisc||"").toLowerCase().includes(fPisc)) return false;
+
+    if(fPisc && !String(r.pisc||"").toLowerCase().includes(fPisc)) return false;
+
+    // Rango por fecha (inclusive)
+    const df = parseAnyDateForRange(rangeFilters.dateFrom);
+    const dt = parseAnyDateForRange(rangeFilters.dateTo);
+    if(rangeFilters.dateFrom || rangeFilters.dateTo){
+      const rf = parseAnyDateForRange(String(r.fechaManual||""));
+      const rf2 = rf || parseDateShortEs(String(r.fechaManual||""));
+      const rdate = rf2 ? rf2 : null;
+      if(!rdate) return false;
+      let kf = df ? dateKey(df) : null;
+      let kt = dt ? dateKey(dt) : null;
+      if(kf!==null && kt!==null && kf>kt){ const tmp=kf; kf=kt; kt=tmp; }
+      const kr = dateKey(rdate);
+      if(kf!==null && kr<kf) return false;
+      if(kt!==null && kr>kt) return false;
+    }
+
+    // Rango por secuencia (inclusive)
+    if(rangeFilters.seqFrom || rangeFilters.seqTo){
+      const n = parseInt(String(r.secuencia||"").replace(/[^\d-]/g,""), 10);
+      if(!Number.isFinite(n)) return false;
+      let a = parseInt(rangeFilters.seqFrom, 10);
+      let b = parseInt(rangeFilters.seqTo, 10);
+      if(Number.isFinite(a) && Number.isFinite(b) && a>b){ const t=a; a=b; b=t; }
+      if(Number.isFinite(a) && n<a) return false;
+      if(Number.isFinite(b) && n>b) return false;
+    }
+
+    return true;
+  });
+}
+
+function confirmAndLockRow(row){
+  normalizeMoneyFields(row);
+  const summary = [
+    "Confirma la información:",
+    `Hora: ${row.hora||"-"}`,
+    `Fecha: ${row.fechaManual||"-"}`,
+    `Proveedor: ${row.proveedor||"-"}`,
+    `Sector: ${row.sector||"-"}`,
+    `Lote: ${lotDisplay(row.lote)||"-"}`,
+    `Secuencia: ${row.secuencia||"-"}`,
+    `Gramo: ${row.gramo||"-"}`,
+    `Guía (lbs): ${row.guia||"-"}`,
+    `Promedio: ${row.promedio||"-"}`,
+    `Peso cola: ${row.pesoCola||"-"}`,
+    `Basura: ${row.basura||"-"}`,
+    `Liquidado: ${row.liquidado||"-"}`
+  ].join("\n");
+
+  if(!confirm(summary)) return false;
+
+  row.locked = true;
+  row.modificar = false; // check por defecto desactivado
+  return true;
+}
+
+function upsertProgramaRow(row){
+  normalizeMoneyFields(row);
+  const i = state.programaRows.findIndex(x=>x.id===row.id);
+  if(i>=0) state.programaRows[i]=row; else state.programaRows.push(row);
+  sortPrograma();
+  saveState();
+}
+
+function renderPrograma(){
+  // options de filtros
+  setSelectOptions(document.getElementById("f_proveedor"),
+    state.providers.map(p=>({value:p.nombre,label:p.nombre})), true, "(Todos)");
+  setSelectOptions(document.getElementById("f_sector"),
+    state.sectors.map(s=>({value:s.lugar,label:`${s.lugar}`})).sort((a,b)=>a.label.localeCompare(b.label)),
+    true, "(Todos)");
+  setSelectOptions(document.getElementById("f_lote"),
+    state.lots.map(l=>({value:l.lote,label: lotDisplay(l.lote)})).sort((a,b)=>a.label.localeCompare(b.label)),
+    true, "(Todos)");
+
+  document.getElementById("f_proveedor").value = filters.proveedor;
+  document.getElementById("f_sector").value = filters.sector;
+  document.getElementById("f_lote").value = filters.lote;
+
+  sortPrograma();
+  const visible = applyFilters(state.programaRows);
+  document.getElementById("countRows").textContent = `${visible.length} filas`;
+
+  // Totales (solo filtradas)
+  let sumGuia=0,sumProm=0,sumPlanta=0,sumPC=0,sumBas=0,sumLiq=0;
+  for(const r of visible){
+    const guia=parseNum(r.guia);
+    const prom=parseNum(r.promedio);
+    const pc=parseNum(r.pesoCola);
+    const bas=parseNum(r.basura);
+    const liq=parseNum(r.liquidado);
+    const planta=calcPlanta(pc);
+
+    if(Number.isFinite(guia)) sumGuia+=guia;
+    if(Number.isFinite(prom)) sumProm+=prom;
+    if(Number.isFinite(planta)) sumPlanta+=planta;
+    if(Number.isFinite(pc)) sumPC+=pc;
+    if(Number.isFinite(bas)) sumBas+=bas;
+    if(Number.isFinite(liq)) sumLiq+=liq;
+  }
+  document.getElementById("t_guia").textContent = nf2.format(sumGuia);
+  document.getElementById("t_promedio").textContent = nf2.format(sumProm);
+  document.getElementById("t_planta").textContent = nf2.format(sumPlanta);
+  document.getElementById("t_pesocola").textContent = nf2.format(sumPC);
+  document.getElementById("t_basura").textContent = nf2.format(sumBas);
+  document.getElementById("t_liquidado").textContent = nf2.format(sumLiq);
+
+  const tbody = document.getElementById("tbodyPrograma");
+  tbody.innerHTML = "";
+  tbody.appendChild(renderProgramaRow(newPrograma, {isNew:true}));
+  for(const r of visible){
+    tbody.appendChild(renderProgramaRow(r, {isNew:false}));
+  }
+}
+
+function setSelectOptions(select, items, includeAll=true, allLabel="(Todos)"){
+  select.innerHTML = "";
+  if(includeAll){
+    const opt=document.createElement("option");
+    opt.value=""; opt.textContent=allLabel;
+    select.appendChild(opt);
+  }
+  for(const it of items){
+    const opt=document.createElement("option");
+    opt.value=it.value;
+    opt.textContent=it.label;
+    select.appendChild(opt);
+  }
+}
+
+function renderProgramaRow(row, {isNew}){
+  const tr=document.createElement("tr");
+  if(!isNew && row.locked && !row.modificar) tr.classList.add("locked");
+
+  // editable: fila nueva siempre; fila guardada solo con check activar
+  const editable = isNew ? true : !!row.modificar;
+
+  function tdInput(value, onChange, opts={}){
+    const td=document.createElement("td");
+    const inp=document.createElement("input");
+    inp.value=value ?? "";
+    if(opts.placeholder) inp.placeholder=opts.placeholder;
+    if(opts.inputmode) inp.inputMode=opts.inputmode;
+    if(opts.alignRight){ td.classList.add("right"); inp.classList.add("right"); }
+    inp.disabled = !!opts.disabled || !editable;
+    if(opts.onBlur) inp.addEventListener("blur", (e)=>opts.onBlur(e, inp));
+    inp.addEventListener("input", ()=>onChange(inp.value));
+    if(opts.onKeydown) inp.addEventListener("keydown", opts.onKeydown);
+    td.appendChild(inp);
+    return td;
+  }
+
+  function tdSelect(value, options, onChange, opts={}){
+    const td=document.createElement("td");
+    const sel=document.createElement("select");
+    const opt0=document.createElement("option");
+    opt0.value=""; opt0.textContent="";
+    sel.appendChild(opt0);
+    for(const o of options){
+      const op=document.createElement("option");
+      op.value=o.value; op.textContent=o.label;
+      sel.appendChild(op);
+    }
+    sel.value=value ?? "";
+    sel.disabled = !!opts.disabled || !editable;
+    sel.addEventListener("change", ()=>onChange(sel.value));
+    td.appendChild(sel);
+    return td;
+  }
+
+  function tdText(value, cls=""){
+    const td=document.createElement("td");
+    if(cls) td.className=cls;
+    td.textContent=value ?? "";
+    return td;
+  }
+
+  // Hora
+  tr.appendChild(tdInput(row.hora, v=>row.hora=v, {
+    inputmode:"numeric",
+    onBlur:(e)=>{
+      const v=String(e.target.value||"").trim();
+      const m=v.match(/^(\d{1,2}):(\d{1,2})$/);
+      if(m){
+        const hh=+m[1], mm=+m[2];
+        if(hh>=0 && hh<=23 && mm>=0 && mm<=59){
+          const f=`${pad2(hh)}:${pad2(mm)}`;
+          e.target.value=f; row.hora=f;
+        }
+      }
+    }
+  }));
+
+  // Fecha (MANUAL)
+  tr.appendChild(tdInput(row.fechaManual, v=>row.fechaManual=v, {
+    onBlur:(e)=>{
+      const raw=String(e.target.value||"").trim();
+      if(!raw) return;
+      // si viene 17-12 => 17-dic
+      e.target.value = formatDateShortFromInput(raw);
+      row.fechaManual = e.target.value;
+    }
+  }));
+
+  // Proveedor
+  tr.appendChild(tdSelect(row.proveedor,
+    state.providers.map(p=>({value:p.nombre,label:p.nombre})),
+    v=>row.proveedor=v
+  ));
+
+  // OC
+  tr.appendChild(tdInput(row.oc, v=>row.oc=v, {}));
+
+  // Guía (doc)
+  tr.appendChild(tdInput(row.guiaDoc, v=>row.guiaDoc=v, {}));
+
+  // Bines/Kvt
+  tr.appendChild(tdInput(row.binesKvt, v=>row.binesKvt=v, {}));
+
+  // Pisc
+  tr.appendChild(tdInput(row.pisc, v=>row.pisc=v, {inputmode:"numeric"}));
+
+  // Sector
+  tr.appendChild(tdSelect(row.sector,
+    state.sectors.map(s=>({value:s.lugar,label:s.lugar})).sort((a,b)=>a.label.localeCompare(b.label)),
+    v=>row.sector=v
+  ));
+
+  // LOTE (select que muestra "0191-17/12/2025")
+  tr.appendChild(tdSelect(row.lote,
+    state.lots.map(l=>({value:l.lote,label:lotDisplay(l.lote)})).sort((a,b)=>a.label.localeCompare(b.label)),
+    v=>{ row.lote=v; }
+  ));
+
+  // Secuencia
+  tr.appendChild(tdInput(row.secuencia, v=>row.secuencia=v, {inputmode:"numeric"}));
+
+  // Gramo
+  tr.appendChild(tdInput(row.gramo, v=>row.gramo=v, {inputmode:"decimal", alignRight:true}));
+
+  // Talla (calc)
+  tr.appendChild(tdText(calcTallaFromGramo(parseNum(row.gramo)), "center"));
+
+  // Guía (lbs) - Enter => confirmar/bloquear
+  tr.appendChild(tdInput(row.guia, v=>row.guia=v, {
+    inputmode:"decimal",
+    alignRight:true,
+    onBlur:(e)=>{
+      const n=parseNum(e.target.value);
+      if(n!==null){ const f=nf2.format(n); e.target.value=f; row.guia=f; }
+    },
+    onKeydown:(ev)=>{
+      if(ev.key==="Enter"){
+        ev.preventDefault();
+
+        // mínimos
+        if(!row.lote || !row.proveedor || !row.sector){
+          alert("Para guardar: selecciona LOTE, PROVEEDOR y SECTOR.");
+          return;
+        }
+        if(!String(row.fechaManual||"").trim()){
+          alert("Para guardar: ingresa FECHA (manual).");
+          return;
+        }
+
+        if(confirmAndLockRow(row)){
+          upsertProgramaRow({...row});
+          if(isNew) newPrograma = buildNewProgramaRow();
+          renderPrograma();
+        }
+      }
+    }
+  }));
+
+  // Promedio
+  tr.appendChild(tdInput(row.promedio, v=>row.promedio=v, {inputmode:"decimal", alignRight:true,
+    onBlur:(e)=>{ const n=parseNum(e.target.value); if(n!==null){ const f=nf2.format(n); e.target.value=f; row.promedio=f; } }
+  }));
+
+  // Planta (calc)
+  const planta = calcPlanta(parseNum(row.pesoCola));
+  tr.appendChild(tdText(planta===null? "" : fmt2(planta), "right"));
+
+  // Peso cola
+  tr.appendChild(tdInput(row.pesoCola, v=>row.pesoCola=v, {inputmode:"decimal", alignRight:true,
+    onBlur:(e)=>{ const n=parseNum(e.target.value); if(n!==null){ const f=nf2.format(n); e.target.value=f; row.pesoCola=f; } }
+  }));
+
+  // Basura
+  tr.appendChild(tdInput(row.basura, v=>row.basura=v, {inputmode:"decimal", alignRight:true,
+    onBlur:(e)=>{ const n=parseNum(e.target.value); if(n!==null){ const f=nf2.format(n); e.target.value=f; row.basura=f; } }
+  }));
+
+  // Liquidado
+  tr.appendChild(tdInput(row.liquidado, v=>row.liquidado=v, {inputmode:"decimal", alignRight:true,
+    onBlur:(e)=>{ const n=parseNum(e.target.value); if(n!==null){ const f=nf2.format(n); e.target.value=f; row.liquidado=f; } }
+  }));
+
+  // Rend (calc)
+  const rend = calcRend(parseNum(row.liquidado), parseNum(row.promedio), parseNum(row.basura));
+  tr.appendChild(tdText(rend===null? "" : fmtPct(rend), "right"));
+
+  // Modificar (check siempre)
+  const tdMod=document.createElement("td"); tdMod.classList.add("center");
+  const chk=document.createElement("input"); chk.type="checkbox";
+  if(isNew){
+    chk.disabled = true;
+    chk.checked = false;
+  }else{
+    chk.checked = !!row.modificar;
+    chk.addEventListener("change", ()=>{
+      row.modificar = chk.checked;
+      if(row.modificar){
+        row.locked = false;
+      }else{
+        row.locked = true;
+        upsertProgramaRow({...row});
+      }
+      saveState();
+      renderPrograma();
+    });
+  }
+  tdMod.appendChild(chk);
+  tr.appendChild(tdMod);
+
+  // Acción
+  const tdAct=document.createElement("td"); tdAct.classList.add("center");
+  if(isNew){
+    const b=document.createElement("button");
+    b.className="btn"; b.textContent="Limpiar";
+    b.addEventListener("click", ()=>{ newPrograma=buildNewProgramaRow(); renderPrograma(); });
+    tdAct.appendChild(b);
+  }else{
+    const del=document.createElement("span");
+    del.className="delLink"; del.textContent="ELIMINAR";
+    del.addEventListener("click", ()=>{
+      if(!confirm("¿Eliminar esta fila?")) return;
+      state.programaRows = state.programaRows.filter(x=>x.id!==row.id);
+      saveState();
+      renderPrograma();
+    });
+    tdAct.appendChild(del);
+  }
+  tr.appendChild(tdAct);
+
+  return tr;
+}
+
+/* ====================== LOTES ====================== */
+function buildNewLot(){
+  return { id: uid(), producto:"", lote:"", granja:"", autorizacion:"", fechaProduccion:"", ref:"", libras:"", piscina:"" };
+}
+let newLot = buildNewLot();
+
+function renderLotes(){
+  document.getElementById("countLotes").textContent = state.lots.length;
+
+  const tbody=document.getElementById("tbodyLotes");
+  tbody.innerHTML="";
+
+  const addInput=(tr,val,cb,ph="")=>{
+    const td=document.createElement("td");
+    const inp=document.createElement("input");
+    inp.value=val||""; inp.placeholder=ph;
+    inp.addEventListener("input", ()=>cb(inp.value));
+    td.appendChild(inp); tr.appendChild(td);
+  };
+
+  // nueva fila
+  const trNew=document.createElement("tr");
+  addInput(trNew, newLot.producto, v=>newLot.producto=v, "Ej: Camarón crudo congelado");
+  addInput(trNew, newLot.lote, v=>newLot.lote=v, "Ej: 0191");
+  addInput(trNew, newLot.granja, v=>newLot.granja=v, "Ej: Natushrimp S.A.");
+  addInput(trNew, newLot.autorizacion, v=>newLot.autorizacion=v, "Ej: GR-83063");
+  addInput(trNew, newLot.fechaProduccion, v=>newLot.fechaProduccion=v, "Ej: 17-12 o 2025-12-17");
+  addInput(trNew, newLot.ref, v=>newLot.ref=v, "Ej: 7/5/1901");
+  addInput(trNew, newLot.libras, v=>newLot.libras=v, "Ej: 44.360,00");
+  addInput(trNew, newLot.piscina, v=>newLot.piscina=v, "Ej: 11");
+
+  const tdBtn=document.createElement("td"); tdBtn.classList.add("center");
+  const btn=document.createElement("button"); btn.className="btn"; btn.textContent="Agregar";
+  btn.addEventListener("click", ()=>{
+    const lote=(newLot.lote||"").trim();
+    const fechaRaw=(newLot.fechaProduccion||"").trim();
+    if(!lote || !fechaRaw){ alert("LOTE y FECHA DE PRODUCCIÓN son obligatorios."); return; }
+    if(state.lots.some(x=>x.lote===lote)){ alert("Ese LOTE ya existe."); return; }
+    const p=parseDateFlexible(fechaRaw);
+    if(!p){ alert("Fecha inválida. Usa 17-12 o 2025-12-17."); return; }
+
+    state.lots.push({
+      id: uid(),
+      producto: newLot.producto,
+      lote,
+      granja: newLot.granja,
+      autorizacion: newLot.autorizacion,
+      fechaProduccionISO: toISO(p),
+      ref: newLot.ref,
+      libras: newLot.libras,
+      piscina: newLot.piscina
+    });
+
+    newLot = buildNewLot();
+    saveState();
+    renderAll();
+  });
+  tdBtn.appendChild(btn);
+  trNew.appendChild(tdBtn);
+  tbody.appendChild(trNew);
+
+  // listados
+  for(const l of state.lots.slice().sort((a,b)=>String(a.lote).localeCompare(String(b.lote)))){
+    const tr=document.createElement("tr");
+    tr.appendChild(tdPlain(l.producto));
+    tr.appendChild(tdPlain(l.lote));
+    tr.appendChild(tdPlain(l.granja));
+    tr.appendChild(tdPlain(l.autorizacion));
+    tr.appendChild(tdPlain(formatDateLongFromISO(l.fechaProduccionISO)));
+    tr.appendChild(tdPlain(l.ref));
+    tr.appendChild(tdRight(l.libras));
+    tr.appendChild(tdRight(l.piscina));
+    const td=document.createElement("td"); td.classList.add("center");
+    const del=document.createElement("span"); del.className="delLink"; del.textContent="ELIMINAR";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`¿Eliminar el LOTE ${l.lote}?`)) return;
+      state.lots = state.lots.filter(x=>x.id!==l.id);
+      saveState();
+      renderAll();
+    });
+    td.appendChild(del);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+  function tdPlain(v){ const td=document.createElement("td"); td.textContent=v||""; return td; }
+  function tdRight(v){ const td=document.createElement("td"); td.classList.add("right"); td.textContent=v||""; return td; }
+}
+
+/* ====================== PROVEEDORES ====================== */
+let newProv={id:uid(), nombre:""};
+function renderProveedores(){
+  document.getElementById("countProv").textContent = state.providers.length;
+  const tbody=document.getElementById("tbodyProveedores");
+  tbody.innerHTML="";
+
+  const trNew=document.createElement("tr");
+  const tdIn=document.createElement("td");
+  const inp=document.createElement("input");
+  inp.placeholder="Ej: Camarones naturales Natushrimp S. A.";
+  inp.value=newProv.nombre;
+  inp.addEventListener("input", ()=>newProv.nombre=inp.value);
+  tdIn.appendChild(inp);
+  trNew.appendChild(tdIn);
+
+  const tdBtn=document.createElement("td"); tdBtn.classList.add("center");
+  const btn=document.createElement("button"); btn.className="btn"; btn.textContent="Agregar";
+  btn.addEventListener("click", ()=>{
+    const nombre=(newProv.nombre||"").trim();
+    if(!nombre){ alert("Ingresa el nombre del proveedor."); return; }
+    if(state.providers.some(p=>p.nombre.toLowerCase()===nombre.toLowerCase())){ alert("Ese proveedor ya existe."); return; }
+    state.providers.push({id:uid(), nombre});
+    newProv={id:uid(), nombre:""};
+    saveState();
+    renderAll();
+  });
+  tdBtn.appendChild(btn);
+  trNew.appendChild(tdBtn);
+  tbody.appendChild(trNew);
+
+  for(const p of state.providers.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre))){
+    const tr=document.createElement("tr");
+    const td=document.createElement("td"); td.textContent=p.nombre; tr.appendChild(td);
+    const tda=document.createElement("td"); tda.classList.add("center");
+    const del=document.createElement("span"); del.className="delLink"; del.textContent="ELIMINAR";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`¿Eliminar proveedor "${p.nombre}"?`)) return;
+      state.providers = state.providers.filter(x=>x.id!==p.id);
+      saveState();
+      renderAll();
+    });
+    tda.appendChild(del);
+    tr.appendChild(tda);
+    tbody.appendChild(tr);
+  }
+}
+
+/* ====================== SECTORES ====================== */
+let newSec={id:uid(), lugar:"", provincia:""};
+function renderSectores(){
+  document.getElementById("countSec").textContent = state.sectors.length;
+  const tbody=document.getElementById("tbodySectores");
+  tbody.innerHTML="";
+
+  const trNew=document.createElement("tr");
+  trNew.appendChild((()=>{
+    const td=document.createElement("td");
+    const inp=document.createElement("input");
+    inp.placeholder="Ej: Cien familias";
+    inp.value=newSec.lugar;
+    inp.addEventListener("input", ()=>newSec.lugar=inp.value);
+    td.appendChild(inp); return td;
+  })());
+  trNew.appendChild((()=>{
+    const td=document.createElement("td");
+    const inp=document.createElement("input");
+    inp.placeholder="Ej: El Oro";
+    inp.value=newSec.provincia;
+    inp.addEventListener("input", ()=>newSec.provincia=inp.value);
+    td.appendChild(inp); return td;
+  })());
+  trNew.appendChild((()=>{
+    const td=document.createElement("td"); td.classList.add("center");
+    const btn=document.createElement("button"); btn.className="btn"; btn.textContent="Agregar";
+    btn.addEventListener("click", ()=>{
+      const lugar=(newSec.lugar||"").trim();
+      const provincia=(newSec.provincia||"").trim();
+      if(!lugar || !provincia){ alert("Lugar y Provincia son obligatorios."); return; }
+      if(state.sectors.some(s=>s.lugar.toLowerCase()===lugar.toLowerCase())){ alert("Ese sector/lugar ya existe."); return; }
+      state.sectors.push({id:uid(), lugar, provincia});
+      newSec={id:uid(), lugar:"", provincia:""};
+      saveState();
+      renderAll();
+    });
+    td.appendChild(btn); return td;
+  })());
+  tbody.appendChild(trNew);
+
+  for(const s of state.sectors.slice().sort((a,b)=>a.lugar.localeCompare(b.lugar))){
+    const tr=document.createElement("tr");
+    const td1=document.createElement("td"); td1.textContent=s.lugar; tr.appendChild(td1);
+    const td2=document.createElement("td"); td2.textContent=s.provincia; tr.appendChild(td2);
+    const td3=document.createElement("td"); td3.classList.add("center");
+    const del=document.createElement("span"); del.className="delLink"; del.textContent="ELIMINAR";
+    del.addEventListener("click", ()=>{
+      if(!confirm(`¿Eliminar sector "${s.lugar}"?`)) return;
+      state.sectors = state.sectors.filter(x=>x.id!==s.id);
+      saveState();
+      renderAll();
+    });
+    td3.appendChild(del);
+    tr.appendChild(td3);
+    tbody.appendChild(tr);
+  }
+}
+
+/* ====================== Normalización / Migración ====================== */
+function normalizeData(){
+  // lots: asegurar fechaProduccionISO
+  for(const l of state.lots){
+    if(!l.fechaProduccionISO){
+      const p=parseDateFlexible(l.fechaProduccion||"");
+      if(p) l.fechaProduccionISO=toISO(p);
+      delete l.fechaProduccion;
+    }
+  }
+  // programa: migrar campos antiguos
+  for(const r of state.programaRows){
+    if(r.fechaManual === undefined){
+      // v1/v2 tenían fechaISO/fechaDisplay -> no aplica; intentamos recuperar algo visible
+      r.fechaManual = (r.fechaDisplay || r.fechaISO || "").trim();
+      delete r.fechaISO; delete r.fechaDisplay;
+    }
+    if(typeof r.modificar !== "boolean") r.modificar=false;
+    if(typeof r.locked !== "boolean") r.locked=!r.modificar;
+    // normaliza formato numérico requerido
+    normalizeMoneyFields(r);
+  }
+}
+
+/* ====================== Render All ====================== */
+function renderAll(){
+  normalizeData();
+  saveState();
+  renderPrograma();
+  renderLotes();
+  renderProveedores();
+  renderSectores();
+}
+renderAll();
+/* ====================== Resize columnas (arrastrar) ====================== */
+const COLW_KEY = STORAGE_KEY + "_colwidths";
+
+function getColWidthStore(){
+  try{ return JSON.parse(localStorage.getItem(COLW_KEY) || "{}"); }catch(e){ return {}; }
+}
+function setColWidthStore(obj){
+  localStorage.setItem(COLW_KEY, JSON.stringify(obj));
+}
+
+function applyStoredWidths(table){
+  const key = table.dataset.resizeKey || "table";
+  const store = getColWidthStore();
+  const widths = store[key];
+  if(!widths) return;
+
+  const ths = table.tHead?.rows?.[0]?.cells ? Array.from(table.tHead.rows[0].cells) : [];
+  widths.forEach((w, i)=>{
+    if(!w || !ths[i]) return;
+    ths[i].style.width = w + "px";
+  });
+}
+
+function persistWidths(table){
+  const key = table.dataset.resizeKey || "table";
+  const store = getColWidthStore();
+  const ths = table.tHead?.rows?.[0]?.cells ? Array.from(table.tHead.rows[0].cells) : [];
+  store[key] = ths.map(th => Math.round(th.getBoundingClientRect().width));
+  setColWidthStore(store);
+}
+
+function makeResizable(table){
+  const ths = table.tHead?.rows?.[0]?.cells ? Array.from(table.tHead.rows[0].cells) : [];
+  if(ths.length===0) return;
+
+  applyStoredWidths(table);
+
+  ths.forEach((th, i)=>{
+    if(th.querySelector(".col-resizer")) return;
+
+    const resizer = document.createElement("div");
+    resizer.className = "col-resizer";
+    th.appendChild(resizer);
+
+    let startX=0, startW=0;
+    let raf=null;
+
+    const onMove = (e)=>{
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const dx = clientX - startX;
+      const newW = Math.max(40, startW + dx);
+      if(raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(()=>{ th.style.width = newW + "px"; });
+    };
+
+    const onUp = ()=>{
+      document.body.classList.remove("resizing");
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onUp);
+      persistWidths(table);
+    };
+
+    const onDown = (e)=>{
+      e.preventDefault();
+      document.body.classList.add("resizing");
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      startX = clientX;
+      startW = th.getBoundingClientRect().width;
+
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+      window.addEventListener("touchmove", onMove, {passive:false});
+      window.addEventListener("touchend", onUp);
+    };
+
+    resizer.addEventListener("mousedown", onDown);
+    resizer.addEventListener("touchstart", onDown, {passive:false});
+
+    // doble click: auto-fit aproximado
+    resizer.addEventListener("dblclick", ()=>{
+      const rows = Array.from(table.tBodies[0]?.rows || []);
+      const sample = rows.slice(0, 30);
+
+      const measurer = document.createElement("span");
+      measurer.style.visibility="hidden";
+      measurer.style.position="absolute";
+      measurer.style.whiteSpace="nowrap";
+      measurer.style.font = window.getComputedStyle(th).font;
+      document.body.appendChild(measurer);
+
+      let maxW = 60;
+      measurer.textContent = th.textContent.trim();
+      maxW = Math.max(maxW, measurer.getBoundingClientRect().width + 20);
+
+      for(const r of sample){
+        const cell = r.cells[i];
+        if(!cell) continue;
+        const inp = cell.querySelector("input,select");
+        const text = inp ? (inp.value || inp.placeholder || "") : (cell.textContent || "");
+        measurer.textContent = String(text).trim();
+        maxW = Math.max(maxW, measurer.getBoundingClientRect().width + 28);
+      }
+      document.body.removeChild(measurer);
+
+      th.style.width = Math.min(Math.max(40, Math.round(maxW)), 520) + "px";
+      persistWidths(table);
+    });
+  });
+}
+
+function initAllResizableTables(){
+  document.querySelectorAll("table.resizable").forEach(t=>makeResizable(t));
+}
+
+initAllResizableTables();
+
+// Hook renderAll para re-inicializar
+const __renderAll = renderAll;
+renderAll = function(){
+  __renderAll();
+  requestAnimationFrame(()=>initAllResizableTables());
+};
+
+
+/* ====================== Exportar Excel / PDF (fix) ====================== */
+(function(){
+  function safeGet(id){ return document.getElementById(id); }
+
+  function getVisibleProgramaRows(){
+    try{
+      sortPrograma();
+      return applyFilters(state.programaRows);
+    }catch(e){
+      console.error("Error getVisibleProgramaRows", e);
+      return [];
+    }
+  }
+
+  function buildProgramaExportTable(rows){
+    const headers = ["Hora","Fecha","Proveedor","OC","Guía (doc)","Bines / Kvt","Pisc","Sector","LOTE","SECUENCIA","Gramo","Talla","Guía","Promedio","Planta","Peso cola","Basura","Liquidado","Rend"];
+    const data = rows.map(r=>{
+      const gr = parseNum(r.gramo);
+      const talla = calcTallaFromGramo(gr);
+      const pc = parseNum(r.pesoCola);
+      const planta = calcPlanta(pc);
+      const rend = calcRend(parseNum(r.liquidado), parseNum(r.promedio), parseNum(r.basura));
+      return [
+        r.hora||"",
+        r.fechaManual||"",
+        r.proveedor||"",
+        r.oc||"",
+        r.guiaDoc||"",
+        r.binesKvt||"",
+        r.pisc||"",
+        r.sector||"",
+        lotDisplay(r.lote)||"",
+        r.secuencia||"",
+        r.gramo||"",
+        talla||"",
+        (r.guia||""),
+        (r.promedio||""),
+        (planta===null? "" : nf2.format(planta)),
+        (r.pesoCola||""),
+        (r.basura||""),
+        (r.liquidado||""),
+        (rend===null? "" : pf2.format(rend))
+      ];
+    });
+    return {headers, data};
+  }
+
+  function exportExcel(){
+    const rows = getVisibleProgramaRows();
+    const {headers, data} = buildProgramaExportTable(rows);
+
+    let out = `<!doctype html><html><head><meta charset="utf-8"></head><body>`;
+    out += `<h3>OCEANTREASURE S. A. — Programa Oceantreasure 2025</h3>`;
+    out += `<div>Exportado: ${new Date().toLocaleString("es-EC")} — Filas: ${rows.length}</div>`;
+    out += `<table border="1" cellspacing="0" cellpadding="4">`;
+    out += `<tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr>`;
+    for(const row of data){
+      out += `<tr>${row.map(v=>`<td>${String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</td>`).join("")}</tr>`;
+    }
+    out += `</table></body></html>`;
+
+    const blob = new Blob([out], {type:"application/vnd.ms-excel;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `oceantreasure_programa_${new Date().toISOString().slice(0,10)}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 500);
+  }
+
+  function exportPDF(){
+    const rows = getVisibleProgramaRows();
+    const {headers, data} = buildProgramaExportTable(rows);
+
+    // Totales solicitados
+    const totalGuia = rows.reduce((acc,r)=> acc + (parseNum(r.guia)||0), 0);
+    const totalGuiaCola = totalGuia * 0.66;
+
+    // Nombre sugerido para "Guardar como PDF" (Chrome/Edge suele usar el título del documento)
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2,"0");
+    const mm = String(now.getMonth()+1).padStart(2,"0");
+    const yyyy = now.getFullYear();
+    const hh = String(now.getHours()).padStart(2,"0");
+    const mi = String(now.getMinutes()).padStart(2,"0");
+    const fileTitle = `Programacion Oceantreasure ${dd}-${mm}-${yyyy} ${hh}-${mi}`;
+
+    const win = window.open("", "_blank");
+    if(!win){
+      alert("El navegador bloqueó la ventana emergente. Habilita pop-ups para este archivo y vuelve a intentar.");
+      return;
+    }
+
+    const styles = `
+      <style>
+        @page { size: A4 landscape; margin: 10mm; }
+        body{font-family:Calibri,Arial,sans-serif;margin:0}
+        h3{margin:0 0 6px 0}
+        .wrap{padding:12px}
+        .meta{margin:0 0 10px 0;font-size:12px}
+        table{border-collapse:collapse;width:100%;font-size:9.5px}
+        th,td{border:1px solid #999;padding:3px 5px;white-space:nowrap}
+        th{background:#1f2f3d;color:#fff}
+        thead tr.totrow th{
+          background:#44515e !important;
+          color:#fff !important;
+          font-weight:700;
+          border:1px solid #999;
+          text-align:right;
+        }
+        thead tr.totrow th.blank{color:transparent}
+      </style>
+    `;
+
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${fileTitle}</title>${styles}</head><body><div class="wrap">`);
+    win.document.write(`<h3>OCEANTREASURE S. A. — Programa Oceantreasure 2025</h3>`);
+    win.document.write(`<div class="meta">Exportado: ${now.toLocaleString("es-EC")} — Filas: ${rows.length}</div>`);
+
+    // Índices de columnas (0-based) en el export:
+    // headers = ["Hora","Fecha","Proveedor","OC","Guía (doc)","Bines / Kvt","Pisc","Sector","LOTE","SECUENCIA","Gramo","Talla","Guía","Promedio","Planta","Peso cola","Basura","Liquidado","Rend"]
+    const idxGuia = 12;
+    const idxPesoCola = 15;
+
+    // THEAD con fila de totales encima de encabezados
+    win.document.write(`<table><thead>`);
+    win.document.write(`<tr class="totrow">` +
+      headers.map((h,i)=>{
+        if(i===idxGuia) return `<th>${nf2.format(totalGuia)}</th>`;
+        if(i===idxPesoCola) return `<th>${nf2.format(totalGuiaCola)}</th>`;
+        return `<th class="blank">&nbsp;</th>`;
+      }).join("") +
+    `</tr>`);
+
+    win.document.write(`<tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`);
+
+    for(const row of data){
+      win.document.write(`<tr>${row.map(v=>`<td>${String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</td>`).join("")}</tr>`);
+    }
+    win.document.write(`</tbody></table></div></body></html>`);
+    win.document.close();
+
+    // Espera un tick para imprimir
+    setTimeout(()=>{ win.focus(); win.print(); }, 250);
+  }
+
+
+  function bind(){
+    const bx = safeGet("btnExportExcel");
+    const bp = safeGet("btnExportPDF");
+    if(bx){
+      bx.addEventListener("click", (e)=>{
+        e.preventDefault();
+        try{ exportExcel(); }catch(err){ console.error(err); alert("Error al exportar Excel. Revisa consola (F12)."); }
+      });
+    }
+    if(bp){
+      bp.addEventListener("click", (e)=>{
+        e.preventDefault();
+        try{ exportPDF(); }catch(err){ console.error(err); alert("Error al exportar PDF. Revisa consola (F12)."); }
+      });
+    }
+  }
+
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
+  else bind();
+})();
+
+</script>
+</body>
+</html>
