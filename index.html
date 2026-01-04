@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Oceantreasure | Sistemas</title>
+  <style>
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#e5e7eb}
+    header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2)}
+    h1{margin:0;font-size:18px;font-weight:700}
+    p{margin:6px 0 0;font-size:13px;opacity:.85}
+    main{max-width:980px;margin:0 auto;padding:18px;display:grid;gap:12px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:14px}
+    .card h2{margin:0 0 6px;font-size:15px}
+    .card small{opacity:.75}
+    .btn{display:inline-block;margin-top:10px;padding:9px 12px;border-radius:10px;
+         background:#2563eb;color:white;text-decoration:none;font-weight:700;font-size:13px}
+    .btn:hover{filter:brightness(1.05)}
+    .muted{opacity:.75;font-size:12px;margin-top:10px}
+    .line{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>OCEANTREASURE — Sistemas Web</h1>
+    <p>Selecciona el sistema que deseas abrir.</p>
+  </header>
+
+  <main>
+    <div class="grid">
+
+      <div class="card">
+        <h2>Gestión de Compra</h2>
+        <small>Login Firebase (solo Jefferson)</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SGC-Gestion-de-compra-Firebase-JeffersonOnly.html">Abrir</a>
+        <div class="muted">Archivo: SGC-Gestion-de-compra-Firebase-JeffersonOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SLP — Liquidación de Pago</h2>
+        <small>Login Firebase (liquidacionesdepago)</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SLP-Liquidacion-de-pago-Firebase-LiquidacionesOnly.html">Abrir</a>
+        <div class="muted">Archivo: SLP-Liquidacion-de-pago-Firebase-LiquidacionesOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SOP — Órdenes de Producción</h2>
+        <small>Login Firebase (ordenesdeproduccion) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SOP-Ordenes-de-Produccion-OrdenesOnly.html">Abrir</a>
+        <div class="muted">Archivo: SOP-Ordenes-de-Produccion-OrdenesOnly.html</div>
+      </div>
+
+    </div>
+
+    <p class="muted">
+      Nota: GitHub Pages distingue mayúsculas/minúsculas. Si cambias el nombre del archivo, cambia el link aquí.
+    </p>
+  </main>
+
+  <script>
+    // Cache-buster al hacer clic: agrega/actualiza ?v=TIMESTAMP (y mantiene otros parámetros)
+    function withNoCache(url) {
+      const u = new URL(url, window.location.href);
+      u.searchParams.set("v", Date.now().toString());
+      return u.toString();
+    }
+
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a[data-nocache]");
+      if (!a) return;
+
+      // Respeta Ctrl/Shift/Middle click (abrir en otra pestaña)
+      if (e.ctrlKey || e.shiftKey || e.metaKey || e.button === 1) {
+        a.href = withNoCache(a.getAttribute("href"));
+        return;
+      }
+
+      e.preventDefault();
+      window.location.href = withNoCache(a.getAttribute("href"));
+    });
+  </script>
+</body>
+</html>
