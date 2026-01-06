@@ -1,0 +1,1374 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SSL Sistema de Soporte de Liquidaciones</title>
+
+  <!-- PDF libs -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --border:#000;
+      --muted:#666;
+      --bg:#fff;
+      --tab:#f2f2f2;
+      --tabActive:#fff;
+      --blocked:#e6e6e6;
+      --accent:#111;
+      --navy:#0b1f3b; /* azul marino */
+    }
+    body{
+      margin:0;
+      font-family: "Times New Roman", Times, serif; /* TODO el texto */
+      background:#fafafa;
+      color:#111;
+    }
+
+    /* Top bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border-bottom:1px solid #ddd;
+      background:#fff;
+    }
+    .title{
+      font-weight:700;
+      font-size:16px;
+      color:var(--navy);
+    }
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    button{
+      border:1px solid #111;
+      background:#fff;
+      padding:6px 10px;
+      font-size:12px;
+      cursor:pointer;
+      font-family: "Times New Roman", Times, serif;
+    }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .btn-primary{
+      background:#111;
+      color:#fff;
+    }
+    .btn-danger{
+      border-color:#a00;
+      color:#a00;
+    }
+    .btn-warn{
+      border-color:#b57c00;
+      color:#b57c00;
+    }
+
+    /* Tabs */
+    .tabs{
+      display:flex;
+      gap:2px;
+      padding:0 14px;
+      background:#fff;
+      border-bottom:1px solid #ddd;
+    }
+    .tab{
+      border:1px solid #ddd;
+      border-bottom:none;
+      background:var(--tab);
+      padding:8px 12px;
+      font-size:12px;
+      cursor:pointer;
+      position:relative;
+      top:1px;
+      font-family: "Times New Roman", Times, serif;
+    }
+    .tab.active{
+      background:var(--tabActive);
+      border-color:#ddd;
+      font-weight:700;
+    }
+    .container{
+      padding:14px;
+    }
+    .panel{
+      background:#fff;
+      border:1px solid #ddd;
+      padding:12px;
+    }
+
+    /* Form */
+    .grid{
+      display:grid;
+      grid-template-columns: 160px 240px;
+      gap:6px 10px;
+      align-items:center;
+      max-width:520px;
+    }
+    .label{
+      font-weight:700;
+      font-size:12px;
+    }
+    input, select{
+      width:100%;
+      box-sizing:border-box;
+      padding:6px 6px;
+      border:1px solid #111;
+      font-size:12px;
+      background:#fff;
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    /* Class buttons */
+    .classRow{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .classBtn{
+      min-width:120px;
+      text-align:center;
+      padding:8px 10px;
+      border:1px solid #111;
+      background:#fff;
+      font-weight:700;
+      font-size:12px;
+    }
+    .classBtn.blocked{
+      background:var(--blocked);
+      border-color:#999;
+      color:#777;
+      cursor:not-allowed;
+    }
+    .status{
+      font-size:12px;
+      color:#111;
+      margin-top:10px;
+      line-height:1.35;
+    }
+    .mini{
+      font-size:11px;
+      color:#444;
+    }
+
+    /* Modal */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.25);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      z-index:1000;
+    }
+    .overlay.show{ display:flex; }
+    .modal{
+      width:min(920px, 100%);
+      background:#fff;
+      border:2px solid #111;
+      padding:10px;
+    }
+    .modalHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      border-bottom:1px solid #111;
+      padding-bottom:8px;
+      margin-bottom:8px;
+    }
+    .modalTitle{
+      font-weight:800;
+      font-size:13px;
+    }
+    .modalActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    /* Tallas en una sola línea */
+    .modalBody{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:10px;
+    }
+    .tallasList{
+      border:1px solid #111;
+      padding:8px;
+      max-height:340px;
+      overflow:auto;
+    }
+    .tallasList label{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      font-size:12px;
+      padding:3px 0;
+      white-space: nowrap;
+    }
+    .tallasList span{
+      white-space: nowrap;
+    }
+
+    .rowsBox{
+      border:1px solid #111;
+      padding:8px;
+      max-height:340px;
+      overflow:auto;
+    }
+    .rowsBox .row{
+      display:grid;
+      grid-template-columns: 120px 120px 120px 120px;
+      gap:8px;
+      align-items:center;
+      padding:6px 0;
+      border-bottom:1px dashed #ccc;
+    }
+    .rowsBox .row:last-child{ border-bottom:none; }
+    .rowsBox .head{
+      font-weight:700;
+      font-size:12px;
+      border-bottom:1px solid #111;
+      padding-bottom:6px;
+      margin-bottom:6px;
+      display:grid;
+      grid-template-columns: 120px 120px 120px 120px;
+      gap:8px;
+    }
+
+    /* Liquidación */
+    .sheet{
+      width: 760px;               /* un poco más compacto */
+      max-width: 100%;
+      background:#fff;
+      border:1px solid #111;
+      padding:14px;
+      margin: 0 auto;             /* centrado en la vista */
+    }
+    .sheetHeading{
+      text-align:center;
+      font-weight:900;
+      font-size:16px;
+      color:var(--navy);
+      margin-bottom:10px;
+    }
+    .sheetTable{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:13px;
+    }
+    .sheetTable td{
+      border:1px solid #111;
+      padding:6px 8px;
+      vertical-align:middle;
+    }
+    .sheetTable td.labelCell{
+      font-weight:800;
+      width:38%;
+    }
+    .sheetTable td.valueCell{
+      font-weight:800;
+      width:62%;
+      text-align:right;
+    }
+    .sectionTitle{
+      text-align:center;
+      font-weight:900;
+      font-size:16px;
+      padding:10px 0;
+    }
+    .subTable{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:13px;
+    }
+    .subTable th, .subTable td{
+      border:1px solid #111;
+      padding:6px 8px;
+    }
+    .subTable th{
+      font-weight:900;
+      text-align:center;
+    }
+    .subTable td:first-child{
+      font-weight:800;
+    }
+    .num{
+      text-align:right;
+      font-weight:800;
+    }
+    .totalRow td{
+      font-weight:900;
+    }
+    .spacer{ height:10px; }
+
+    @media print{
+      body{ background:#fff; }
+      .topbar, .tabs, .container .panel:not(.printArea), .noPrint{ display:none !important; }
+      .container{ padding:0; }
+      .printArea{ border:none; }
+      .sheet{ border:none; padding:0; width:auto; margin:0 auto; }
+    }
+  
+    /* Login overlay */
+    .loginOverlay{
+      position:fixed; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      z-index:9999;
+    }
+    .loginCard{
+      width:min(420px, calc(100vw - 28px));
+      background:rgba(17,24,39,.92);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:18px 16px 14px;
+      box-shadow:0 14px 50px rgba(0,0,0,.45);
+      color:#e5e7eb;
+    }
+    .loginTitle{font-weight:800; letter-spacing:.3px; font-size:16px; margin-bottom:4px}
+    .loginSub{font-size:12px; opacity:.85; margin-bottom:12px}
+    .loginCard label{display:block; font-size:12px; opacity:.9; margin:10px 0 6px}
+    .loginCard input{
+      width:100%;
+      padding:10px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.25);
+      color:#fff;
+      outline:none;
+    }
+    .loginCard input:focus{border-color:rgba(255,255,255,.28)}
+    .loginError{
+      margin-top:10px;
+      font-size:12px;
+      color:#fecaca;
+      background:rgba(220,38,38,.12);
+      border:1px solid rgba(220,38,38,.25);
+      border-radius:10px;
+      padding:10px 10px;
+    }
+    .loginBtn{
+      margin-top:12px;
+      width:100%;
+      padding:10px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:#111827;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .loginBtn:hover{filter:brightness(1.08)}
+    .userBadge{
+      display:inline-block;
+      margin-left:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.25);
+      font-size:12px;
+      color:#e5e7eb;
+      max-width:260px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      vertical-align:middle;
+    }
+
+  </style>
+
+  <!-- Firebase (Auth) - Compat build for non-module scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+</head>
+
+<body>
+  <!-- Login overlay (Firebase Auth) -->
+  <div id="loginOverlay" class="loginOverlay">
+    <div class="loginCard">
+      <div class="loginTitle">Oceantreasure | Acceso</div>
+      <div class="loginSub">Ingrese con el correo autorizado para continuar.</div>
+
+      <label for="loginEmail">Correo</label>
+      <input id="loginEmail" type="email" autocomplete="username" value="soporte@oceantreasure.local" />
+
+      <label for="loginPass">Contraseña</label>
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" />
+
+      <div id="loginError" class="loginError" style="display:none;"></div>
+
+      <button id="btnLogin" class="loginBtn" type="button">Ingresar</button>
+    </div>
+  </div>
+
+  <div id="appRoot" style="display:none;">
+
+  <div class="topbar">
+    <div class="title">SSL Sistema de Soporte de Liquidaciones</div>
+    <div class="actions noPrint">
+      <button class="btn-danger" id="btnReset">Reiniciar</button>
+    </div>
+  </div>
+
+  <div class="tabs noPrint">
+    <button class="tab active" id="tabIngreso">Ingreso</button>
+    <button class="tab" id="tabLiquidacion" disabled>Liquidación</button>
+  </div>
+
+  <div class="container">
+    <!-- INGRESO -->
+    <div class="panel" id="viewIngreso">
+      <div style="font-weight:900;margin-bottom:8px;">1) Datos base</div>
+
+      <div class="grid">
+        <div class="label">PROVEEDOR</div>
+        <input id="inProveedor" />
+
+        <div class="label">SECUENCIAL</div>
+        <input id="inSecuencial" />
+
+        <div class="label">PISCINA</div>
+        <input id="inPiscina" />
+
+        <div class="label">PESO GUIA</div>
+        <input id="inPesoGuia" inputmode="decimal" />
+
+        <div class="label">RECIBIDO</div>
+        <input id="inRecibido" inputmode="decimal" />
+
+        <div class="label">BASURA</div>
+        <input id="inBasura" inputmode="decimal" />
+      </div>
+
+      <div style="font-weight:900;margin-top:14px;">2) Ingreso por Clase</div>
+      <div class="classRow">
+        <button class="classBtn" id="btnClaseA">Ingresar Clase A</button>
+        <button class="classBtn" id="btnClaseB">Ingresar Clase B</button>
+        <button class="classBtn" id="btnClaseC">Ingresar Clase C (Venta local)</button>
+        <span class="mini" id="miniTip"></span>
+      </div>
+
+      <div class="status" id="statusIngreso"></div>
+    </div>
+
+    <!-- LIQUIDACIÓN -->
+    <div class="panel printArea" id="viewLiquidacion" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;" class="noPrint">
+        <div style="font-weight:900;">Vista Liquidación</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-warn" id="btnEdit">MODIFICAR TABLA</button>
+          <button class="btn-primary" id="btnPDF">Generar PDF</button>
+          <button id="btnPrint">Imprimir</button>
+        </div>
+      </div>
+
+      <div class="sheet" id="sheetArea">
+        <div class="sheetHeading">SSL Sistema de Soporte de Liquidaciones</div>
+
+        <table class="sheetTable">
+          <tr><td class="labelCell">PROVEEDOR</td><td class="valueCell" id="outProveedor">-</td></tr>
+          <tr><td class="labelCell">SECUENCIAL</td><td class="valueCell" id="outSecuencial">-</td></tr>
+          <tr><td class="labelCell">PISCINA</td><td class="valueCell" id="outPiscina">-</td></tr>
+          <tr><td class="labelCell">PESO GUIA</td><td class="valueCell" id="outPesoGuia">0,00</td></tr>
+          <tr><td class="labelCell">RECIBIDO</td><td class="valueCell" id="outRecibido">0,00</td></tr>
+          <tr><td class="labelCell">BASURA</td><td class="valueCell" id="outBasura">0,00</td></tr>
+          <tr><td class="labelCell">PESO PLANTA</td><td class="valueCell" id="outPesoPlanta">0,00</td></tr>
+          <tr><td class="labelCell">EMPACADO</td><td class="valueCell" id="outEmpacado">0,00</td></tr>
+          <tr><td class="labelCell">RENDIMIENTO</td><td class="valueCell" id="outRendimiento">0,00%</td></tr>
+        </table>
+
+        <div class="spacer"></div>
+
+        <div class="sectionTitle">CLASE "A"</div>
+        <table class="subTable" id="tblA">
+          <thead>
+            <tr>
+              <th style="width:40%;">TALLAS</th>
+              <th style="width:30%;">CAJAS</th>
+              <th style="width:30%;">LIBRAS</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="totalRow">
+              <td colspan="2">Total clase A</td>
+              <td class="num" id="outTotalA">0,00</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="spacer"></div>
+
+        <div class="sectionTitle">CLASE "B"</div>
+        <table class="subTable" id="tblB">
+          <thead>
+            <tr>
+              <th style="width:40%;">TALLAS</th>
+              <th style="width:30%;">CAJAS</th>
+              <th style="width:30%;">LIBRAS</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="totalRow">
+              <td colspan="2">Total clase B</td>
+              <td class="num" id="outTotalB">0,00</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="spacer"></div>
+
+        <div class="sectionTitle">CLASE "C"</div>
+        <table class="subTable" id="tblC">
+          <thead>
+            <tr>
+              <th style="width:40%;">TALLAS</th>
+              <th style="width:30%;">FUNDAS</th>
+              <th style="width:30%;">LIBRAS</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="totalRow">
+              <td colspan="2">Total clase C</td>
+              <td class="num" id="outTotalC">0,00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="modalHead">
+        <div>
+          <div class="modalTitle" id="modalTitle">Ingresar Clase</div>
+          <div class="mini" id="modalSub">Selecciona tallas y completa cajas/fundas + peso por unidad (kg o lb).</div>
+        </div>
+        <div class="modalActions">
+          <button id="btnModalNoData" title="Marca la clase como ingresada sin tallas">Sin datos</button>
+          <button id="btnModalClose">Cerrar</button>
+          <button class="btn-primary" id="btnModalSave">Aceptar y guardar</button>
+        </div>
+      </div>
+
+      <div class="modalBody">
+        <div>
+          <div style="font-weight:900;font-size:12px;margin-bottom:6px;">Checklist de tallas</div>
+          <div class="tallasList" id="tallasList"></div>
+          <div class="mini" id="modalHint" style="margin-top:8px;"></div>
+        </div>
+
+        <div>
+          <div style="font-weight:900;font-size:12px;margin-bottom:6px;">Datos por talla seleccionada</div>
+          <div class="rowsBox" id="rowsBox">
+            <div class="head">
+              <div>Talla</div>
+              <div id="colQtyName">Cajas</div>
+              <div>Peso / unidad</div>
+              <div>Unidad</div>
+            </div>
+            <div id="rowsContainer" class="mini">Selecciona una talla para comenzar.</div>
+          </div>
+          <div class="mini" style="margin-top:8px;">
+            <b>Nota:</b> Para A y B se sugiere por defecto <b>4,356 lb</b> por caja. Para C se sugiere <b>5 lb</b> por funda.
+            Puedes cambiarlo por talla si lo necesitas.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ------------------------
+    // Helpers
+    // ------------------------
+    const nf = new Intl.NumberFormat('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const pf = new Intl.NumberFormat('es-EC', { style:'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function parseLocaleNumber(v){
+      if (v == null) return 0;
+      let s = String(v).trim();
+      if (!s) return 0;
+
+      if (s.includes(',')){
+        s = s.replace(/\./g,'').replace(',', '.');
+      }
+      s = s.replace(/[^0-9.\-]/g,'');
+      const n = Number(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function toLb(weight, unit){
+      const w = parseLocaleNumber(weight);
+      if (unit === 'kg') return w * 2.2046226218;
+      return w;
+    }
+
+    function sum(arr){
+      return arr.reduce((a,b)=>a+b,0);
+    }
+
+    function pad2(x){ return String(x).padStart(2,'0'); }
+
+    function nowFileStamp(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = pad2(d.getMonth()+1);
+      const dd = pad2(d.getDate());
+      const hh = pad2(d.getHours());
+      const mi = pad2(d.getMinutes());
+      const ss = pad2(d.getSeconds());
+      return `${yyyy}-${mm}-${dd}_${hh}-${mi}-${ss}`;
+    }
+
+    function safeFileToken(s){
+      return String(s || '')
+        .trim()
+        .replace(/\s+/g,'')          // sin espacios
+        .replace(/[^\w\-]/g,'');     // solo letras/números/_/-
+    }
+
+    // ------------------------
+    // Data
+    // ------------------------
+    const tallasAB = ["U12","U15","16-20","21-25","26-30","31-35","36-40","41-50","51-60","61-70","71-90","91-110"];
+    const tallasC  = ["BL","BM","BS","BVS","JUVENIL","ROJO"];
+
+    const state = {
+      editMode: false,
+      header: {
+        proveedor: "",
+        secuencial: "",
+        piscina: "",
+        pesoGuia: 0,
+        recibido: 0,
+        basura: 0
+      },
+      classes: {
+        A: null,
+        B: null,
+        C: null
+      }
+    };
+
+    // ------------------------
+    // UI refs
+    // ------------------------
+    const tabIngreso = document.getElementById('tabIngreso');
+    const tabLiquidacion = document.getElementById('tabLiquidacion');
+    const viewIngreso = document.getElementById('viewIngreso');
+    const viewLiquidacion = document.getElementById('viewLiquidacion');
+
+    const inProveedor = document.getElementById('inProveedor');
+    const inSecuencial = document.getElementById('inSecuencial');
+    const inPiscina = document.getElementById('inPiscina');
+    const inPesoGuia = document.getElementById('inPesoGuia');
+    const inRecibido = document.getElementById('inRecibido');
+    const inBasura = document.getElementById('inBasura');
+
+    const btnClaseA = document.getElementById('btnClaseA');
+    const btnClaseB = document.getElementById('btnClaseB');
+    const btnClaseC = document.getElementById('btnClaseC');
+    const statusIngreso = document.getElementById('statusIngreso');
+    const miniTip = document.getElementById('miniTip');
+
+    const overlay = document.getElementById('overlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSub = document.getElementById('modalSub');
+    const tallasList = document.getElementById('tallasList');
+    const rowsContainer = document.getElementById('rowsContainer');
+    const colQtyName = document.getElementById('colQtyName');
+    const modalHint = document.getElementById('modalHint');
+
+    const btnModalClose = document.getElementById('btnModalClose');
+    const btnModalSave = document.getElementById('btnModalSave');
+    const btnModalNoData = document.getElementById('btnModalNoData');
+
+    const btnEdit = document.getElementById('btnEdit');
+
+    // Output refs
+    const outProveedor = document.getElementById('outProveedor');
+    const outSecuencial = document.getElementById('outSecuencial');
+    const outPiscina = document.getElementById('outPiscina');
+    const outPesoGuia = document.getElementById('outPesoGuia');
+    const outRecibido = document.getElementById('outRecibido');
+    const outBasura = document.getElementById('outBasura');
+    const outPesoPlanta = document.getElementById('outPesoPlanta');
+    const outEmpacado = document.getElementById('outEmpacado');
+    const outRendimiento = document.getElementById('outRendimiento');
+
+    const tblA = document.getElementById('tblA').querySelector('tbody');
+    const tblB = document.getElementById('tblB').querySelector('tbody');
+    const tblC = document.getElementById('tblC').querySelector('tbody');
+
+    const outTotalA = document.getElementById('outTotalA');
+    const outTotalB = document.getElementById('outTotalB');
+    const outTotalC = document.getElementById('outTotalC');
+
+    // ------------------------
+    // Tabs
+    // ------------------------
+    function showTab(which){
+      if (which === 'ingreso'){
+        tabIngreso.classList.add('active');
+        tabLiquidacion.classList.remove('active');
+        viewIngreso.style.display = '';
+        viewLiquidacion.style.display = 'none';
+      } else {
+        tabIngreso.classList.remove('active');
+        tabLiquidacion.classList.add('active');
+        viewIngreso.style.display = 'none';
+        viewLiquidacion.style.display = '';
+        renderLiquidacion();
+      }
+    }
+
+    tabIngreso.onclick = ()=>showTab('ingreso');
+    tabLiquidacion.onclick = ()=>showTab('liq');
+
+    // ------------------------
+    // Header binding
+    // ------------------------
+    function syncHeader(){
+      state.header.proveedor = (inProveedor.value || '').trim();
+      state.header.secuencial = (inSecuencial.value || '').trim();
+      state.header.piscina = (inPiscina.value || '').trim();
+      state.header.pesoGuia = parseLocaleNumber(inPesoGuia.value);
+      state.header.recibido = parseLocaleNumber(inRecibido.value);
+      state.header.basura = parseLocaleNumber(inBasura.value);
+      refreshIngresoStatus();
+    }
+
+    [inProveedor,inSecuencial,inPiscina,inPesoGuia,inRecibido,inBasura].forEach(el=>{
+      el.addEventListener('input', syncHeader);
+    });
+
+    // ------------------------
+    // Class workflow
+    // ------------------------
+    let activeClass = null;   // 'A'|'B'|'C'
+    let tempSelected = new Set();
+    let tempRows = new Map(); // talla -> { qty, unitWeight, unit }
+
+    btnClaseA.onclick = ()=>openClass('A');
+    btnClaseB.onclick = ()=>openClass('B');
+    btnClaseC.onclick = ()=>openClass('C');
+
+    btnModalClose.onclick = closeModal;
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+
+    function validateBase(){
+      const r = parseLocaleNumber(inRecibido.value);
+      const b = parseLocaleNumber(inBasura.value);
+
+      if (!state.header.proveedor || !state.header.secuencial || !state.header.piscina){
+        return { ok:false, msg:'Completa PROVEEDOR, SECUENCIAL y PISCINA.' };
+      }
+      if (r <= 0){
+        return { ok:false, msg:'RECIBIDO debe ser mayor a 0.' };
+      }
+      if (b < 0){
+        return { ok:false, msg:'BASURA no puede ser negativa.' };
+      }
+      return { ok:true, msg:'' };
+    }
+
+    function openClass(cls){
+      syncHeader();
+      const v = validateBase();
+      if (!v.ok){
+        statusIngreso.innerHTML = `<b style="color:#a00;">${v.msg}</b>`;
+        return;
+      }
+
+      if (!state.editMode && state.classes[cls]){
+        return;
+      }
+
+      activeClass = cls;
+      tempSelected = new Set();
+      tempRows = new Map();
+
+      if (state.editMode && state.classes[cls]){
+        for (const r of (state.classes[cls].rows || [])){
+          tempSelected.add(r.talla);
+          tempRows.set(r.talla, {
+            qty: String(r.qty ?? ''),
+            unitWeight: String(r.unitWeight ?? (cls === 'C' ? 5 : 4.356)).replace('.', ','),
+            unit: r.unit || 'lb'
+          });
+        }
+      }
+
+      modalTitle.textContent = `Ingresar Clase "${cls}"`;
+      const isC = cls === 'C';
+      colQtyName.textContent = isC ? 'Fundas' : 'Cajas';
+
+      modalSub.textContent = isC
+        ? 'Si no existe venta local, presiona "Sin datos".'
+        : 'Si no existen tallas, presiona "Sin datos".';
+
+      modalHint.innerHTML = state.editMode
+        ? '<b>Modo edición:</b> puedes corregir y volver a guardar.'
+        : (isC ? 'Clase C (venta local).' : 'Clase A/B (cola).');
+
+      buildTallasChecklist(cls);
+      buildRowsEditor();
+
+      if (tempSelected.size === 0){
+        rowsContainer.innerHTML = `<div class="mini">Selecciona una talla para comenzar.</div>`;
+      }
+
+      overlay.classList.add('show');
+    }
+
+    function closeModal(){
+      overlay.classList.remove('show');
+      activeClass = null;
+      tempSelected = new Set();
+      tempRows = new Map();
+    }
+
+    function buildTallasChecklist(cls){
+      const list = (cls === 'C') ? tallasC : tallasAB;
+      tallasList.innerHTML = '';
+
+      list.forEach(t=>{
+        const wrap = document.createElement('label');
+
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+
+        if (tempSelected.has(t)) chk.checked = true;
+
+        chk.addEventListener('change', ()=>{
+          if (chk.checked){
+            tempSelected.add(t);
+            if (!tempRows.has(t)){
+              const defWeight = (cls === 'C') ? 5 : 4.356;
+              tempRows.set(t, { qty: '', unitWeight: String(defWeight).replace('.', ','), unit: 'lb' });
+            }
+          } else {
+            tempSelected.delete(t);
+            tempRows.delete(t);
+          }
+          buildRowsEditor();
+        });
+
+        const span = document.createElement('span');
+        span.textContent = t;
+
+        wrap.appendChild(chk);
+        wrap.appendChild(span);
+        tallasList.appendChild(wrap);
+
+        if (tempSelected.has(t) && !tempRows.has(t)){
+          const defWeight = (cls === 'C') ? 5 : 4.356;
+          tempRows.set(t, { qty: '', unitWeight: String(defWeight).replace('.', ','), unit: 'lb' });
+        }
+      });
+    }
+
+    function buildRowsEditor(){
+      const cls = activeClass;
+      if (!cls) return;
+
+      const isC = cls === 'C';
+      const selected = Array.from(tempSelected);
+
+      if (selected.length === 0){
+        rowsContainer.innerHTML = `<div class="mini">Selecciona una talla para comenzar.</div>`;
+        return;
+      }
+
+      const box = document.createElement('div');
+
+      selected.forEach(talla=>{
+        const row = document.createElement('div');
+        row.className = 'row';
+
+        const c1 = document.createElement('div');
+        c1.textContent = talla;
+        c1.style.fontWeight = '800';
+
+        const qty = document.createElement('input');
+        qty.placeholder = isC ? 'Fundas' : 'Cajas';
+        qty.inputMode = 'numeric';
+        qty.value = tempRows.get(talla)?.qty ?? '';
+        qty.addEventListener('input', ()=>{
+          const obj = tempRows.get(talla);
+          obj.qty = qty.value;
+          tempRows.set(talla, obj);
+        });
+
+        const w = document.createElement('input');
+        w.placeholder = isC ? 'Peso por funda' : 'Peso por caja';
+        w.inputMode = 'decimal';
+        w.value = tempRows.get(talla)?.unitWeight ?? '';
+        w.addEventListener('input', ()=>{
+          const obj = tempRows.get(talla);
+          obj.unitWeight = w.value;
+          tempRows.set(talla, obj);
+        });
+
+        const unit = document.createElement('select');
+        unit.innerHTML = `<option value="lb">lb</option><option value="kg">kg</option>`;
+        unit.value = tempRows.get(talla)?.unit ?? 'lb';
+        unit.addEventListener('change', ()=>{
+          const obj = tempRows.get(talla);
+          obj.unit = unit.value;
+          tempRows.set(talla, obj);
+        });
+
+        row.appendChild(c1);
+        row.appendChild(qty);
+        row.appendChild(w);
+        row.appendChild(unit);
+        box.appendChild(row);
+      });
+
+      rowsContainer.innerHTML = '';
+      rowsContainer.appendChild(box);
+    }
+
+    // Sin datos (A/B/C)
+    btnModalNoData.onclick = ()=>{
+      const cls = activeClass;
+      if (!cls) return;
+
+      state.classes[cls] = {
+        kind: (cls === 'C') ? 'FUNDAS' : 'CAJAS',
+        rows: []
+      };
+
+      closeModal();
+      refreshIngresoStatus();
+
+      if (state.classes.A && state.classes.B && state.classes.C){
+        tabLiquidacion.disabled = false;
+        showTab('liq');
+      }
+    };
+
+    btnModalSave.onclick = ()=>{
+      const cls = activeClass;
+      if (!cls) return;
+
+      const selected = Array.from(tempSelected);
+      if (selected.length === 0){
+        alert('Selecciona al menos una talla o presiona "Sin datos".');
+        return;
+      }
+
+      const isC = cls === 'C';
+      const rows = [];
+
+      for (const talla of selected){
+        const obj = tempRows.get(talla);
+        const qty = parseLocaleNumber(obj.qty);
+        const unitWeight = parseLocaleNumber(obj.unitWeight);
+        if (qty <= 0){
+          alert(`En talla ${talla}: ${isC ? 'Fundas' : 'Cajas'} debe ser > 0`);
+          return;
+        }
+        if (unitWeight <= 0){
+          alert(`En talla ${talla}: Peso por unidad debe ser > 0`);
+          return;
+        }
+
+        const wLb = toLb(unitWeight, obj.unit);
+        const libras = qty * wLb;
+
+        rows.push({
+          talla,
+          qty,
+          unitWeight,
+          unit: obj.unit,
+          unitWeightLb: wLb,
+          libras
+        });
+      }
+
+      state.classes[cls] = {
+        kind: isC ? 'FUNDAS' : 'CAJAS',
+        rows
+      };
+
+      closeModal();
+      refreshIngresoStatus();
+
+      if (state.classes.A && state.classes.B && state.classes.C){
+        tabLiquidacion.disabled = false;
+        showTab('liq');
+      }
+    };
+
+    // ------------------------
+    // Modo edición (MODIFICAR TABLA)
+    // ------------------------
+    btnEdit.onclick = ()=>{
+      if (!state.editMode){
+        const ok = confirm('¿Habilitar edición para desbloquear A, B y C y corregir la tabla?');
+        if (!ok) return;
+        state.editMode = true;
+        btnEdit.textContent = 'FINALIZAR EDICIÓN';
+        showTab('ingreso');
+      } else {
+        state.editMode = false;
+        btnEdit.textContent = 'MODIFICAR TABLA';
+      }
+      refreshIngresoStatus();
+    };
+
+    function refreshIngresoStatus(){
+      setClassButton(btnClaseA, 'A');
+      setClassButton(btnClaseB, 'B');
+      setClassButton(btnClaseC, 'C');
+
+      const done = ['A','B','C'].filter(c=>state.classes[c]).join(', ') || 'Ninguna';
+      const missing = ['A','B','C'].filter(c=>!state.classes[c]).join(', ') || 'Ninguna';
+      miniTip.textContent = `Guardadas: ${done} | Faltan: ${missing}${state.editMode ? ' | (EDICIÓN ACTIVADA)' : ''}`;
+
+      const baseOk = validateBase().ok;
+      const a = !!state.classes.A, b = !!state.classes.B, c = !!state.classes.C;
+
+      if (!baseOk){
+        statusIngreso.innerHTML = `<span style="color:#a00;"><b>Completa los datos base</b> para poder ingresar clases.</span>`;
+      } else {
+        statusIngreso.innerHTML = `
+          <b>Estado:</b> A=${a?'OK':'pendiente'} | B=${b?'OK':'pendiente'} | C=${c?'OK':'pendiente'}<br>
+          ${a && b && c
+            ? '<span style="color:#0a0;"><b>Listo.</b> Ya puedes ver la liquidación y generar PDF.</span>'
+            : 'Ingresa las clases que falten para habilitar la pestaña <b>Liquidación</b>.'}
+          ${state.editMode ? '<br><span style="color:#b57c00;"><b>Edición activa:</b> puedes abrir A/B/C para corregir y guardar nuevamente.</span>' : ''}
+        `;
+      }
+
+      tabLiquidacion.disabled = !(state.classes.A && state.classes.B && state.classes.C);
+    }
+
+    function setClassButton(btn, cls){
+      const isSaved = !!state.classes[cls];
+
+      if (state.editMode){
+        btn.disabled = false;
+        btn.classList.remove('blocked');
+        btn.textContent = isSaved
+          ? (cls === 'C' ? 'Editar Clase C (Venta local)' : `Editar Clase ${cls}`)
+          : (cls === 'C' ? 'Ingresar Clase C (Venta local)' : `Ingresar Clase ${cls}`);
+        return;
+      }
+
+      btn.disabled = isSaved;
+      btn.classList.toggle('blocked', isSaved);
+      btn.textContent = isSaved
+        ? `Clase ${cls} (bloqueada)`
+        : (cls === 'C' ? 'Ingresar Clase C (Venta local)' : `Ingresar Clase ${cls}`);
+    }
+
+    // ------------------------
+    // Render Liquidación (cálculos)
+    // ------------------------
+    function renderLiquidacion(){
+      syncHeader();
+
+      const h = state.header;
+      const pesoPlanta = (h.recibido - h.basura);
+
+      const totalA = state.classes.A ? sum(state.classes.A.rows.map(r=>r.libras)) : 0;
+      const totalB = state.classes.B ? sum(state.classes.B.rows.map(r=>r.libras)) : 0;
+      const totalC = state.classes.C ? sum(state.classes.C.rows.map(r=>r.libras)) : 0;
+
+      const empacado = totalA + totalB + totalC;
+      const rendimiento = (pesoPlanta > 0) ? (empacado / pesoPlanta) : 0;
+
+      outProveedor.textContent = h.proveedor || '-';
+      outSecuencial.textContent = h.secuencial || '-';
+      outPiscina.textContent = h.piscina || '-';
+      outPesoGuia.textContent = nf.format(h.pesoGuia || 0);
+      outRecibido.textContent = nf.format(h.recibido || 0);
+      outBasura.textContent = nf.format(h.basura || 0);
+      outPesoPlanta.textContent = nf.format(pesoPlanta || 0);
+      outEmpacado.textContent = nf.format(empacado || 0);
+      outRendimiento.textContent = pf.format(rendimiento || 0);
+
+      outTotalA.textContent = nf.format(totalA || 0);
+      outTotalB.textContent = nf.format(totalB || 0);
+      outTotalC.textContent = nf.format(totalC || 0);
+
+      fillSubTable(tblA, state.classes.A);
+      fillSubTable(tblB, state.classes.B);
+      fillSubTable(tblC, state.classes.C);
+    }
+
+    function fillSubTable(tbody, clsObj){
+      tbody.innerHTML = '';
+
+      if (!clsObj || !clsObj.rows || clsObj.rows.length === 0){
+        const tr1 = document.createElement('tr');
+        tr1.innerHTML = `<td></td><td class="num">-</td><td class="num">-</td>`;
+        const tr2 = document.createElement('tr');
+        tr2.innerHTML = `<td></td><td class="num">-</td><td class="num">-</td>`;
+        tbody.appendChild(tr1);
+        tbody.appendChild(tr2);
+        return;
+      }
+
+      clsObj.rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(r.talla)}</td>
+          <td class="num">${nf.format(r.qty)}</td>
+          <td class="num">${nf.format(r.libras)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    // ------------------------
+    // PDF / Print
+    // ------------------------
+    document.getElementById('btnPrint').onclick = ()=>window.print();
+
+    document.getElementById('btnPDF').onclick = async ()=>{
+      renderLiquidacion();
+
+      const sheet = document.getElementById('sheetArea');
+      const canvas = await html2canvas(sheet, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+
+      // 3) Más pequeño y centrado
+      const margin = 70;                 // margen amplio para que se vea más "pequeño"
+      const targetW = pageW - margin*2;  // ancho objetivo
+      const imgH = canvas.height * (targetW / canvas.width);
+
+      const x = (pageW - targetW) / 2;
+      const yTop = margin;
+
+      if (imgH <= pageH - margin*2){
+        pdf.addImage(imgData, 'PNG', x, yTop, targetW, imgH);
+      } else {
+        // Multi-página centrado
+        const fullImgH = imgH;
+        pdf.addImage(imgData, 'PNG', x, yTop, targetW, fullImgH);
+
+        let remaining = fullImgH - (pageH - margin*2);
+        while (remaining > 0){
+          pdf.addPage();
+          const y = yTop - (fullImgH - remaining);
+          pdf.addImage(imgData, 'PNG', x, y, targetW, fullImgH);
+          remaining -= (pageH - margin*2);
+        }
+      }
+
+      // 1) Nombre archivo: (Proveedor)+(Secuencial)_YYYY-MM-DD_HH-mm-ss.pdf
+      const prov = safeFileToken(state.header.proveedor) || 'PROVEEDOR';
+      const sec  = safeFileToken(state.header.secuencial) || '0';
+      const filename = `${prov}${sec}_${nowFileStamp()}.pdf`;
+
+      pdf.save(filename);
+    };
+
+    // ------------------------
+    // Reset
+    // ------------------------
+    function resetAll(){
+      if (!confirm('¿Seguro que quieres reiniciar todo?')) return;
+
+      state.editMode = false;
+      btnEdit.textContent = 'MODIFICAR TABLA';
+
+      state.header = { proveedor:"", secuencial:"", piscina:"", pesoGuia:0, recibido:0, basura:0 };
+      state.classes = { A:null, B:null, C:null };
+
+      inProveedor.value = '';
+      inSecuencial.value = '';
+      inPiscina.value = '';
+      inPesoGuia.value = '';
+      inRecibido.value = '';
+      inBasura.value = '';
+
+      refreshIngresoStatus();
+      tabLiquidacion.disabled = true;
+      showTab('ingreso');
+    }
+
+    document.getElementById('btnReset').onclick = resetAll;
+
+    // Init
+    syncHeader();
+    refreshIngresoStatus();
+  </script>
+
+  </div>
+
+  <script>
+    // =========================
+    // Firebase Auth (Login único)
+    // =========================
+    // 1) Pega aquí tu configuración del proyecto Firebase (Project settings > Your apps > Firebase SDK snippet > Config)
+    // IMPORTANTE: NO pegues contraseñas en el código. La contraseña se escribe en el login.
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const ALLOWED_EMAILS = ["soporte@oceantreasure.local"]; // login único permitido
+
+    function _cfgOk(cfg){
+      const must = ["apiKey","authDomain","projectId","appId"];
+      return must.every(k => (cfg[k]||"").trim() && !String(cfg[k]).includes("REEMPLAZA"));
+    }
+
+    const elOverlay = document.getElementById("loginOverlay");
+    const elAppRoot = document.getElementById("appRoot");
+    const elEmail = document.getElementById("loginEmail");
+    const elPass = document.getElementById("loginPass");
+    const elErr  = document.getElementById("loginError");
+    const btnLogin = document.getElementById("btnLogin");
+    const btnLogout = document.getElementById("btnLogout");
+    const userBadge = document.getElementById("userBadge");
+
+    function showErr(msg){
+      elErr.style.display = "block";
+      elErr.textContent = msg;
+    }
+    function clearErr(){
+      elErr.style.display = "none";
+      elErr.textContent = "";
+    }
+    function showLogin(msg){
+      elAppRoot.style.display = "none";
+      elOverlay.style.display = "flex";
+      if (msg) showErr(msg); else clearErr();
+      setTimeout(()=>{ try{ elPass.value = ""; elEmail.focus(); }catch(e){} }, 50);
+    }
+    function showApp(user){
+      elOverlay.style.display = "none";
+      elAppRoot.style.display = "block";
+      if (userBadge){
+        const em = (user && user.email) ? user.email : "";
+        userBadge.textContent = em ? ("Usuario: " + em) : "";
+        userBadge.title = em || "";
+      }
+    }
+
+    // Nav por Enter en el login
+    function loginAttempt(){
+      clearErr();
+      if (!_cfgOk(firebaseConfig)){
+        showLogin("Falta configurar Firebase (firebaseConfig). Abre el HTML y reemplaza los valores REEMPLAZA_AQUI.");
+        return;
+      }
+      const email = (elEmail.value||"").trim().toLowerCase();
+      const pass  = (elPass.value||"");
+      if (!email || !pass) return showErr("Ingresa correo y contraseña.");
+      firebase.auth().signInWithEmailAndPassword(email, pass)
+        .catch((e)=>{
+          const code = (e && e.code) ? e.code : "";
+          if (code === "auth/wrong-password" || code === "auth/invalid-credential") return showErr("Contraseña incorrecta.");
+          if (code === "auth/user-not-found") return showErr("Usuario no existe en Firebase.");
+          if (code === "auth/invalid-email") return showErr("Correo inválido.");
+          return showErr("No se pudo iniciar sesión. " + (e && e.message ? e.message : ""));
+        });
+    }
+
+    // Init Firebase + auth listener
+    (function initAuth(){
+      if (!_cfgOk(firebaseConfig)){
+        // Deja el login visible con aviso para que no "parezca que no hace nada"
+        showLogin("Configura firebaseConfig en el HTML (no se han puesto las llaves del proyecto).");
+        return;
+      }
+      try{
+        firebase.initializeApp(firebaseConfig);
+      }catch(e){
+        // si se recarga y ya estaba inicializado
+      }
+
+      firebase.auth().onAuthStateChanged((user)=>{
+        if (!user){
+          showLogin();
+          return;
+        }
+        const email = (user.email||"").toLowerCase();
+        if (!ALLOWED_EMAILS.includes(email)){
+          firebase.auth().signOut().finally(()=>{
+            showLogin("Este usuario no está autorizado para esta página.");
+          });
+          return;
+        }
+        showApp(user);
+      });
+    })();
+
+    // Eventos UI
+    if (btnLogin) btnLogin.addEventListener("click", loginAttempt);
+    if (btnLogout) btnLogout.addEventListener("click", ()=> firebase.auth().signOut());
+    [elEmail, elPass].forEach((el)=>{
+      if(!el) return;
+      el.addEventListener("keydown", (ev)=>{
+        if (ev.key === "Enter"){
+          ev.preventDefault();
+          // Si estás en email, baja a pass; si estás en pass, intenta login
+          if (ev.target === elEmail) elPass.focus();
+          else loginAttempt();
+        }
+      });
+    });
+
+    // Por seguridad, si alguien intenta usar la app antes de autenticarse:
+    document.addEventListener("DOMContentLoaded", ()=>{
+      if (userBadge) userBadge.textContent = "";
+    });
+  </script>
+
+</body>
+</html>
