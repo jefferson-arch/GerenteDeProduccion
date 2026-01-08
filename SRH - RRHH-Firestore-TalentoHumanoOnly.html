@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SRH | RRHH Talento Humano</title>
+
+  <style>
+    :root{
+      --blue:#1e88e5;
+      --green:#2e7d32;
+      --graybtn:#d9d9d9;
+      --lightblue:#cfefff;
+      --black:#111;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000}
+    .safe{padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+    .wrap{max-width:620px;margin:0 auto;padding:10px 14px 24px}
+    .topline{text-align:center;font-size:14px;padding:6px 0 8px;border-bottom:1px solid #ddd}
+    .topline a,.topline span.email{color:var(--blue);text-decoration:underline;cursor:pointer}
+    .navrow{display:flex;justify-content:space-between;align-items:flex-start;font-size:14px;padding:10px 0;min-height:26px}
+    .navrow .left a{display:block;color:var(--green);text-decoration:none;margin:0 0 4px;cursor:pointer}
+    .navrow .right a{color:var(--green);text-decoration:none;cursor:pointer}
+    .center{text-align:center}
+    .title{margin:14px 0 10px;font-size:18px;color:var(--blue);letter-spacing:.5px}
+    .logo{width:86px;height:86px;margin:8px auto 6px;display:block;object-fit:contain}
+    .brand{font-weight:700;letter-spacing:.5px;margin:0;font-size:14px}
+    .tagline{margin:0 0 8px;font-size:10px;letter-spacing:1px}
+    .form{margin:14px auto 0;width:100%;max-width:430px}
+    .row{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:center;margin:10px 0}
+    .row label{font-size:16px}
+    input[type="text"],input[type="password"],input[type="date"],select,textarea{
+      width:100%;padding:8px 10px;border:1px solid #ccc;background:#eee;outline:none;font-size:15px;min-height:38px
+    }
+    textarea{min-height:60px;resize:vertical}
+    select{background:#fff}
+    .btn{
+      display:block;width:210px;margin:10px auto;padding:8px 10px;border:1px solid #555;background:var(--graybtn);
+      color:#000;font-weight:700;text-align:center;cursor:pointer;user-select:none
+    }
+    .btn.blue{background:var(--lightblue);border-color:#2a2a2a;color:#0b5aa5}
+    .btn.black{background:#000;color:#fff;border-color:#000}
+    .btn.green{background:#dff1d8;border-color:#2a2a2a}
+    .btn.small{width:160px}
+    .btn:active{transform:scale(.99)}
+    .gridForm{display:grid;grid-template-columns:220px 1fr;gap:6px 10px;align-items:center;margin-top:12px}
+    .gridForm .lab{font-size:13px}
+    .gridForm .field input,.gridForm .field select,.gridForm .field textarea{
+      background:#fff;border:none;border-bottom:1px dotted #888;padding:6px 6px;min-height:26px;font-size:13px
+    }
+    .gridForm .field textarea{border:1px dotted #888;min-height:44px}
+    .idbar{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 10px}
+    .idbar .idlabel{font-weight:700}
+    .idbar input{width:260px;background:#eee;border:none;padding:8px 10px;min-height:34px}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+    thead th{background:#0d2f4f;color:#fff;padding:6px 6px;text-align:left}
+    tbody td{border-bottom:1px solid #ddd;padding:6px 6px}
+    .linkCenter{text-align:center;margin-top:16px;color:var(--blue);text-decoration:underline;cursor:pointer;font-size:14px}
+    .view{display:none}
+    .view.active{display:block}
+    .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px;z-index:999}
+    .modal{width:min(420px,100%);background:#fff;border:1px solid #999;padding:14px;text-align:center}
+    .modal h3{margin:0 0 8px;font-size:16px}
+    .modal p{margin:0 0 12px;font-size:14px}
+    .modal .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .modal .actions .btn{margin:0}
+  </style>
+</head>
+
+<body class="safe">
+  <div class="wrap">
+
+    <!-- LOGIN -->
+    <section id="vLogin" class="view active">
+      <div class="center">
+        <div class="title">INICIAR SESIÓN</div>
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="form">
+        <div class="row">
+          <label>Usuario:</label>
+          <input id="loginEmail" type="text" autocomplete="username" />
+        </div>
+        <div class="row">
+          <label>Contraseña:</label>
+          <input id="loginPass" type="password" autocomplete="current-password" />
+        </div>
+
+        <div class="btn" id="btnLogin">ACCEDER</div>
+        <div class="center" id="loginMsg" style="color:#b00020;font-size:13px;min-height:18px;"></div>
+      </div>
+    </section>
+
+    <!-- TOP HEADER (solo logeado) -->
+    <div id="authHeader" style="display:none;">
+      <div class="topline">Usuario: <span class="email" id="userEmail"></span></div>
+    </div>
+
+    <!-- OPCIONES -->
+    <section id="vOptions" class="view">
+      <div class="navrow"><div class="left"></div><div class="right"></div></div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="btn" id="goConsultar">CONSULTAR</div>
+      <div class="btn blue" id="goIngresar">INGRESAR</div>
+      <div class="btn" id="goModificar">MODIFICAR</div>
+      <div class="btn black" id="goListaNegra">LISTA NEGRA</div>
+      <div class="btn" id="goEliminar">ELIMINAR</div>
+
+      <div class="linkCenter" id="linkLogout1">Cerrar sesión</div>
+    </section>
+
+    <!-- CONSULTAR -->
+    <section id="vConsultar" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkToOptions1">Opciones</a>
+          <a id="lnkLogout2">Cerrar sesión</a>
+        </div>
+        <div class="right"></div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="idbar">
+        <span class="idlabel">ID:</span>
+        <input id="qId" type="text" />
+      </div>
+
+      <div class="btn small" id="btnConsultar">CONSULTAR</div>
+
+      <div id="consultResult" style="display:none;">
+        <div class="gridForm" style="margin-top:10px;">
+          <div class="lab">Fecha de ingreso:</div><div class="field"><input id="cFechaIngreso" disabled></div>
+          <div class="lab">Fecha de salida:</div><div class="field"><input id="cFechaSalida" disabled></div>
+          <div class="lab">Nombres;</div><div class="field"><input id="cNombres" disabled></div>
+          <div class="lab">Apellidos:</div><div class="field"><input id="cApellidos" disabled></div>
+          <div class="lab">Nacionalidad:</div><div class="field"><input id="cNacionalidad" disabled></div>
+          <div class="lab">Sexo:</div><div class="field"><input id="cSexo" disabled></div>
+          <div class="lab">Cédula:</div><div class="field"><input id="cCedula" disabled></div>
+          <div class="lab">Padece de alguna enfermedad:</div><div class="field"><input id="cEnfermedad" disabled></div>
+
+          <div class="lab">Área de trabajo:</div><div class="field"><input id="cArea" disabled></div>
+          <div class="lab" id="cCuadrillaLab" style="display:none;">Cuadrilla:</div>
+          <div class="field" id="cCuadrillaField" style="display:none;"><input id="cCuadrilla" disabled></div>
+
+          <div class="lab">Registra antecedentes:</div><div class="field"><input id="cAntecedentes" disabled></div>
+          <div class="lab">Fecha de nacimiento:</div><div class="field"><input id="cNacimiento" disabled></div>
+          <div class="lab">Hijos:</div><div class="field"><input id="cHijos" disabled></div>
+          <div class="lab">Estado Civil:</div><div class="field"><input id="cEstadoCivil" disabled></div>
+
+          <div class="lab">Certificado bancario:</div><div class="field"><input id="cCertBancario" disabled></div>
+
+          <div class="lab" id="cCuentaLab" style="display:none;">Número de cuenta:</div>
+          <div class="field" id="cCuentaField" style="display:none;"><input id="cCuenta" disabled></div>
+          <div class="lab" id="cTipoLab" style="display:none;">Tipo de cuenta:</div>
+          <div class="field" id="cTipoField" style="display:none;"><input id="cTipoCuenta" disabled></div>
+          <div class="lab" id="cBancoLab" style="display:none;">Nombre del banco:</div>
+          <div class="field" id="cBancoField" style="display:none;"><input id="cBanco" disabled></div>
+
+          <div class="lab">Ha trabajado anteriormente aquí:</div><div class="field"><input id="cTrabAntes" disabled></div>
+          <div class="lab">Tiene familiares trabajando aquí:</div><div class="field"><input id="cFamiliares" disabled></div>
+          <div class="lab">Dirección domiciliaria:</div><div class="field"><input id="cDireccion" disabled></div>
+          <div class="lab">Número de teléfono:</div><div class="field"><input id="cTelefono" disabled></div>
+
+          <div class="lab">Lista negra:</div><div class="field"><input id="cListaNegra" disabled></div>
+          <div class="lab">Motivo:</div><div class="field"><input id="cMotivo" disabled></div>
+        </div>
+
+        <div class="btn small" id="btnVolver1">VOLVER</div>
+      </div>
+    </section>
+
+    <!-- INGRESAR -->
+    <section id="vIngresar" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkToOptions2">Opciones</a>
+          <a id="lnkLogout3">Cerrar sesión</a>
+        </div>
+        <div class="right"></div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="idbar">
+        <span class="idlabel">ID:</span>
+        <input id="iId" type="text" placeholder="Se genera con cédula+0001" />
+      </div>
+
+      <div class="btn blue small" id="btnIngresarTop">INGRESAR</div>
+
+      <div class="gridForm">
+        <div class="lab">Fecha de ingreso:</div><div class="field"><input id="iFechaIngreso" type="date"></div>
+        <div class="lab">Fecha de salida:</div><div class="field"><input id="iFechaSalida" type="date"></div>
+        <div class="lab">Nombres;</div><div class="field"><input id="iNombres" type="text"></div>
+        <div class="lab">Apellidos:</div><div class="field"><input id="iApellidos" type="text"></div>
+        <div class="lab">Nacionalidad:</div><div class="field"><input id="iNacionalidad" type="text"></div>
+        <div class="lab">Sexo:</div>
+        <div class="field">
+          <select id="iSexo">
+            <option value=""></option>
+            <option>Masculino</option>
+            <option>Femenino</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="lab">Cédula:</div><div class="field"><input id="iCedula" type="text" inputmode="numeric"></div>
+        <div class="lab">Padece de alguna enfermedad:</div><div class="field"><input id="iEnfermedad" type="text"></div>
+
+        <div class="lab">Área de trabajo:</div>
+        <div class="field">
+          <select id="iArea"></select>
+        </div>
+
+        <div class="lab" id="iCuadrillaLab" style="display:none;">Cuadrilla:</div>
+        <div class="field" id="iCuadrillaField" style="display:none;">
+          <select id="iCuadrilla">
+            <option value=""></option>
+            <option>OCEANTREASURE</option>
+            <option>MAREPREX</option>
+            <option>FELESMAR</option>
+          </select>
+        </div>
+
+        <div class="lab">Registra antecedentes:</div>
+        <div class="field">
+          <select id="iAntecedentes">
+            <option value=""></option>
+            <option>SI</option>
+            <option>NO</option>
+          </select>
+        </div>
+
+        <div class="lab">Fecha de nacimiento:</div><div class="field"><input id="iNacimiento" type="date"></div>
+        <div class="lab">Hijos:</div><div class="field"><input id="iHijos" type="text"></div>
+        <div class="lab">Estado Civil:</div><div class="field"><input id="iEstadoCivil" type="text"></div>
+
+        <div class="lab">Certificado bancario:</div>
+        <div class="field">
+          <select id="iCertBancario">
+            <option value=""></option>
+            <option>SI</option>
+            <option>NO</option>
+          </select>
+        </div>
+
+        <div class="lab" id="iCuentaLab" style="display:none;">Número de cuenta:</div>
+        <div class="field" id="iCuentaField" style="display:none;"><input id="iCuenta" type="text" inputmode="numeric"></div>
+        <div class="lab" id="iTipoLab" style="display:none;">Tipo de cuenta:</div>
+        <div class="field" id="iTipoField" style="display:none;">
+          <select id="iTipoCuenta">
+            <option value=""></option>
+            <option>CORRIENTE</option>
+            <option>AHORROS</option>
+          </select>
+        </div>
+        <div class="lab" id="iBancoLab" style="display:none;">Nombre del banco:</div>
+        <div class="field" id="iBancoField" style="display:none;"><input id="iBanco" type="text"></div>
+
+        <div class="lab">Ha trabajado anteriormente aquí:</div>
+        <div class="field">
+          <select id="iTrabAntes">
+            <option value=""></option>
+            <option>SI</option>
+            <option>NO</option>
+          </select>
+        </div>
+        <div class="lab">Tiene familiares trabajando aquí:</div>
+        <div class="field">
+          <select id="iFamiliares">
+            <option value=""></option>
+            <option>SI</option>
+            <option>NO</option>
+          </select>
+        </div>
+        <div class="lab">Dirección domiciliaria:</div><div class="field"><input id="iDireccion" type="text"></div>
+        <div class="lab">Número de teléfono:</div><div class="field"><input id="iTelefono" type="text" inputmode="tel"></div>
+
+        <div class="lab">Lista negra:</div>
+        <div class="field">
+          <select id="iListaNegra">
+            <option value=""></option>
+            <option value="NO">NO</option>
+            <option value="SI">SI</option>
+          </select>
+        </div>
+        <div class="lab">Motivo:</div><div class="field"><input id="iMotivo" type="text"></div>
+      </div>
+
+      <div class="btn green" id="btnGuardar">GUARDAR EN BD</div>
+      <div class="center" id="saveMsg" style="color:#0a6;font-size:13px;min-height:18px;"></div>
+    </section>
+
+    <!-- MODIFICAR -->
+    <section id="vModificar" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkToOptionsM">Opciones</a>
+          <a id="lnkLogoutM">Cerrar sesión</a>
+        </div>
+        <div class="right"></div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="idbar">
+        <span class="idlabel">ID:</span>
+        <input id="mIdSearch" type="text" />
+      </div>
+      <div class="btn small" id="btnBuscarModificar">CONSULTAR</div>
+
+      <div id="modBox" style="display:none;">
+        <div class="gridForm" style="margin-top:10px;">
+          <div class="lab">Fecha de ingreso:</div><div class="field"><input id="mFechaIngreso" type="date"></div>
+          <div class="lab">Fecha de salida:</div><div class="field"><input id="mFechaSalida" type="date"></div>
+          <div class="lab">Nombres;</div><div class="field"><input id="mNombres" type="text"></div>
+          <div class="lab">Apellidos:</div><div class="field"><input id="mApellidos" type="text"></div>
+          <div class="lab">Nacionalidad:</div><div class="field"><input id="mNacionalidad" type="text"></div>
+          <div class="lab">Sexo:</div>
+          <div class="field">
+            <select id="mSexo">
+              <option value=""></option>
+              <option>Masculino</option>
+              <option>Femenino</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="lab">Cédula:</div><div class="field"><input id="mCedula" type="text" inputmode="numeric" disabled></div>
+          <div class="lab">Padece de alguna enfermedad:</div><div class="field"><input id="mEnfermedad" type="text"></div>
+
+          <div class="lab">Área de trabajo:</div>
+          <div class="field">
+            <select id="mArea"></select>
+          </div>
+
+          <div class="lab" id="mCuadrillaLab" style="display:none;">Cuadrilla:</div>
+          <div class="field" id="mCuadrillaField" style="display:none;">
+            <select id="mCuadrilla">
+              <option value=""></option>
+              <option>OCEANTREASURE</option>
+              <option>MAREPREX</option>
+              <option>FELESMAR</option>
+            </select>
+          </div>
+
+          <div class="lab">Registra antecedentes:</div>
+          <div class="field">
+            <select id="mAntecedentes">
+              <option value=""></option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+
+          <div class="lab">Fecha de nacimiento:</div><div class="field"><input id="mNacimiento" type="date"></div>
+          <div class="lab">Hijos:</div><div class="field"><input id="mHijos" type="text"></div>
+          <div class="lab">Estado Civil:</div><div class="field"><input id="mEstadoCivil" type="text"></div>
+
+          <div class="lab">Certificado bancario:</div>
+          <div class="field">
+            <select id="mCertBancario">
+              <option value=""></option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+
+          <div class="lab" id="mCuentaLab" style="display:none;">Número de cuenta:</div>
+          <div class="field" id="mCuentaField" style="display:none;"><input id="mCuenta" type="text" inputmode="numeric"></div>
+          <div class="lab" id="mTipoLab" style="display:none;">Tipo de cuenta:</div>
+          <div class="field" id="mTipoField" style="display:none;">
+            <select id="mTipoCuenta">
+              <option value=""></option>
+              <option>CORRIENTE</option>
+              <option>AHORROS</option>
+            </select>
+          </div>
+          <div class="lab" id="mBancoLab" style="display:none;">Nombre del banco:</div>
+          <div class="field" id="mBancoField" style="display:none;"><input id="mBanco" type="text"></div>
+
+          <div class="lab">Ha trabajado anteriormente aquí:</div>
+          <div class="field">
+            <select id="mTrabAntes">
+              <option value=""></option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="lab">Tiene familiares trabajando aquí:</div>
+          <div class="field">
+            <select id="mFamiliares">
+              <option value=""></option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="lab">Dirección domiciliaria:</div><div class="field"><input id="mDireccion" type="text"></div>
+          <div class="lab">Número de teléfono:</div><div class="field"><input id="mTelefono" type="text" inputmode="tel"></div>
+
+          <div class="lab">Lista negra:</div>
+          <div class="field">
+            <select id="mListaNegra">
+              <option value=""></option>
+              <option value="NO">NO</option>
+              <option value="SI">SI</option>
+            </select>
+          </div>
+          <div class="lab">Motivo:</div><div class="field"><input id="mMotivo" type="text"></div>
+        </div>
+
+        <div class="btn green" id="btnActualizar">ACTUALIZAR BD</div>
+        <div class="center" id="modMsg" style="color:#0a6;font-size:13px;min-height:18px;"></div>
+      </div>
+    </section>
+
+    <!-- LISTA NEGRA -->
+    <section id="vListaNegra" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkToOptions3">Opciones</a>
+          <a id="lnkLogout4">Cerrar sesión</a>
+        </div>
+        <div class="right"></div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="idbar">
+        <span class="idlabel">ID:</span>
+        <input id="lnId" type="text" />
+      </div>
+
+      <div class="btn black small" id="btnListaNegra">LISTA NEGRA</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:120px;">ID</th>
+            <th>NOMBRES</th>
+            <th>APELLIDOS</th>
+            <th>AREA</th>
+            <th>MOTIVO</th>
+          </tr>
+        </thead>
+        <tbody id="lnBody"></tbody>
+      </table>
+    </section>
+
+    <!-- ELIMINAR -->
+    <section id="vEliminar" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkToOptions4">Opciones</a>
+          <a id="lnkLogout5">Cerrar sesión</a>
+        </div>
+        <div class="right"></div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="idbar">
+        <span class="idlabel">ID:</span>
+        <input id="eId" type="text" />
+      </div>
+
+      <div class="btn small" id="btnBuscarEliminar">CONSULTAR</div>
+
+      <div id="eBox" style="display:none;">
+        <div class="gridForm" style="margin-top:10px;">
+          <div class="lab">Apellidos:</div><div class="field"><input id="eApellidos" disabled></div>
+          <div class="lab">Nombres:</div><div class="field"><input id="eNombres" disabled></div>
+          <div class="lab">Área de trabajo:</div><div class="field"><input id="eArea" disabled></div>
+        </div>
+
+        <div class="btn black" id="btnEliminarBD">ELIMINAR DE BD</div>
+        <div class="center" id="eMsg" style="color:#0a6;font-size:13px;min-height:18px;"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL NUEVO TALENTO -->
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <h3>NUEVO TALENTO</h3>
+      <p>Este ID no existe en la base de datos.</p>
+      <div class="actions">
+        <div class="btn blue small" id="modalIngresar">INGRESAR</div>
+        <div class="btn small" id="modalCancel">CANCELAR</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, orderBy }
+      from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const COL = "rrhh_talento";
+    const COL_AREAS = "rrhh_areas";
+
+    const BASE_AREAS = [
+      "MAQUINA","PRECAJAS","CONGELACION","CAMARA","RECEPCION","CALIDAD","PRODUCCION","BODEGA",
+      "AVANCE PAÑALEO","AVANCE DESCABEZADO","APOYO DESCABEZADO"
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    const views = {
+      login: $("vLogin"),
+      options: $("vOptions"),
+      consultar: $("vConsultar"),
+      ingresar: $("vIngresar"),
+      modificar: $("vModificar"),
+      listaNegra: $("vListaNegra"),
+      eliminar: $("vEliminar")
+    };
+
+    function showView(name){
+      Object.values(views).forEach(v => v.classList.remove("active"));
+      views[name].classList.add("active");
+    }
+    function setHeaderVisible(v){ $("authHeader").style.display = v ? "block" : "none"; }
+    function setUserEmail(email){ $("userEmail").textContent = email || ""; }
+    async function doLogout(){ await signOut(auth); }
+    function openModal(open){ $("modalBack").style.display = open ? "flex" : "none"; }
+
+    function normalizeAreaName(s){
+      return String(s||"").trim().replace(/\s+/g," ").toUpperCase();
+    }
+
+    async function fetchAreas(){
+      const set = new Set(BASE_AREAS.map(normalizeAreaName));
+      try{
+        const q = query(collection(db, COL_AREAS), orderBy("name","asc"));
+        const snap = await getDocs(q);
+        snap.forEach(d=>{
+          const x = d.data() || {};
+          if(x.name) set.add(normalizeAreaName(x.name));
+        });
+      }catch(_){}
+      return Array.from(set).sort((a,b)=>a.localeCompare(b,"es"));
+    }
+
+    async function fillAreaSelect(selectEl, { includeCreate=false }={}){
+      const areas = await fetchAreas();
+      const current = selectEl.value || "";
+      selectEl.innerHTML = "";
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = "";
+      selectEl.appendChild(opt0);
+
+      for(const a of areas){
+        const op = document.createElement("option");
+        op.value = a;
+        op.textContent = a;
+        selectEl.appendChild(op);
+      }
+
+      if(includeCreate){
+        const op = document.createElement("option");
+        op.value = "__CREAR_AREA__";
+        op.textContent = "CREAR AREA";
+        selectEl.appendChild(op);
+      }
+
+      if(current) selectEl.value = current;
+    }
+
+    async function createAreaFromPrompt(){
+      const raw = prompt("Ingrese el nombre de la nueva área:");
+      if(raw === null) return null;
+      const name = normalizeAreaName(raw);
+      if(!name){ alert("Nombre de área inválido."); return null; }
+      try{
+        await setDoc(doc(db, COL_AREAS, name), { name, createdAt: new Date().toISOString() }, { merge:true });
+        return name;
+      }catch(err){
+        alert("No se pudo crear el área. Revisa permisos/reglas.");
+        return null;
+      }
+    }
+
+    function toggleCuadrillaGeneric(areaValue, labEl, fieldEl, selectEl){
+      const isAv = (areaValue || "") === "AVANCE DESCABEZADO";
+      labEl.style.display = isAv ? "" : "none";
+      fieldEl.style.display = isAv ? "" : "none";
+      if(!isAv) selectEl.value = "";
+    }
+
+    function toggleBancoGeneric(certValue, labsFields, clearFn){
+      const show = (certValue || "") === "SI";
+      for(const el of labsFields) el.style.display = show ? "" : "none";
+      if(!show && clearFn) clearFn();
+    }
+
+    // Navegación
+    $("goConsultar").onclick = () => { showView("consultar"); $("consultResult").style.display="none"; $("qId").focus(); };
+    $("goIngresar").onclick  = async () => {
+      showView("ingresar");
+      clearIngresar();
+      await fillAreaSelect($("iArea"), { includeCreate:true });
+    };
+    $("goModificar").onclick = async () => {
+      showView("modificar");
+      resetModificar();
+      await fillAreaSelect($("mArea"), { includeCreate:false });
+    };
+    $("goListaNegra").onclick = () => { showView("listaNegra"); $("lnId").focus(); };
+    $("goEliminar").onclick = () => { showView("eliminar"); resetEliminar(); };
+
+    $("lnkToOptions1").onclick = () => showView("options");
+    $("lnkToOptions2").onclick = () => showView("options");
+    $("lnkToOptions3").onclick = () => showView("options");
+    $("lnkToOptions4").onclick = () => showView("options");
+    $("lnkToOptionsM").onclick = () => showView("options");
+
+    $("linkLogout1").onclick = doLogout;
+    $("lnkLogout2").onclick = doLogout;
+    $("lnkLogout3").onclick = doLogout;
+    $("lnkLogout4").onclick = doLogout;
+    $("lnkLogout5").onclick = doLogout;
+    $("lnkLogoutM").onclick = doLogout;
+
+    $("btnVolver1").onclick = () => showView("options");
+
+    // Login
+    $("btnLogin").onclick = async () => {
+      $("loginMsg").textContent = "";
+      const email = $("loginEmail").value.trim();
+      const pass  = $("loginPass").value;
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){
+        $("loginMsg").textContent = "Error: usuario o contraseña incorrectos.";
+      }
+    };
+    ["loginEmail","loginPass"].forEach(id=>{
+      $(id).addEventListener("keydown", (e)=>{ if(e.key==="Enter") $("btnLogin").click(); });
+    });
+
+    // Auth state
+    onAuthStateChanged(auth, (user)=>{
+      if(user){
+        setHeaderVisible(true);
+        setUserEmail(user.email);
+
+        const allowedEmail = "rrhh@oceantreasure.local";
+        if(user.email !== allowedEmail){
+          alert("Acceso no autorizado.");
+          doLogout();
+          return;
+        }
+
+        showView("options");
+      } else {
+        setHeaderVisible(false);
+        setUserEmail("");
+        showView("login");
+      }
+    });
+
+    // CONSULTAR
+    let lastConsultId = "";
+    $("btnConsultar").onclick = async () => {
+      $("consultResult").style.display = "none";
+      const id = $("qId").value.trim();
+      if(!id){ alert("Ingrese un ID."); return; }
+      lastConsultId = id;
+
+      const snap = await getDoc(doc(db, COL, id));
+      if(!snap.exists()){
+        openModal(true);
+        return;
+      }
+      const d = snap.data();
+
+      $("cFechaIngreso").value = d.fechaIngreso || "";
+      $("cFechaSalida").value  = d.fechaSalida || "";
+      $("cNombres").value      = d.nombres || "";
+      $("cApellidos").value    = d.apellidos || "";
+      $("cNacionalidad").value = d.nacionalidad || "";
+      $("cSexo").value         = d.sexo || "";
+      $("cCedula").value       = d.cedula || "";
+      $("cEnfermedad").value   = d.enfermedad || "";
+      $("cArea").value         = d.areaTrabajo || "";
+
+      const isAv = (d.areaTrabajo || "") === "AVANCE DESCABEZADO";
+      $("cCuadrillaLab").style.display = isAv ? "" : "none";
+      $("cCuadrillaField").style.display = isAv ? "" : "none";
+      $("cCuadrilla").value = d.cuadrilla || "";
+
+      $("cAntecedentes").value = d.antecedentes || "";
+      $("cNacimiento").value   = d.fechaNacimiento || "";
+      $("cHijos").value        = d.hijos || "";
+      $("cEstadoCivil").value  = d.estadoCivil || "";
+      $("cCertBancario").value = d.certificadoBancario || "";
+
+      const showBank = (d.certificadoBancario || "") === "SI";
+      for(const id2 of ["cCuentaLab","cCuentaField","cTipoLab","cTipoField","cBancoLab","cBancoField"]){
+        $(id2).style.display = showBank ? "" : "none";
+      }
+      $("cCuenta").value = d.numeroCuenta || "";
+      $("cTipoCuenta").value = d.tipoCuenta || "";
+      $("cBanco").value = d.bancoNombre || "";
+
+      $("cTrabAntes").value    = d.trabajoAnterior || "";
+      $("cFamiliares").value   = d.familiaresAqui || "";
+      $("cDireccion").value    = d.direccion || "";
+      $("cTelefono").value     = d.telefono || "";
+      $("cListaNegra").value   = d.listaNegra || "NO";
+      $("cMotivo").value       = d.motivoListaNegra || "";
+
+      $("consultResult").style.display = "block";
+    };
+
+    $("modalCancel").onclick = () => openModal(false);
+    $("modalIngresar").onclick = async () => {
+      openModal(false);
+      showView("ingresar");
+      clearIngresar();
+      await fillAreaSelect($("iArea"), { includeCreate:true });
+      $("iId").value = lastConsultId || "";
+    };
+
+    // INGRESAR
+    function clearIngresar(){
+      $("saveMsg").textContent = "";
+      [
+        "iId","iFechaIngreso","iFechaSalida","iNombres","iApellidos","iNacionalidad","iSexo",
+        "iCedula","iEnfermedad","iArea","iCuadrilla","iAntecedentes","iNacimiento","iHijos","iEstadoCivil",
+        "iCertBancario","iCuenta","iTipoCuenta","iBanco",
+        "iTrabAntes","iFamiliares","iDireccion","iTelefono","iListaNegra","iMotivo"
+      ].forEach(id => $(id).value = "");
+      $("iCuadrillaLab").style.display = "none";
+      $("iCuadrillaField").style.display = "none";
+      for(const id2 of ["iCuentaLab","iCuentaField","iTipoLab","iTipoField","iBancoLab","iBancoField"]){
+        $(id2).style.display = "none";
+      }
+    }
+
+    $("iCedula").addEventListener("input", ()=>{
+      const ced = $("iCedula").value.trim();
+      if(ced) $("iId").value = ced + "0001";
+    });
+
+    $("iArea").addEventListener("change", async ()=>{
+      const v = $("iArea").value || "";
+      if(v === "__CREAR_AREA__"){
+        $("iArea").value = "";
+        const created = await createAreaFromPrompt();
+        if(created){
+          await fillAreaSelect($("iArea"), { includeCreate:true });
+          $("iArea").value = created;
+        }
+      }
+      toggleCuadrillaGeneric($("iArea").value, $("iCuadrillaLab"), $("iCuadrillaField"), $("iCuadrilla"));
+    });
+
+    $("iCertBancario").addEventListener("change", ()=>{
+      toggleBancoGeneric($("iCertBancario").value,
+        [$("iCuentaLab"),$("iCuentaField"),$("iTipoLab"),$("iTipoField"),$("iBancoLab"),$("iBancoField")],
+        ()=>{ $("iCuenta").value=""; $("iTipoCuenta").value=""; $("iBanco").value=""; }
+      );
+    });
+
+    $("btnGuardar").onclick = async () => {
+      $("saveMsg").textContent = "";
+
+      const cedula = $("iCedula").value.trim();
+      const id = $("iId").value.trim() || (cedula ? (cedula + "0001") : "");
+
+      if(!id){ alert("Ingrese cédula para generar el ID (cédula+0001) o escriba el ID."); return; }
+      if(!cedula){ alert("La cédula es obligatoria."); return; }
+      if(($("iArea").value || "") === "AVANCE DESCABEZADO" && !($("iCuadrilla").value || "")){
+        alert("Seleccione la CUADRILLA (OCEANTREASURE / MAREPREX / FELESMAR).");
+        return;
+      }
+      if(($("iCertBancario").value || "") === "SI"){
+        if(!$("iCuenta").value.trim() || !$("iTipoCuenta").value || !$("iBanco").value.trim()){
+          alert("Complete Número de cuenta, Tipo de cuenta y Nombre del banco.");
+          return;
+        }
+      }
+
+      const cert = $("iCertBancario").value || "";
+      const payload = {
+        id,
+        fechaIngreso: $("iFechaIngreso").value || "",
+        fechaSalida: $("iFechaSalida").value || "",
+        nombres: $("iNombres").value.trim(),
+        apellidos: $("iApellidos").value.trim(),
+        nacionalidad: $("iNacionalidad").value.trim(),
+        sexo: $("iSexo").value || "",
+        cedula,
+        enfermedad: $("iEnfermedad").value.trim(),
+        areaTrabajo: ($("iArea").value || ""),
+        cuadrilla: ($("iCuadrilla").value || ""),
+        antecedentes: $("iAntecedentes").value || "",
+        fechaNacimiento: $("iNacimiento").value || "",
+        hijos: $("iHijos").value.trim(),
+        estadoCivil: $("iEstadoCivil").value.trim(),
+        certificadoBancario: cert,
+
+        numeroCuenta: cert === "SI" ? $("iCuenta").value.trim() : "",
+        tipoCuenta: cert === "SI" ? ($("iTipoCuenta").value || "") : "",
+        bancoNombre: cert === "SI" ? $("iBanco").value.trim() : "",
+
+        trabajoAnterior: $("iTrabAntes").value || "",
+        familiaresAqui: $("iFamiliares").value || "",
+        direccion: $("iDireccion").value.trim(),
+        telefono: $("iTelefono").value.trim(),
+        listaNegra: $("iListaNegra").value || "NO",
+        motivoListaNegra: $("iMotivo").value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      try{
+        await setDoc(doc(db, COL, id), payload, { merge:true });
+        $("saveMsg").textContent = "Guardado correctamente ✅";
+        alert("Guardado en BD ✅");
+        showView("options");
+      }catch(err){
+        alert("Error guardando en BD. Revisa reglas de Firestore y dominios autorizados.");
+      }
+    };
+
+    // MODIFICAR
+    let modId = "";
+    function resetModificar(){
+      modId = "";
+      $("mIdSearch").value = "";
+      $("modBox").style.display = "none";
+      $("modMsg").textContent = "";
+      [
+        "mFechaIngreso","mFechaSalida","mNombres","mApellidos","mNacionalidad","mSexo","mCedula","mEnfermedad",
+        "mArea","mCuadrilla","mAntecedentes","mNacimiento","mHijos","mEstadoCivil",
+        "mCertBancario","mCuenta","mTipoCuenta","mBanco",
+        "mTrabAntes","mFamiliares","mDireccion","mTelefono","mListaNegra","mMotivo"
+      ].forEach(id=>$(id).value="");
+      $("mCuadrillaLab").style.display="none";
+      $("mCuadrillaField").style.display="none";
+      for(const id2 of ["mCuentaLab","mCuentaField","mTipoLab","mTipoField","mBancoLab","mBancoField"]){
+        $(id2).style.display = "none";
+      }
+    }
+
+    $("mArea").addEventListener("change", ()=>{
+      toggleCuadrillaGeneric($("mArea").value, $("mCuadrillaLab"), $("mCuadrillaField"), $("mCuadrilla"));
+    });
+
+    $("mCertBancario").addEventListener("change", ()=>{
+      toggleBancoGeneric($("mCertBancario").value,
+        [$("mCuentaLab"),$("mCuentaField"),$("mTipoLab"),$("mTipoField"),$("mBancoLab"),$("mBancoField")],
+        ()=>{ $("mCuenta").value=""; $("mTipoCuenta").value=""; $("mBanco").value=""; }
+      );
+    });
+
+    $("btnBuscarModificar").onclick = async ()=>{
+      const id = $("mIdSearch").value.trim();
+      if(!id){ alert("Ingrese un ID."); return; }
+
+      const snap = await getDoc(doc(db, COL, id));
+      if(!snap.exists()){
+        alert("No existe registro para este ID.");
+        $("modBox").style.display = "none";
+        return;
+      }
+      const d = snap.data();
+      modId = id;
+
+      $("mFechaIngreso").value = d.fechaIngreso || "";
+      $("mFechaSalida").value  = d.fechaSalida || "";
+      $("mNombres").value      = d.nombres || "";
+      $("mApellidos").value    = d.apellidos || "";
+      $("mNacionalidad").value = d.nacionalidad || "";
+      $("mSexo").value         = d.sexo || "";
+      $("mCedula").value       = d.cedula || "";
+      $("mEnfermedad").value   = d.enfermedad || "";
+      $("mArea").value         = d.areaTrabajo || "";
+      $("mCuadrilla").value    = d.cuadrilla || "";
+      toggleCuadrillaGeneric($("mArea").value, $("mCuadrillaLab"), $("mCuadrillaField"), $("mCuadrilla"));
+
+      $("mAntecedentes").value = d.antecedentes || "";
+      $("mNacimiento").value   = d.fechaNacimiento || "";
+      $("mHijos").value        = d.hijos || "";
+      $("mEstadoCivil").value  = d.estadoCivil || "";
+
+      $("mCertBancario").value = d.certificadoBancario || "";
+      const showBank = (d.certificadoBancario || "") === "SI";
+      for(const id2 of ["mCuentaLab","mCuentaField","mTipoLab","mTipoField","mBancoLab","mBancoField"]){
+        $(id2).style.display = showBank ? "" : "none";
+      }
+      $("mCuenta").value = d.numeroCuenta || "";
+      $("mTipoCuenta").value = d.tipoCuenta || "";
+      $("mBanco").value = d.bancoNombre || "";
+
+      $("mTrabAntes").value    = d.trabajoAnterior || "";
+      $("mFamiliares").value   = d.familiaresAqui || "";
+      $("mDireccion").value    = d.direccion || "";
+      $("mTelefono").value     = d.telefono || "";
+      $("mListaNegra").value   = d.listaNegra || "NO";
+      $("mMotivo").value       = d.motivoListaNegra || "";
+
+      $("modBox").style.display = "block";
+    };
+
+    $("btnActualizar").onclick = async ()=>{
+      if(!modId){ return; }
+      const cert = $("mCertBancario").value || "";
+
+      if(($("mArea").value || "") === "AVANCE DESCABEZADO" && !($("mCuadrilla").value || "")){
+        alert("Seleccione la CUADRILLA (OCEANTREASURE / MAREPREX / FELESMAR).");
+        return;
+      }
+      if(cert === "SI"){
+        if(!$("mCuenta").value.trim() || !$("mTipoCuenta").value || !$("mBanco").value.trim()){
+          alert("Complete Número de cuenta, Tipo de cuenta y Nombre del banco.");
+          return;
+        }
+      }
+
+      const payload = {
+        id: modId,
+        fechaIngreso: $("mFechaIngreso").value || "",
+        fechaSalida: $("mFechaSalida").value || "",
+        nombres: $("mNombres").value.trim(),
+        apellidos: $("mApellidos").value.trim(),
+        nacionalidad: $("mNacionalidad").value.trim(),
+        sexo: $("mSexo").value || "",
+        cedula: $("mCedula").value.trim(),
+        enfermedad: $("mEnfermedad").value.trim(),
+        areaTrabajo: ($("mArea").value || ""),
+        cuadrilla: ($("mCuadrilla").value || ""),
+        antecedentes: $("mAntecedentes").value || "",
+        fechaNacimiento: $("mNacimiento").value || "",
+        hijos: $("mHijos").value.trim(),
+        estadoCivil: $("mEstadoCivil").value.trim(),
+        certificadoBancario: cert,
+
+        numeroCuenta: cert === "SI" ? $("mCuenta").value.trim() : "",
+        tipoCuenta: cert === "SI" ? ($("mTipoCuenta").value || "") : "",
+        bancoNombre: cert === "SI" ? $("mBanco").value.trim() : "",
+
+        trabajoAnterior: $("mTrabAntes").value || "",
+        familiaresAqui: $("mFamiliares").value || "",
+        direccion: $("mDireccion").value.trim(),
+        telefono: $("mTelefono").value.trim(),
+        listaNegra: $("mListaNegra").value || "NO",
+        motivoListaNegra: $("mMotivo").value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      try{
+        await setDoc(doc(db, COL, modId), payload, { merge:true });
+        $("modMsg").textContent = "Actualizado correctamente ✅";
+        alert("Actualizado en BD ✅");
+        showView("options");
+        resetModificar();
+      }catch(err){
+        alert("Error actualizando. Revisa reglas de Firestore.");
+      }
+    };
+
+    // LISTA NEGRA
+    $("btnListaNegra").onclick = async () => {
+      const id = $("lnId").value.trim();
+      if(!id){ alert("Ingrese un ID."); return; }
+
+      const snap = await getDoc(doc(db, COL, id));
+      if(!snap.exists()){
+        alert("No existe registro para este ID.");
+        return;
+      }
+
+      const d = snap.data();
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(id)}</td>
+        <td>${escapeHtml(d.nombres || "")}</td>
+        <td>${escapeHtml(d.apellidos || "")}</td>
+        <td>${escapeHtml(d.areaTrabajo || "")}</td>
+        <td>${escapeHtml(d.motivoListaNegra || "")}</td>
+      `;
+      $("lnBody").appendChild(tr);
+      $("lnId").value = "";
+      $("lnId").focus();
+    };
+
+    // ELIMINAR
+    let deleteCandidateId = "";
+    function resetEliminar(){
+      deleteCandidateId = "";
+      $("eId").value = "";
+      $("eBox").style.display = "none";
+      $("eMsg").textContent = "";
+      $("eId").focus();
+    }
+
+    $("btnBuscarEliminar").onclick = async () => {
+      $("eBox").style.display = "none";
+      $("eMsg").textContent = "";
+      const id = $("eId").value.trim();
+      if(!id){ alert("Ingrese un ID."); return; }
+
+      const snap = await getDoc(doc(db, COL, id));
+      if(!snap.exists()){
+        alert("No existe registro para este ID.");
+        return;
+      }
+
+      const d = snap.data();
+      deleteCandidateId = id;
+      $("eApellidos").value = d.apellidos || "";
+      $("eNombres").value = d.nombres || "";
+      $("eArea").value = d.areaTrabajo || "";
+      $("eBox").style.display = "block";
+    };
+
+    $("btnEliminarBD").onclick = async () => {
+      if(!deleteCandidateId){ return; }
+      const ok = confirm("¿Seguro que deseas ELIMINAR este registro de la BD?");
+      if(!ok) return;
+
+      try{
+        await deleteDoc(doc(db, COL, deleteCandidateId));
+        $("eMsg").textContent = "Eliminado correctamente ✅";
+        alert("Registro eliminado ✅");
+        showView("options");
+        resetEliminar();
+      }catch(err){
+        alert("Error eliminando. Revisa reglas de Firestore.");
+      }
+    };
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+  </script>
+</body>
+</html>
