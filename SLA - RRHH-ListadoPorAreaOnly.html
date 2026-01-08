@@ -38,6 +38,10 @@
       color:#000;font-weight:700;text-align:center;cursor:pointer;user-select:none
     }
     .btn.blue{background:var(--lightblue);border-color:#2a2a2a;color:#0b5aa5}
+
+    .btn.green{background:#cfe8cf;border-color:#2a2a2a;color:#135e13}
+    .btn.disabled{opacity:.55;pointer-events:none}
+    .hidden{display:none !important}
     .btn:active{transform:scale(.99)}
     .linkCenter{text-align:center;margin-top:16px;color:var(--blue);text-decoration:underline;cursor:pointer;font-size:14px}
 
@@ -125,6 +129,8 @@
 
         <div class="btn blue" id="btnBuscar">CONSULTAR</div>
 
+        <div class="btn green disabled" id="btnExport">EXPORTAR EXCEL</div>
+
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;">
           <div style="font-size:13px;">Registros: <b id="lblCount">0</b></div>
           <div style="font-size:13px;">Orden: <b>APELLIDOS (A→Z)</b></div>
@@ -138,6 +144,7 @@
                 <th>APELLIDOS</th>
                 <th>NOMBRES</th>
                 <th>AREA</th>
+                <th class="col-cuadrilla hidden">CUADRILLA</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -168,6 +175,62 @@
     };
 
     const app = initializeApp(firebaseConfig);
+
+    const isAvanceDescabezado = (area)=>String(area||"").trim().toUpperCase() === "AVANCE DESCABEZADO";
+    const setCuadrillaVisible = (show)=>{
+      document.querySelectorAll(".col-cuadrilla").forEach(el=>{
+        el.classList.toggle("hidden", !show);
+      });
+    };
+
+    let lastRows = [];
+    let lastArea = "";
+    let lastShowCuadrilla = false;
+
+    const toCSV = (rows, showCuadrilla)=>{
+      const sep = ";";
+      const cols = showCuadrilla
+        ? ["ID","APELLIDOS","NOMBRES","AREA","CUADRILLA"]
+        : ["ID","APELLIDOS","NOMBRES","AREA"];
+      const escCSV = (v)=>{
+        const s = String(v ?? "");
+        const needs = /[;"\n\r]/.test(s);
+        const q = s.replaceAll('"','""');
+        return needs ? `"${q}"` : q;
+      };
+      const lines = [];
+      lines.push(cols.join(sep));
+      for(const r of rows){
+        const base = [r.id, r.apellidos, r.nombres, r.area];
+        if(showCuadrilla) base.push(r.cuadrilla || "");
+        lines.push(base.map(escCSV).join(sep));
+      }
+      // BOM para Excel (UTF-8)
+      return "\ufeff" + lines.join("\r\n");
+    };
+
+    const exportExcel = ()=>{
+      if(!lastRows || lastRows.length === 0){
+        alert("No hay datos para exportar.");
+        return;
+      }
+      const now = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      const areaSafe = (lastArea || "AREA").replaceAll(" ","_").replaceAll("/","-");
+      const filename = `SLA_Listado_${areaSafe}_${stamp}.csv`;
+
+      const csv = toCSV(lastRows, lastShowCuadrilla);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 2500);
+    };
     const auth = getAuth(app);
     const db = getFirestore(app);
 
@@ -206,6 +269,7 @@
 
     $("lnkLogout").onclick = doLogout;
     $("lnkLogout2").onclick = doLogout;
+    $("btnExport").onclick = exportExcel;
 
     onAuthStateChanged(auth, async (user)=>{
       if(user){
@@ -227,6 +291,8 @@
         setHeaderVisible(false);
         setUserEmail("");
         showView("login");
+    $("btnExport").classList.add("disabled");
+    setCuadrillaVisible(false);
       }
     });
 
@@ -259,13 +325,14 @@
           id: x.id || d.id,
           apellidos: x.apellidos || "",
           nombres: x.nombres || "",
-          area: x.areaTrabajo || ""
+          area: x.areaTrabajo || "",
+          cuadrilla: x.cuadrilla || ""
         });
       });
 
       if(rows.length === 0){
         const tr = document.createElement("tr");
-        tr.innerHTML = "<td colspan=\"4\">No hay registros para esta área.</td>";
+        tr.innerHTML = `<td colspan="${showCuadrilla ? 5 : 4}">No hay registros para esta área.</td>`;
         $("tbody").appendChild(tr);
         return;
       }
@@ -277,11 +344,14 @@
           <td>${esc(r.apellidos)}</td>
           <td>${esc(r.nombres)}</td>
           <td>${esc(r.area)}</td>
+          <td class="col-cuadrilla ${showCuadrilla ? "" : "hidden"}">${esc(r.cuadrilla || "")}</td>
         `;
         $("tbody").appendChild(tr);
       }
 
       $("lblCount").textContent = String(rows.length);
+      lastRows = rows;
+      $("btnExport").classList.toggle("disabled", rows.length === 0);
     };
 
     function esc(s){
