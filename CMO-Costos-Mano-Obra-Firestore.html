@@ -184,6 +184,10 @@
             <input id="jornadaLbs" inputmode="decimal" />
           </div>
           <div class="field sm">
+            <label>Fecha cálculo</label>
+            <input id="calcDate" type="date" />
+          </div>
+          <div class="field sm">
             <label>&nbsp;</label>
             <button class="btn primary" id="btnSaveSettings" disabled>Guardar arriba</button>
           </div>
@@ -193,7 +197,7 @@
           <table id="tblAreas">
             <thead>
               <tr>
-                <th>ÁREA</th><th>CUPO</th><th>BASE $/H</th><th>+INC</th><th>HI</th><th>HF</th><th>AL</th><th>HT</th><th>COSTO ÁREA</th><th>TOTAL ÁREA</th><th>ACC.</th>
+                <th>ÁREA</th><th>CUPO</th><th>BASE $/H</th><th>HI</th><th>HF</th><th>AL</th><th>HT</th><th>COSTO ÁREA</th><th>TOTAL ÁREA</th><th>ACC.</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -455,6 +459,14 @@
     $("jornadaLbs").value = nf2.format(toNum(s.jornadaLibras ?? 0));
     $("year").value = String(s.year ?? DEFAULT_DATA.settings.year);
     $("month").value = String(s.month ?? DEFAULT_DATA.settings.month);
+    // Fecha de cálculo: por defecto HOY
+    if($("calcDate") && !$("calcDate").value){
+      const t = new Date();
+      const y = t.getFullYear();
+      const m = String(t.getMonth()+1).padStart(2,"0");
+      const d = String(t.getDate()).padStart(2,"0");
+      $("calcDate").value = `${y}-${m}-${d}`;
+    }
     updateKpis();
   }
 
@@ -494,8 +506,9 @@
     let totalCupo=0, totalCostoArea=0, totalNominal=0;
     for(const a of areaList){
       totalCupo += toNum(a.cupo);
-      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + (a.usesIncentive ? toNum(s.incentiveAdd) : 0)));
-      const ht = calcHT(a.hi, a.hf, a.al);
+      const inc = (toNum(s.incentiveAdd) > 0 ? toNum(s.incentiveAdd) : 0);
+      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + inc));
+const ht = calcHT(a.hi, a.hf, a.al);
       const costoArea = rate * ht;
       const totalArea = costoArea * toNum(a.cupo);
       totalCostoArea += costoArea;
@@ -523,8 +536,9 @@
     tbody.innerHTML = "";
     const list = (areas.length ? areas : DEFAULT_DATA.areas.map(x=>({...x})));
     list.forEach((a, idx) => {
-      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + (a.usesIncentive ? toNum(s.incentiveAdd) : 0)));
-      const ht = calcHT(a.hi, a.hf, a.al);
+      const inc = (toNum(s.incentiveAdd) > 0 ? toNum(s.incentiveAdd) : 0);
+      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + inc));
+const ht = calcHT(a.hi, a.hf, a.al);
       const costoArea = rate * ht;
       const totalArea = costoArea * toNum(a.cupo);
       const tr = document.createElement("tr");
@@ -532,13 +546,7 @@
         <td><input data-k="name" data-i="${idx}" value="${esc(a.name||"")}" ${canEditUI?'':'disabled'}></td>
         <td class="num"><input data-k="cupo" data-i="${idx}" inputmode="numeric" value="${toNum(a.cupo)}" ${canEditUI?'':'disabled'}></td>
         <td class="num"><input data-k="baseRate" data-i="${idx}" inputmode="decimal" value="${nf2.format(toNum(a.baseRate))}" ${canEditUI?'':'disabled'}></td>
-        <td class="center">
-          <select data-k="usesIncentive" data-i="${idx}" ${canEditUI?'':'disabled'}>
-            <option value="1" ${a.usesIncentive?'selected':''}>SI</option>
-            <option value="0" ${!a.usesIncentive?'selected':''}>NO</option>
-          </select>
-        </td>
-        <td class="center"><input data-k="hi" data-i="${idx}" value="${esc(a.hi||"")}" placeholder="HH:MM" ${canEditUI?'':'disabled'}></td>
+<td class="center"><input data-k="hi" data-i="${idx}" value="${esc(a.hi||"")}" placeholder="HH:MM" ${canEditUI?'':'disabled'}></td>
         <td class="center"><input data-k="hf" data-i="${idx}" value="${esc(a.hf||"")}" placeholder="HH:MM" ${canEditUI?'':'disabled'}></td>
         <td class="num"><input data-k="al" data-i="${idx}" inputmode="decimal" value="${nf2.format(toNum(a.al))}" ${canEditUI?'':'disabled'}></td>
         <td class="num">${nf2.format(ht)}</td>
@@ -574,8 +582,7 @@
     let v = el.value;
     if(k==="cupo") v = Math.max(0, Math.round(toNum(v)));
     if(k==="baseRate"||k==="al") v = toNum(v);
-    if(k==="usesIncentive") v = (String(v)==="1");
-    if(k==="name") v = String(v||"");
+        if(k==="name") v = String(v||"");
     if(k==="hi"||k==="hf") v = String(v||"").trim();
     areas[i][k] = v;
     renderAreas();
@@ -652,19 +659,37 @@
   function renderDays(){
     const y = toNum($("year").value) || DEFAULT_DATA.settings.year;
     const m = toNum($("month").value) || DEFAULT_DATA.settings.month;
-    const cal = mergeDocs(buildCalendarRows(y,m), daysDocs);
+
+    // Solo mostrar días existentes (docs en Firestore / cache local)
+    const list = (daysDocs || []).slice()
+      .map(d => ({
+        year: y, month: m,
+        day: Number(d.day ?? d.n ?? 0),
+        cupo: toNum(d.cupo),
+        valorNominal: toNum(d.valorNominal),
+        librasProcesadas: toNum(d.librasProcesadas)
+      }))
+      .filter(r => r.day >= 1 && r.day <= 31)
+      .sort((a,b)=>a.day-b.day);
+
     const tbody = $("tblDays").querySelector("tbody");
     tbody.innerHTML = "";
+
     let tCupo=0, tValor=0, tLbs=0;
 
-    cal.forEach(r => {
+    list.forEach(r => {
+      const dateObj = new Date(y, m-1, r.day);
+      const dia = weekdayES(dateObj);
       const costo = (r.librasProcesadas>0) ? (r.valorNominal/r.librasProcesadas) : 0;
-      tCupo += r.cupo; tValor += r.valorNominal; tLbs += r.librasProcesadas;
-      const isToday = (()=>{ const t=new Date(); return t.getFullYear()===y && (t.getMonth()+1)===m && t.getDate()===r.day; })();
+
+      tCupo += r.cupo;
+      tValor += r.valorNominal;
+      tLbs  += r.librasProcesadas;
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="center" style="${isToday?'font-weight:900;background:#e6f4ff':''}">${r.day}</td>
-        <td>${r.dia}</td>
+        <td class="center">${r.day}</td>
+        <td>${dia}</td>
         <td class="num"><input data-day="${r.day}" data-k="cupo" inputmode="numeric" value="${nf0.format(r.cupo)}" ${canEditUI?'':'disabled'}></td>
         <td class="num"><input data-day="${r.day}" data-k="valorNominal" inputmode="decimal" value="${r.valorNominal? nfMoney.format(r.valorNominal):""}" ${canEditUI?'':'disabled'}></td>
         <td class="num"><input data-day="${r.day}" data-k="librasProcesadas" inputmode="decimal" value="${r.librasProcesadas? nf2.format(r.librasProcesadas):""}" ${canEditUI?'':'disabled'}></td>
@@ -675,7 +700,7 @@
 
     $("mTotCupo").textContent = nf0.format(tCupo);
     $("mTotValor").textContent = fmtMoney(tValor);
-    $("mTotLbs").textContent = nf2.format(tLbs);
+    $("mTotLbs").textContent  = nf2.format(tLbs);
     const prom = (tLbs>0) ? (tValor/tLbs) : 0;
     $("mPromCosto").textContent = fmtCost(prom);
 
@@ -723,6 +748,18 @@
 
   function dayDocId(y,m,d){ return `y${y}m${pad2(m)}d${pad2(d)}`; }
 
+  function getCalcDateObj(){
+    const v = $("calcDate") ? $("calcDate").value : "";
+    if(v){
+      const parts = v.split("-").map(n=>Number(n));
+      if(parts.length===3 && parts[0] && parts[1] && parts[2]){
+        return new Date(parts[0], parts[1]-1, parts[2]);
+      }
+    }
+    return new Date();
+  }
+
+
   $("btnSaveDays").addEventListener("click", async ()=>{
     if(!canEditUI) return;
     try {
@@ -755,7 +792,7 @@
 
   async function autoUpsertToday(){
     if(!canEditUI) return;
-    const t = new Date();
+    const t = getCalcDateObj();
     const y = t.getFullYear();
     const m = t.getMonth()+1;
     const d = t.getDate();
@@ -1033,8 +1070,9 @@ try {
 
       // Right: top areas summary (Top 10 por Total Área)
       const sortedAreas = areaList.map(a=>{
-        const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + (a.usesIncentive ? toNum(s.incentiveAdd) : 0)));
-        const ht = calcHT(a.hi, a.hf, a.al);
+        const inc = (toNum(s.incentiveAdd) > 0 ? toNum(s.incentiveAdd) : 0);
+      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + inc));
+const ht = calcHT(a.hi, a.hf, a.al);
         const costoArea = rate*ht;
         const totalArea = costoArea*toNum(a.cupo);
         return { area: a.name, cupo: toNum(a.cupo), ht, rate, totalArea };
@@ -1077,15 +1115,15 @@ try {
 
       // Tabla áreas completa
       const fullAreas = areaList.map(a=>{
-        const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + (a.usesIncentive ? toNum(s.incentiveAdd) : 0)));
-        const ht = calcHT(a.hi, a.hf, a.al);
+        const inc = (toNum(s.incentiveAdd) > 0 ? toNum(s.incentiveAdd) : 0);
+      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + inc));
+const ht = calcHT(a.hi, a.hf, a.al);
         const costoArea = rate*ht;
         const totalArea = costoArea*toNum(a.cupo);
         return [
           a.name,
           nf0.format(toNum(a.cupo)),
           nfMoney.format(toNum(a.baseRate)),
-          (a.usesIncentive ? "SI" : "NO"),
           (a.hi || ""),
           (a.hf || ""),
           nf2.format(toNum(a.al)),
@@ -1099,7 +1137,7 @@ try {
         doc.autoTable({
           startY: 70,
           margin: { left: margin, right: margin },
-          head: [["Área","Cupo","Base $/H","Inc","HI","HF","AL","HT","Costo Área","Total Área"]],
+          head: [["Área","Cupo","Base $/H","HI","HF","AL","HT","Costo Área","Total Área"]],
           body: fullAreas,
           styles: { font:"helvetica", fontSize:8.5, cellPadding:3, textColor:[11,18,32], lineColor:[217,227,242], lineWidth:0.7 },
           headStyles: { fillColor:cBlue, textColor:[255,255,255], fontStyle:"bold" },
