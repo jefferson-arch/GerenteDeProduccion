@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CMO | Costos Mano de Obra</title>
+
+<link rel="icon" href="favicon.ico?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+
+<style>
+  :root{
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --card2:#f7fbff;
+    --line:#d9e3f2;
+    --text:#0b1220;
+    --muted:#4b5563;
+    --blue:#1e88e5;
+    --btn:#1e88e5;
+    --btn2:#136fbf;
+    --danger:#e53935;
+    --sky:#e6f4ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:1500px;margin:0 auto;padding:12px 12px 18px}
+
+  header{
+    display:flex;gap:10px;align-items:center;justify-content:space-between;
+    padding:10px 12px;border:1px solid var(--line);
+    background:linear-gradient(180deg, var(--sky), #ffffff);
+    border-radius:10px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;min-width:260px}
+  .logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(180deg,#6ec6ff,#1e88e5);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px}
+  .brand h1{margin:0;font-size:15px}
+  .brand small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
+
+  .right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .chip{padding:5px 9px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:11px}
+  .btn{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--text);
+    padding:7px 10px;border-radius:8px;font-weight:800;font-size:11px;line-height:1}
+  .btn.primary{background:var(--btn);border-color:var(--btn);color:#fff}
+  .btn.primary:hover{background:var(--btn2);border-color:var(--btn2)}
+  .btn.danger{background:#fff;border-color:#f3b6b5;color:var(--danger)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-top:10px}
+  @media (max-width: 1100px){.grid{grid-template-columns:1fr}}
+
+  .panel{border:1px solid var(--line);background:var(--card);border-radius:10px;overflow:hidden}
+  .panelHead{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:8px 10px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, #dff2ff, #ffffff);
+  }
+  .panelHead h2{margin:0;font-size:12px}
+  .panelBody{padding:8px 10px}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+  label{display:block;font-size:10px;color:var(--muted);margin:0 0 4px}
+  input, select{width:100%;padding:5px 6px;border-radius:7px;border:1px solid var(--line);
+    background:#fff;color:var(--text);outline:none;font-size:11px;line-height:1.1}
+  input:focus, select:focus{border-color:rgba(30,136,229,.65)}
+  .field{min-width:140px;max-width:220px}
+  .field.sm{min-width:110px;max-width:150px}
+
+  table{width:100%;border-collapse:collapse;font-size:11px;table-layout:auto}
+  th, td{border:1px solid var(--line);padding:3px 4px;vertical-align:middle;white-space:nowrap}
+  thead th{background:#1e88e5;color:#fff;text-align:center;font-weight:800}
+  tbody td{background:#fff}
+  tbody tr:nth-child(even) td{background:var(--card2)}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  td.center{text-align:center}
+  tr.total td{background:#eef6ff;font-weight:900}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+  @media (max-width: 700px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px}
+  .kpi .t{font-size:10px;color:var(--muted)}
+  .kpi .v{margin-top:5px;font-size:18px;font-weight:900}
+
+  .chartWrap{border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px}
+  canvas{width:100%;height:430px}
+
+  /* Login */
+  .loginWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+  .loginCard{width:100%;max-width:560px;border:1px solid var(--line);background:var(--card);
+    border-radius:12px;padding:16px}
+  .loginCard p{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.35}
+  .err{color:var(--danger);font-size:12px;margin-top:10px;white-space:pre-wrap}
+
+  .toast{position:fixed;left:12px;right:12px;bottom:12px;display:flex;justify-content:center;pointer-events:none}
+  .toast > div{pointer-events:auto;max-width:920px;width:100%;border:1px solid var(--line);background:#fff;
+    border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+  .toast b{font-size:12px}
+  .toast .msg{font-size:12px;color:var(--muted)}
+  .hidden{display:none !important}
+</style>
+</head>
+
+<body>
+<section id="login" class="loginWrap">
+  <div class="loginCard">
+    <div class="brand" style="margin-bottom:8px">
+      <div class="logo">OT</div>
+      <div>
+        <h1 style="margin:0">CMO — Costos por Mano de Obra</h1>
+        <small>Firebase Auth + Firestore (GitHub Pages)</small>
+      </div>
+    </div>
+
+    <p>
+      Editor (puede guardar): <b>milenalmeida@oceantreasure.local</b><br>
+      Otros usuarios logueados: <b>solo vista</b>.
+    </p>
+
+    <div class="row">
+      <div class="field" style="flex:1;max-width:none">
+        <label>Correo</label>
+        <input id="email" type="email" placeholder="usuario@oceantreasure.local" autocomplete="username" />
+      </div>
+      <div class="field" style="flex:1;max-width:none">
+        <label>Contraseña</label>
+        <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center;justify-content:flex-end">
+      <button class="btn primary" id="btnLogin">Ingresar</button>
+    </div>
+    <div class="err" id="loginErr"></div>
+  </div>
+</section>
+
+<section id="app" class="wrap hidden">
+  <header>
+    <div class="brand">
+      <div class="logo">OT</div>
+      <div>
+        <h1>CMO — Costos por Mano de Obra (OCEANTREASURE)</h1>
+        <small>Compacto • separadores de miles (es-EC) • calendario automático</small>
+      </div>
+    </div>
+    <div class="right">
+      <div class="chip" id="roleChip">Rol: <b>—</b></div>
+      <div class="chip" id="userChip">Usuario: <b>—</b></div>
+      <button class="btn" id="btnSeed" disabled>Inicializar plantilla</button>
+      <button class="btn primary" id="btnAutoHoy" disabled>Registrar hoy</button>
+      <button class="btn" id="btnNuevo" disabled>NUEVO</button>
+      <button class="btn primary" id="btnPDF">Generar PDF</button>
+      <button class="btn danger" id="btnLogout">Salir</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panelHead">
+        <h2>Costos por Área</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btnAddArea" disabled>+ Área</button>
+          <button class="btn primary" id="btnSaveAreas" disabled>Guardar áreas</button>
+        </div>
+      </div>
+      <div class="panelBody">
+        <div class="kpis">
+          <div class="kpi"><div class="t">LIBRAS PROCESADAS (Jornada)</div><div class="v" id="kpiLbs">—</div></div>
+          <div class="kpi"><div class="t">VALOR NOMINAL JORNADA</div><div class="v" id="kpiNominal">—</div></div>
+          <div class="kpi"><div class="t">MANO DE OBRA (CUPO)</div><div class="v" id="kpiCupo">—</div></div>
+          <div class="kpi"><div class="t">COSTO DE PRODUCCIÓN</div><div class="v" id="kpiCosto">—</div></div>
+        </div>
+
+        <div class="row" style="margin-bottom:8px">
+          <div class="field sm">
+            <label>Incentivo (+ $/H)</label>
+            <input id="incentiveAdd" inputmode="decimal" />
+          </div>
+          <div class="field sm">
+            <label>Libras jornada</label>
+            <input id="jornadaLbs" inputmode="decimal" />
+          </div>
+          <div class="field sm">
+            <label>Fecha cálculo</label>
+            <input id="calcDate" type="date" />
+          </div>
+          <div class="field sm">
+            <label>&nbsp;</label>
+            <button class="btn primary" id="btnSaveSettings" disabled>Guardar arriba</button>
+          </div>
+        </div>
+
+        <div style="overflow:auto;border-radius:10px">
+          <table id="tblAreas">
+            <thead>
+              <tr>
+                <th>ÁREA</th><th>CUPO</th><th>BASE $/H</th><th>HI</th><th>HF</th><th>AL</th><th>HT</th><th>COSTO ÁREA</th><th>TOTAL ÁREA</th><th>ACC.</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr class="total">
+                <td class="center">TOTAL</td>
+                <td class="num" id="totCupo">—</td>
+                <td colspan="6"></td>
+                <td class="num" id="totCostoArea">—</td>
+                <td class="num" id="totNominal">—</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panelHead">
+        <h2 id="monthTitle">Mes</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btnSaveDays" disabled>Guardar mes</button>
+        </div>
+      </div>
+      <div class="panelBody">
+        <div class="row" style="margin-bottom:8px">
+          <div class="field sm">
+            <label>Año</label>
+            <input id="year" inputmode="numeric" />
+          </div>
+          <div class="field sm">
+            <label>Mes</label>
+            <select id="month">
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="field sm">
+            <label>&nbsp;</label>
+            <button class="btn" id="btnReload">Cargar</button>
+          </div>
+        </div>
+
+        <div style="overflow:auto;border-radius:10px;margin-bottom:8px">
+          <table id="tblDays">
+            <thead>
+              <tr>
+                <th>FECHA</th><th>DÍA</th><th>CUPO</th><th>VALOR NOMINAL</th><th>LIBRAS PROCESADAS</th><th>COSTO</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr class="total">
+                <td class="center" colspan="2">TOTAL</td>
+                <td class="num" id="mTotCupo">—</td>
+                <td class="num" id="mTotValor">—</td>
+                <td class="num" id="mTotLbs">—</td>
+                <td class="num" id="mPromCosto">—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="row" style="margin:-2px 0 8px">
+          <div class="chip">EMPAC ($): <b id="empacUsd">—</b></div>
+          <div class="chip">COLA (lbs): <b id="colaEmpacada">—</b></div>
+          <div class="chip">EQUIV. CONT.: <b id="equivCont">—</b></div>
+          <div class="chip">ENTERO (lbs): <b id="enteroDesc">—</b></div>
+          <div class="chip">PROMEDIO: <b id="promedioChip">—</b></div>
+        </div>
+
+        <div class="chartWrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="toast hidden" id="toast"><div>
+  <div>
+    <b id="toastTitle">Listo</b>
+    <div class="msg" id="toastMsg"></div>
+  </div>
+  <button class="btn" id="toastClose">OK</button>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+    authDomain: "oceantreasure-app.firebaseapp.com",
+    projectId: "oceantreasure-app",
+    storageBucket: "oceantreasure-app.firebasestorage.app",
+    messagingSenderId: "553014659258",
+    appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+    measurementId: "G-HMMQKJY8NJ"
+  };
+
+  const DEFAULT_DATA = {"settings": {"company": "OCEANTREASURE", "module": "CMO — Costos Mano de Obra", "year": 2026, "month": 1, "incentiveAdd": 0.2, "jornadaLibras": 30000, "contenedorColaLbs": 52272, "colaFactor": 0.66}, "areas": [{"name": "RECEPCION", "cupo": 4, "baseRate": 1.7, "usesIncentive": true, "hi": "07:35", "hf": "12:00", "al": 1.0, "order": 0}, {"name": "DESCABEZADO C1", "cupo": 7, "baseRate": 2.0, "usesIncentive": true, "hi": "07:30", "hf": "12:00", "al": 1.5, "order": 1}, {"name": "DESCABEZADO C2", "cupo": 4, "baseRate": 2.0, "usesIncentive": true, "hi": "07:41", "hf": "12:00", "al": 1.5, "order": 2}, {"name": "PESADOR - SELLADOR MQ", "cupo": 6, "baseRate": 2.0, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 3}, {"name": "TOLVERO - OPERADOR", "cupo": 3, "baseRate": 2.0, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 4}, {"name": "CAJERO - AUXILIAR MQ", "cupo": 10, "baseRate": 1.9, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 5}, {"name": "VARIOS MQ1", "cupo": 6, "baseRate": 1.7, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 6}, {"name": "VARIOS MQ2", "cupo": 7, "baseRate": 1.7, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 7}, {"name": "PRECAJAS", "cupo": 6, "baseRate": 1.7, "usesIncentive": true, "hi": "08:16", "hf": "12:00", "al": 1.5, "order": 8}, {"name": "BODEGA", "cupo": 1, "baseRate": 1.7, "usesIncentive": true, "hi": "07:50", "hf": "12:00", "al": 1.5, "order": 9}, {"name": "CONGELACION", "cupo": 3, "baseRate": 2.0, "usesIncentive": true, "hi": "08:27", "hf": "12:00", "al": 1.5, "order": 10}, {"name": "PRODUCCION", "cupo": 12, "baseRate": 2.0, "usesIncentive": true, "hi": "08:00", "hf": "12:00", "al": 1.5, "order": 11}, {"name": "CALIDAD", "cupo": 0, "baseRate": 1.8, "usesIncentive": true, "hi": "", "hf": "12:00", "al": 0.0, "order": 12}, {"name": "MASTERIZADO", "cupo": 5, "baseRate": 2.0, "usesIncentive": true, "hi": "08:28", "hf": "12:00", "al": 1.5, "order": 13}, {"name": "CAMARA", "cupo": 5, "baseRate": 2.0, "usesIncentive": true, "hi": "08:28", "hf": "12:00", "al": 1.5, "order": 14}, {"name": "EMBARQUE", "cupo": 4, "baseRate": 2.0, "usesIncentive": true, "hi": "08:28", "hf": "12:00", "al": 1.5, "order": 15}, {"name": "CASILLEROS", "cupo": 1, "baseRate": 1.7, "usesIncentive": true, "hi": "07:13", "hf": "12:00", "al": 1.5, "order": 16}, {"name": "LAVADO MATERIAL", "cupo": 1, "baseRate": 1.7, "usesIncentive": true, "hi": "08:00", "hf": "12:00", "al": 1.0, "order": 17}, {"name": "BAÑOS", "cupo": 1, "baseRate": 2.0, "usesIncentive": true, "hi": "07:50", "hf": "12:00", "al": 1.0, "order": 18}, {"name": "Limpieza Turno noche", "cupo": 9, "baseRate": 1.7, "usesIncentive": false, "hi": "19:00", "hf": "06:00", "al": 1.0, "order": 19}], "days": [{"day": 2, "diaHint": "VIERNES", "cupo": 50, "valorNominal": 1091.0, "librasProcesadas": 8052.0}, {"day": 3, "diaHint": "SABADO", "cupo": 73, "valorNominal": 1340.0, "librasProcesadas": 19965.0}, {"day": 5, "diaHint": "LUNES", "cupo": 109, "valorNominal": 1844.0, "librasProcesadas": 90000.0}, {"day": 6, "diaHint": "MARTES", "cupo": 117, "valorNominal": 2282.0, "librasProcesadas": 52227.0}, {"day": 7, "diaHint": "MIERCOLES", "cupo": 112, "valorNominal": 2265.0, "librasProcesadas": 63000.0}, {"day": 8, "diaHint": "JUEVES", "cupo": 104, "valorNominal": 2075.0, "librasProcesadas": 82600.0}, {"day": 9, "diaHint": "VIERNES", "cupo": 110, "valorNominal": 2047.0, "librasProcesadas": 59714.0}, {"day": 10, "diaHint": "SABADO", "cupo": 104, "valorNominal": 1931.0, "librasProcesadas": 101183.0}]};
+  const UI_EDITOR_EMAIL = "milenalmeida@oceantreasure.local";
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+  const $ = (id) => document.getElementById(id);
+  const nf0 = new Intl.NumberFormat("es-EC", {maximumFractionDigits:0});
+  const nf2 = new Intl.NumberFormat("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const nfMoney = new Intl.NumberFormat("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const nfCost = new Intl.NumberFormat("es-EC", {minimumFractionDigits:4, maximumFractionDigits:6});
+
+  function toNum(v){
+    if(v==null) return 0;
+    let s = String(v).trim();
+    if(!s) return 0;
+    s = s.replace(/\$/g,"").replace(/\s/g,"");
+    s = s.replace(/\.(?=\d{3}(\D|$))/g, "");
+    if(s.includes(",")) s = s.replace(/,/g, ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function fmtLbs(v){ return nf2.format(toNum(v)); }
+  function fmtMoney(v){ return "$ " + nfMoney.format(toNum(v)); }
+  function fmtCost(v){ return nfCost.format(toNum(v)); }
+  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c])); }
+
+  function timeToMinutes(hhmm){
+    if(!hhmm) return null;
+    const m = String(hhmm).trim().match(/^(\d{1,2}):(\d{2})$/);
+    if(!m) return null;
+    const h = Math.max(0, Math.min(23, parseInt(m[1],10)));
+    const mm = Math.max(0, Math.min(59, parseInt(m[2],10)));
+    return h*60 + mm;
+  }
+  function calcHT(hi, hf, al){
+    const s = timeToMinutes(hi);
+    const e0 = timeToMinutes(hf);
+    if(s==null || e0==null) return 0;
+    let e = e0;
+    if(e < s) e += 24*60;
+    const hours = (e - s) / 60;
+    return Math.max(0, hours - toNum(al));
+  }
+
+  function nowToast(title,msg){
+    $("toastTitle").textContent = title || "Listo";
+    $("toastMsg").textContent = msg || "";
+    $("toast").classList.remove("hidden");
+    clearTimeout(window.__tTO);
+    window.__tTO = setTimeout(()=>$("toast").classList.add("hidden"), 2100);
+  }
+  $("toastClose").onclick = () => $("toast").classList.add("hidden");
+
+  let currentUser=null, canEditUI=false;
+  let settings=null, areas=[], daysDocs=[];
+  let chart=null;
+
+  const settingsRef = db.collection("cmo_settings").doc("global");
+  const areasCol = db.collection("cmo_areas");
+  const daysCol = db.collection("cmo_days");
+
+  $("btnLogin").addEventListener("click", doLogin);
+  $("pass").addEventListener("keydown", (e) => { if(e.key==="Enter") doLogin(); });
+
+  async function doLogin(){
+    $("loginErr").textContent = "";
+    const email = $("email").value.trim();
+    const pass  = $("pass").value;
+    if(!email || !pass) { $("loginErr").textContent = "Ingresa correo y contraseña."; return; }
+    try { await auth.signInWithEmailAndPassword(email, pass); }
+    catch(err) { $("loginErr").textContent = (err && err.message) ? err.message : String(err); }
+  }
+
+  $("btnLogout").addEventListener("click", async () => { try { await auth.signOut(); } catch(e) {} });
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user || null;
+    if(!currentUser) {
+      $("app").classList.add("hidden");
+      $("login").classList.remove("hidden");
+      return;
+    }
+    $("login").classList.add("hidden");
+    $("app").classList.remove("hidden");
+
+    const email = (currentUser.email || "").toLowerCase();
+    canEditUI = (email === UI_EDITOR_EMAIL);
+
+    $("userChip").innerHTML = "Usuario: <b>"+ esc(email || "—") +"</b>";
+    $("roleChip").innerHTML = "Rol: <b>"+ (canEditUI ? "EDITOR" : "SOLO VISTA") +"</b>";
+
+    for(const id of ["btnAddArea","btnSaveAreas","btnSaveSettings","btnSaveDays","btnSeed","btnAutoHoy","btnNuevo"]) {
+      $(id).disabled = !canEditUI;
+    }
+
+    await loadAll();
+  });
+
+  $("btnReload").addEventListener("click", async () => {
+    await loadDaysByMonth();
+    renderDays();
+    renderChart();
+  });
+
+  async function loadAll(){
+    await loadSettings();
+    await loadAreas();
+    renderSettings();
+    await loadDaysByMonth();
+    renderAreas();
+    renderDays();
+    renderChart();
+    maybeEnableSeed();
+  }
+
+  async function loadSettings(){
+    const snap = await settingsRef.get();
+    settings = snap.exists ? snap.data() : null;
+  }
+  async function loadAreas(){
+    const q = await areasCol.orderBy("order","asc").get();
+    areas = q.docs.map(d => ({id:d.id, ...d.data()}));
+  }
+
+  function monthName(m){ return ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][m] || "Mes"; }
+  function daysInMonth(year,month){ return new Date(year, month, 0).getDate(); }
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function weekdayES(dateObj){ return ["DOMINGO","LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO"][dateObj.getDay()]; }
+
+  // Quita duplicados por "day" (si quedaron docs antiguos con IDs distintos)
+  function dedupeDaysDocs(docs){
+    const map = new Map();
+    (docs || []).forEach(d => {
+      const day = Number(d.day ?? d.n ?? 0);
+      if(!day) return;
+
+      const prev = map.get(day);
+      if(!prev){ map.set(day, d); return; }
+
+      const tPrev = (prev.updatedAt && prev.updatedAt.toMillis) ? prev.updatedAt.toMillis() : 0;
+      const tCur  = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : 0;
+
+      // si no hay timestamps, preferir el último que llega
+      if(tCur >= tPrev) map.set(day, d);
+    });
+    return Array.from(map.values()).sort((a,b)=>Number(a.day??0)-Number(b.day??0));
+  }
+
+
+  async function loadDaysByMonth(){
+    const y = toNum($("year").value) || (settings?.year || DEFAULT_DATA.settings.year);
+    const m = toNum($("month").value) || (settings?.month || DEFAULT_DATA.settings.month);
+    $("monthTitle").textContent = monthName(m).toUpperCase() + " DEL " + y;
+    const q = await daysCol.where("year","==",y).where("month","==",m).get();
+    daysDocs = q.docs.map(d => ({id:d.id, ...d.data()}));
+  
+    daysDocs = dedupeDaysDocs(daysDocs);
+}
+
+  function maybeEnableSeed(){
+    const needs = (!settings) || (areas.length===0);
+    $("btnSeed").disabled = !(canEditUI && needs);
+  }
+
+  function renderSettings(){
+    const s = settings || DEFAULT_DATA.settings;
+    $("incentiveAdd").value = nf2.format(toNum(s.incentiveAdd ?? 0));
+    $("jornadaLbs").value = nf2.format(toNum(s.jornadaLibras ?? 0));
+    $("year").value = String(s.year ?? DEFAULT_DATA.settings.year);
+    $("month").value = String(s.month ?? DEFAULT_DATA.settings.month);
+    // Fecha de cálculo: por defecto HOY
+    if($("calcDate") && !$("calcDate").value){
+      const t = new Date();
+      const y = t.getFullYear();
+      const m = String(t.getMonth()+1).padStart(2,"0");
+      const d = String(t.getDate()).padStart(2,"0");
+      $("calcDate").value = `${y}-${m}-${d}`;
+    }
+    updateKpis();
+  }
+
+  function getSettingsFromUI(){
+    const base = settings || DEFAULT_DATA.settings;
+    return {
+      ...base,
+      incentiveAdd: toNum($("incentiveAdd").value),
+      jornadaLibras: toNum($("jornadaLbs").value),
+      year: toNum($("year").value) || base.year,
+      month: toNum($("month").value) || base.month
+    };
+  }
+
+  function normalizeBlur(el, formatter){
+    el.addEventListener("blur", ()=>{ el.value = formatter(toNum(el.value)); });
+  }
+  normalizeBlur($("incentiveAdd"), (n)=>nf2.format(n));
+  normalizeBlur($("jornadaLbs"), (n)=>nf2.format(n));
+
+  $("btnSaveSettings").addEventListener("click", async () => {
+    if(!canEditUI) return;
+    const s = getSettingsFromUI();
+    try {
+      await settingsRef.set(s, {merge:true});
+      settings = s;
+      nowToast("Guardado", "Ajustes guardados.");
+      renderAreas();
+      updateKpis();
+      await autoUpsertToday();
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  });
+
+  function calcAreasTotals(areaList, s){
+    let totalCupo=0, totalCostoArea=0, totalNominal=0;
+    for(const a of areaList){
+      totalCupo += toNum(a.cupo);
+      const inc = (toNum(s.incentiveAdd) > 0 ? toNum(s.incentiveAdd) : 0);
+      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + inc));
+const ht = calcHT(a.hi, a.hf, a.al);
+      const costoArea = rate * ht;
+      const totalArea = costoArea * toNum(a.cupo);
+      totalCostoArea += costoArea;
+      totalNominal += totalArea;
+    }
+    return {totalCupo, totalCostoArea, totalNominal};
+  }
+
+  function updateKpis(){
+    const s = getSettingsFromUI();
+    const list = (areas.length ? areas : DEFAULT_DATA.areas.map(x=>({...x})));
+    const totals = calcAreasTotals(list, s);
+    $("kpiLbs").textContent = fmtLbs(s.jornadaLibras || 0);
+    $("kpiNominal").textContent = fmtMoney(totals.totalNominal);
+    $("kpiCupo").textContent = nf0.format(totals.totalCupo);
+    $("kpiCosto").textContent = fmtCost( (toNum(s.jornadaLibras)>0) ? (totals.totalNominal / toNum(s.jornadaLibras)) : 0 );
+    $("totCupo").textContent = nf0.format(totals.totalCupo);
+    $("totCostoArea").textContent = fmtMoney(totals.totalCostoArea);
+    $("totNominal").textContent = fmtMoney(totals.totalNominal);
+  }
+
+  function renderAreas(){
+    const s = getSettingsFromUI();
+    const tbody = $("tblAreas").querySelector("tbody");
+    tbody.innerHTML = "";
+    const list = (areas.length ? areas : DEFAULT_DATA.areas.map(x=>({...x})));
+    list.forEach((a, idx) => {
+      const inc = (toNum(s.incentiveAdd) > 0 ? toNum(s.incentiveAdd) : 0);
+      const rate = toNum(a.overrideRate ?? (toNum(a.baseRate) + inc));
+const ht = calcHT(a.hi, a.hf, a.al);
+      const costoArea = rate * ht;
+      const totalArea = costoArea * toNum(a.cupo);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="name" data-i="${idx}" value="${esc(a.name||"")}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-k="cupo" data-i="${idx}" inputmode="numeric" value="${toNum(a.cupo)}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-k="baseRate" data-i="${idx}" inputmode="decimal" value="${nf2.format(toNum(a.baseRate))}" ${canEditUI?'':'disabled'}></td>
+<td class="center"><input data-k="hi" data-i="${idx}" value="${esc(a.hi||"")}" placeholder="HH:MM" ${canEditUI?'':'disabled'}></td>
+        <td class="center"><input data-k="hf" data-i="${idx}" value="${esc(a.hf||"")}" placeholder="HH:MM" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-k="al" data-i="${idx}" inputmode="decimal" value="${nf2.format(toNum(a.al))}" ${canEditUI?'':'disabled'}></td>
+        <td class="num">${nf2.format(ht)}</td>
+        <td class="num">${fmtMoney(costoArea)}</td>
+        <td class="num">${fmtMoney(totalArea)}</td>
+        <td class="center"><button class="btn danger" data-del-area="${idx}" ${canEditUI?'':'disabled'}>X</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    if(canEditUI){
+      tbody.querySelectorAll("input,select").forEach(el => {
+        el.addEventListener("input", onAreaEdit);
+        el.addEventListener("change", onAreaEdit);
+        if(el.getAttribute("inputmode")==="decimal") el.addEventListener("blur", ()=>{ el.value = nf2.format(toNum(el.value)); });
+      });
+      tbody.querySelectorAll("[data-del-area]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = parseInt(btn.getAttribute("data-del-area"),10);
+          areas.splice(i,1);
+          areas.forEach((x,k)=>x.order=k);
+          renderAreas(); updateKpis();
+        });
+      });
+    }
+    updateKpis();
+  }
+
+  function onAreaEdit(e){
+    const el = e.target;
+    const i = parseInt(el.getAttribute("data-i"),10);
+    const k = el.getAttribute("data-k");
+    if(!areas[i]) areas = DEFAULT_DATA.areas.map(x=>({...x}));
+    let v = el.value;
+    if(k==="cupo") v = Math.max(0, Math.round(toNum(v)));
+    if(k==="baseRate"||k==="al") v = toNum(v);
+        if(k==="name") v = String(v||"");
+    if(k==="hi"||k==="hf") v = String(v||"").trim();
+    areas[i][k] = v;
+    renderAreas();
+  }
+
+  $("btnAddArea").addEventListener("click", () => {
+    if(!canEditUI) return;
+    areas.push({
+      name:"NUEVA AREA", cupo:0, baseRate:0, usesIncentive:true,
+      hi:"08:00", hf:"12:00", al:1.5, order: areas.length
+    });
+    renderAreas();
+  });
+
+  $("btnSaveAreas").addEventListener("click", async () => {
+    if(!canEditUI) return;
+    try {
+      const batch = db.batch();
+      const old = await areasCol.get();
+      old.forEach(doc => batch.delete(doc.ref));
+      areas.forEach((a, idx) => {
+        batch.set(areasCol.doc(), {
+          name: String(a.name||"").trim(),
+          cupo: Math.max(0, Math.round(toNum(a.cupo))),
+          baseRate: toNum(a.baseRate),
+          usesIncentive: !!a.usesIncentive,
+          hi: String(a.hi||"").trim(),
+          hf: String(a.hf||"").trim(),
+          al: toNum(a.al),
+          order: idx
+        });
+      });
+      await batch.commit();
+      nowToast("Guardado", "Áreas guardadas.");
+      await loadAreas();
+      renderAreas();
+      maybeEnableSeed();
+      await autoUpsertToday();
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  });
+
+  function buildCalendarRows(year,month){
+    const last = daysInMonth(year,month);
+    const rows = [];
+    for(let d=1; d<=last; d++) {
+      const dateObj = new Date(year, month-1, d);
+      rows.push({
+        year, month, day: d,
+        dia: weekdayES(dateObj),
+        cupo: 0, valorNominal: 0, librasProcesadas: 0
+      });
+    }
+    return rows;
+  }
+  function mergeDocs(rows, docs){
+    const map = new Map();
+    docs.forEach(doc => {
+      const day = Number(doc.day ?? doc.n ?? 0);
+      if(day) map.set(day, doc);
+    });
+    rows.forEach(r => {
+      const doc = map.get(r.day);
+      if(doc) {
+        r.cupo = toNum(doc.cupo);
+        r.valorNominal = toNum(doc.valorNominal);
+        r.librasProcesadas = toNum(doc.librasProcesadas);
+      }
+    });
+    return rows;
+  }
+
+  function renderDays(){
+    const y = toNum($("year").value) || DEFAULT_DATA.settings.year;
+    const m = toNum($("month").value) || DEFAULT_DATA.settings.month;
+
+    // Solo mostrar días existentes (docs en Firestore / cache local)
+    const list = dedupeDaysDocs(daysDocs).slice()
+      .map(d => ({
+        year: y, month: m,
+        day: Number(d.day ?? d.n ?? 0),
+        cupo: toNum(d.cupo),
+        valorNominal: toNum(d.valorNominal),
+        librasProcesadas: toNum(d.librasProcesadas)
+      }))
+      .filter(r => r.day >= 1 && r.day <= 31)
+      .sort((a,b)=>a.day-b.day);
+
+    const tbody = $("tblDays").querySelector("tbody");
+    tbody.innerHTML = "";
+
+    let tCupo=0, tValor=0, tLbs=0;
+
+    list.forEach(r => {
+      const dateObj = new Date(y, m-1, r.day);
+      const dia = weekdayES(dateObj);
+      const costo = (r.librasProcesadas>0) ? (r.valorNominal/r.librasProcesadas) : 0;
+
+      tCupo += r.cupo;
+      tValor += r.valorNominal;
+      tLbs  += r.librasProcesadas;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="center">${r.day}</td>
+        <td>${dia}</td>
+        <td class="num"><input data-day="${r.day}" data-k="cupo" inputmode="numeric" value="${nf0.format(r.cupo)}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-day="${r.day}" data-k="valorNominal" inputmode="decimal" value="${r.valorNominal? nfMoney.format(r.valorNominal):""}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-day="${r.day}" data-k="librasProcesadas" inputmode="decimal" value="${r.librasProcesadas? nf2.format(r.librasProcesadas):""}" ${canEditUI?'':'disabled'}></td>
+        <td class="num">${fmtCost(costo)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    $("mTotCupo").textContent = nf0.format(tCupo);
+    $("mTotValor").textContent = fmtMoney(tValor);
+    $("mTotLbs").textContent  = nf2.format(tLbs);
+    const prom = (tLbs>0) ? (tValor/tLbs) : 0;
+    $("mPromCosto").textContent = fmtCost(prom);
+
+    const s = getSettingsFromUI();
+    const cont = toNum(s.contenedorColaLbs ?? 52272);
+    const colaFactor = toNum(s.colaFactor ?? 0.66);
+
+    $("empacUsd").textContent = fmtMoney(tValor);
+    $("colaEmpacada").textContent = nf2.format(tLbs);
+    $("equivCont").textContent = nf2.format( (cont>0) ? (tLbs/cont) : 0 );
+    $("enteroDesc").textContent = nf2.format( (colaFactor>0) ? (tLbs/colaFactor) : 0 );
+    $("promedioChip").textContent = fmtCost(prom);
+
+    if(canEditUI){
+      tbody.querySelectorAll("input").forEach(el => {
+        el.addEventListener("input", onDayEdit);
+        el.addEventListener("blur", () => {
+          const k = el.getAttribute("data-k");
+          if(k==="cupo") el.value = nf0.format(toNum(el.value));
+          if(k==="valorNominal") el.value = nfMoney.format(toNum(el.value));
+          if(k==="librasProcesadas") el.value = nf2.format(toNum(el.value));
+        });
+      });
+    }
+  }
+
+  function onDayEdit(e){
+    const el = e.target;
+    const day = Number(el.getAttribute("data-day"));
+    const k = el.getAttribute("data-k");
+    const y = toNum($("year").value);
+    const m = toNum($("month").value);
+
+    let doc = daysDocs.find(d => Number(d.day ?? d.n ?? 0)===day);
+    if(!doc) {
+      doc = {year:y, month:m, day, cupo:0, valorNominal:0, librasProcesadas:0};
+      daysDocs.push(doc);
+    }
+    if(k==="cupo") doc.cupo = Math.max(0, Math.round(toNum(el.value)));
+    if(k==="valorNominal") doc.valorNominal = toNum(el.value);
+    if(k==="librasProcesadas") doc.librasProcesadas = Math.max(0, toNum(el.value));
+
+    renderDays(); renderChart();
+  }
+
+  function dayDocId(y,m,d){ return `y${y}m${pad2(m)}d${pad2(d)}`; }
+
+  function getCalcDateObj(){
+    const v = $("calcDate") ? $("calcDate").value : "";
+    if(v){
+      const parts = v.split("-").map(n=>Number(n));
+      if(parts.length===3 && parts[0] && parts[1] && parts[2]){
+        return new Date(parts[0], parts[1]-1, parts[2]);
+      }
+    }
+    return new Date();
+  }
+
+
+  $("btnSaveDays").addEventListener("click", async ()=>{
+    if(!canEditUI) return;
+    try {
+      const y = toNum($("year").value);
+      const m = toNum($("month").value);
+
+      // 1) Limpiar duplicados antiguos del mes (IDs no determinísticos)
+      const existing = await daysCol.where("year","==",y).where("month","==",m).get();
+      const batch = db.batch();
+      existing.forEach(docSnap => {
+        const data = docSnap.data() || {};
+        const day = Number(data.day ?? data.n ?? 0);
+        if(!day) return;
+        const expectedId = dayDocId(y,m,day);
+        if(docSnap.id !== expectedId){
+          batch.delete(docSnap.ref);
+        }
+      });
+
+      // 2) Guardar/actualizar días (solo con valores)
+      const normalized = dedupeDaysDocs(daysDocs);
+      normalized.forEach(d => {
+        const day = Number(d.day ?? d.n ?? 0);
+        if(!day) return;
+
+        const cupo = Math.max(0, Math.round(toNum(d.cupo)));
+        const valorNominal = toNum(d.valorNominal);
+        const librasProcesadas = Math.max(0, toNum(d.librasProcesadas));
+        if(cupo===0 && valorNominal===0 && librasProcesadas===0) return;
+
+        const ref = daysCol.doc(dayDocId(y,m,day));
+        batch.set(ref, {
+          year:y, month:m, day,
+          cupo, valorNominal, librasProcesadas,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      });
+
+      await batch.commit();
+      nowToast("Guardado", "Mes guardado (sin duplicados).");
+      await loadDaysByMonth();
+      renderDays();
+      renderChart();
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  });
+
+  async function autoUpsertToday(){
+    if(!canEditUI) return;
+
+    const t = getCalcDateObj(); // fecha elegida o hoy
+    const y = t.getFullYear();
+    const m = t.getMonth()+1;
+    const d = t.getDate();
+
+    const s = getSettingsFromUI();
+    const list = (areas.length ? areas : DEFAULT_DATA.areas.map(x=>({...x})));
+    const totals = calcAreasTotals(list, s);
+    const libras = Math.max(0, toNum(s.jornadaLibras));
+    const ref = daysCol.doc(dayDocId(y,m,d));
+
+    try {
+      // Guardar year/month en settings para comodidad
+      await settingsRef.set({year:y, month:m}, {merge:true});
+
+      // Validación: si ya existe la fecha con valores, confirmar actualización
+      const snap = await ref.get();
+      if(snap.exists){
+        const data = snap.data() || {};
+        const hasValues = (toNum(data.cupo)>0) || (toNum(data.valorNominal)>0) || (toNum(data.librasProcesadas)>0);
+        if(hasValues){
+          const dd = String(d).padStart(2,"0");
+          const mm = String(m).padStart(2,"0");
+          const ok = confirm(`Ya existen valores para la fecha ${dd}/${mm}/${y}.
+
+¿Deseas ACTUALIZAR esos valores?`);
+          if(!ok) return;
+        }
+      }
+
+      await ref.set({
+        year:y, month:m, day:d,
+        cupo: Math.max(0, Math.round(toNum(totals.totalCupo))),
+        valorNominal: toNum(totals.totalNominal),
+        librasProcesadas: libras,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true});
+
+      $("year").value = String(y);
+      $("month").value = String(m);
+      await loadDaysByMonth();
+      renderDays();
+      renderChart();
+      nowToast("OK", "Registro actualizado.");
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  }
+  $("btnAutoHoy").addEventListener("click", autoUpsertToday);
+
+  $("btnNuevo").addEventListener("click", newCalculation);
+  $("btnPDF").addEventListener("click", generatePDF);
+
+
+  function renderChart(){
+    const y = toNum($("year").value) || DEFAULT_DATA.settings.year;
+    const m = toNum($("month").value) || DEFAULT_DATA.settings.month;
+
+    // ✅ Solo días con valores (no mostrar días vacíos del mes)
+    const list = dedupeDaysDocs(daysDocs).slice()
+      .map(d => ({
+        day: Number(d.day ?? d.n ?? 0),
+        cupo: toNum(d.cupo),
+        valorNominal: toNum(d.valorNominal),
+        librasProcesadas: toNum(d.librasProcesadas)
+      }))
+      .filter(r => r.day >= 1 && r.day <= 31)
+      .filter(r => (r.cupo!==0) || (r.valorNominal!==0) || (r.librasProcesadas!==0))
+      .sort((a,b)=>a.day-b.day);
+
+    const labels = list.map(r => String(r.day));
+    const lbs = list.map(r => toNum(r.librasProcesadas));
+    const cost = list.map(r => (toNum(r.librasProcesadas)>0) ? (toNum(r.valorNominal)/toNum(r.librasProcesadas)) : 0);
+
+    const data = {
+      labels,
+      datasets: [
+        { type:"bar", label:"LIBRAS PROCESADAS", data: lbs, yAxisID:"y", borderWidth:0 },
+        { type:"line", label:"COSTO DE PRODUCCIÓN", data: cost, yAxisID:"y1", tension:.25, pointRadius:2 }
+      ]
+    };
+    const options = {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:"#0b1220"}},
+        tooltip:{callbacks:{label:(c)=>{const label=c.dataset.label||"";const v=c.raw; if(label.includes("LIBRAS")) return label+": "+nf2.format(v); return label+": "+nfCost.format(v);}}}
+      },
+      scales:{
+        x:{ticks:{color:"#0b1220"}, grid:{color:"rgba(11,18,32,.10)"}},
+        y:{position:"left", ticks:{color:"#0b1220"}, grid:{color:"rgba(11,18,32,.10)"}},
+        y1:{position:"right", ticks:{color:"#0b1220"}, grid:{drawOnChartArea:false}}
+      }
+    };
+    const ctx = $("chart");
+    if(chart){ chart.data=data; chart.options=options; chart.update(); }
+    else { chart = new Chart(ctx, {data, options}); }
+  }
+
+  $("btnSeed").addEventListener("click", async () => {
+    if(!canEditUI) return;
+    try {
+      const ok = confirm("Cargar plantilla inicial a Firestore. ¿Continuar?");
+      if(!ok) return;
+
+      const batch = db.batch();
+      batch.set(settingsRef, DEFAULT_DATA.settings, {merge:true});
+
+      const oldA = await areasCol.get();
+      oldA.forEach(doc => batch.delete(doc.ref));
+      DEFAULT_DATA.areas.forEach((a, idx) => batch.set(areasCol.doc(), {...a, order: idx}));
+
+      const y = DEFAULT_DATA.settings.year;
+      const m = DEFAULT_DATA.settings.month;
+      DEFAULT_DATA.days.forEach((d) => {
+        const day = Number(d.day || 0);
+        if(!day) return;
+        const ref = daysCol.doc(dayDocId(y,m,day));
+        batch.set(ref, {
+          year:y, month:m, day,
+          cupo: Math.max(0, Math.round(toNum(d.cupo))),
+          valorNominal: toNum(d.valorNominal),
+          librasProcesadas: Math.max(0, toNum(d.librasProcesadas)),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      });
+
+      await batch.commit();
+      nowToast("Listo", "Plantilla cargada.");
+      await loadAll();
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  });
+</script>
+</body>
+</html>
