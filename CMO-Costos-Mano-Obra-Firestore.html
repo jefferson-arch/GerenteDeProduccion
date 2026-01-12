@@ -1,0 +1,1811 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CMO | Costos Mano de Obra</title>
+
+<link rel="icon" href="favicon.ico?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+
+<style>
+  :root{
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --card2:#f7fbff;
+    --line:#d9e3f2;
+    --text:#0b1220;
+    --muted:#4b5563;
+    --blue:#1e88e5;
+    --btn:#1e88e5;
+    --btn2:#136fbf;
+    --danger:#e53935;
+    --sky:#e6f4ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:1500px;margin:0 auto;padding:12px 12px 18px}
+
+  header{
+    display:flex;gap:10px;align-items:center;justify-content:space-between;
+    padding:10px 12px;border:1px solid var(--line);
+    background:linear-gradient(180deg, var(--sky), #ffffff);
+    border-radius:10px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;min-width:260px}
+  .logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(180deg,#6ec6ff,#1e88e5);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px}
+  
+  .logoImg{width:38px;height:38px;border-radius:9px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:4px}
+.brand h1{margin:0;font-size:15px}
+  .brand small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
+
+  .right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .chip{padding:5px 9px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:11px}
+  .btn{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--text);
+    padding:6px 9px;border-radius:8px;font-weight:800;font-size:11px;line-height:1}
+  .btn.primary{background:var(--btn);border-color:var(--btn);color:#fff}
+  .btn.primary:hover{background:var(--btn2);border-color:var(--btn2)}
+  .btn.danger{background:#fff;border-color:#f3b6b5;color:var(--danger)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-top:10px}
+  @media (max-width: 1100px){.grid{grid-template-columns:1fr}}
+
+  .panel{border:1px solid var(--line);background:var(--card);border-radius:10px;overflow:hidden}
+  .panelHead{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:8px 10px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, #dff2ff, #ffffff);
+  }
+  .panelHead h2{margin:0;font-size:12px}
+  .panelBody{padding:8px 10px}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+  label{display:block;font-size:10px;color:var(--muted);margin:0 0 4px}
+  input, select{width:100%;padding:4px 5px;border-radius:7px;border:1px solid var(--line);
+    background:#fff;color:var(--text);outline:none;font-size:11px;line-height:1.1}
+  input:focus, select:focus{border-color:rgba(30,136,229,.65)}
+  .field{min-width:140px;max-width:220px}
+  .field.sm{min-width:110px;max-width:150px}
+
+  table{width:100%;border-collapse:collapse;font-size:11px;table-layout:auto}
+  th, td{border:1px solid var(--line);padding:2px 3px;vertical-align:middle;white-space:nowrap}
+  thead th{background:#1e88e5;color:#fff;text-align:center;font-weight:800}
+  thead th{position:relative}
+  .col-resizer{position:absolute;top:0;right:-2px;width:6px;height:100%;cursor:col-resize;user-select:none}
+  .col-resizer:hover{background:rgba(255,255,255,.35)}
+
+  tbody td{background:#fff}
+  tbody tr:nth-child(even) td{background:var(--card2)}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  td.center{text-align:center}
+  tr.total td{background:#eef6ff;font-weight:900}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+  @media (max-width: 700px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px}
+  .kpi .t{font-size:10px;color:var(--muted)}
+  .kpi .v{margin-top:5px;font-size:18px;font-weight:900}
+
+  .chartWrap{border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px}
+  canvas{width:100%;height:340px}
+
+  /* Login */
+  .loginWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+  .loginCard{width:100%;max-width:560px;border:1px solid var(--line);background:var(--card);
+    border-radius:12px;padding:16px}
+  .loginCard p{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.35}
+  .err{color:var(--danger);font-size:12px;margin-top:10px;white-space:pre-wrap}
+
+  .toast{position:fixed;left:12px;right:12px;bottom:12px;display:flex;justify-content:center;pointer-events:none}
+  .toast > div{pointer-events:auto;max-width:920px;width:100%;border:1px solid var(--line);background:#fff;
+    border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+  .toast b{font-size:12px}
+  .toast .msg{font-size:12px;color:var(--muted)}
+  .hidden{display:none !important}
+</style>
+</head>
+
+<body>
+<section id="login" class="loginWrap">
+  <div class="loginCard">
+    <div class="brand" style="margin-bottom:8px">
+      <img class="logoImg" src="logo.png" alt="Oceantreasure" />
+      <div>
+        <h1 style="margin:0">CMO — Costos por Mano de Obra</h1>
+        <small>Firebase Auth + Firestore (GitHub Pages)</small>
+      </div>
+    </div>
+
+    <p>
+      Editor (puede guardar): <b>milenalmeida@oceantreasure.local</b><br>
+      Otros usuarios logueados: <b>solo vista</b>.
+    </p>
+
+    <div class="row">
+      <div class="field" style="flex:1;max-width:none">
+        <label>Correo</label>
+        <input id="email" type="email" placeholder="usuario@oceantreasure.local" autocomplete="username" />
+      </div>
+      <div class="field" style="flex:1;max-width:none">
+        <label>Contraseña</label>
+        <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center;justify-content:flex-end">
+      <button class="btn primary" id="btnLogin">Ingresar</button>
+    </div>
+    <div class="err" id="loginErr"></div>
+  </div>
+</section>
+
+<section id="app" class="wrap hidden">
+  <header>
+    <div class="brand">
+      <div class="logo">OT</div>
+      <div>
+        <h1>CMO — Costos por Mano de Obra (OCEANTREASURE)</h1>
+        <small>Compacto • separadores de miles (es-EC) • calendario automático</small>
+      </div>
+    </div>
+    <div class="right">
+      <div class="chip" id="roleChip">Rol: <b>—</b></div>
+      <div class="chip" id="userChip">Usuario: <b>—</b></div>
+<button class="btn primary" id="btnAutoHoy" disabled>Registrar hoy</button>
+      <button class="btn" id="btnNuevo" disabled>NUEVO</button>
+      <button class="btn primary" id="btnPDF">Generar PDF</button>
+      <button class="btn danger" id="btnLogout">Salir</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panelHead">
+        <h2>Costos por Área</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btnAddArea" disabled>+ Área</button>
+          <button class="btn primary" id="btnSaveAreas" disabled>Guardar áreas</button>
+        </div>
+      </div>
+      <div class="panelBody">
+        <div class="kpis">
+          <div class="kpi"><div class="t">LIBRAS PROCESADAS (Jornada)</div><div class="v" id="kpiLbs">—</div></div>
+          <div class="kpi"><div class="t">VALOR NOMINAL JORNADA</div><div class="v" id="kpiNominal">—</div></div>
+          <div class="kpi"><div class="t">MANO DE OBRA (CUPO)</div><div class="v" id="kpiCupo">—</div></div>
+          <div class="kpi"><div class="t">COSTO DE PRODUCCIÓN</div><div class="v" id="kpiCosto">—</div></div>
+        </div>
+
+        <div class="row" style="margin-bottom:8px">
+          <div class="field sm">
+            <label>Incentivo (+ $/H)</label>
+            <input id="incentiveAdd" inputmode="decimal" />
+          </div>
+          <div class="field sm" style="min-width:110px;max-width:150px">
+            <label>&nbsp;</label>
+            <button class="btn" id="btnApplyInc" disabled>Aplicar</button>
+          </div>
+          <div class="field sm">
+            <label>Libras jornada</label>
+            <input id="jornadaLbs" inputmode="decimal" />
+          </div>
+          <div class="field sm">
+            <label>Fecha cálculo</label>
+            <input id="calcDate" type="date" />
+          </div>
+          <div class="field sm">
+            <label>&nbsp;</label>
+            <button class="btn primary" id="btnSaveSettings" disabled>Guardar arriba</button>
+            <button class="btn" id="btnTarifas" disabled>TARIFAS</button>
+          </div>
+        </div>
+
+        <div style="overflow:auto;border-radius:10px">
+          <table id="tblAreas">
+            <thead>
+              <tr>
+                <th>ÁREA</th><th>CUPO</th><th>BASE $/H</th><th>HI</th><th>HF</th><th>AL</th><th>HT</th><th>COSTO ÁREA</th><th>TOTAL ÁREA</th><th>ACC.</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr class="total">
+                <td class="center">TOTAL</td>
+                <td class="num" id="totCupo">—</td>
+                <td colspan="6"></td>
+                <td class="num" id="totCostoArea">—</td>
+                <td class="num" id="totNominal">—</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panelHead">
+        <h2 id="monthTitle">Mes</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btnSaveDays" disabled>Guardar mes</button>
+        </div>
+      </div>
+      <div class="panelBody">
+        <div class="row" style="margin-bottom:8px">
+          <div class="field sm">
+            <label>Año</label>
+            <input id="year" inputmode="numeric" />
+          </div>
+          <div class="field sm">
+            <label>Mes</label>
+            <select id="month">
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="field sm">
+            <label>&nbsp;</label>
+            <button class="btn" id="btnReload">Cargar</button>
+            <button class="btn primary" id="btnExportXlsx">Exportar Excel</button>
+          </div>
+        </div>
+
+        <div style="overflow:auto;border-radius:10px;margin-bottom:8px">
+          <table id="tblDays">
+            <thead>
+              <tr>
+                <th>FECHA</th><th>DÍA</th><th>CUPO</th><th>VALOR NOMINAL</th><th>LIBRAS PROCESADAS</th><th>COSTO</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr class="total">
+                <td class="center" colspan="2">TOTAL</td>
+                <td class="num" id="mTotCupo">—</td>
+                <td class="num" id="mTotValor">—</td>
+                <td class="num" id="mTotLbs">—</td>
+                <td class="num" id="mPromCosto">—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="row" style="margin:-2px 0 8px">
+          <div class="chip">COSTO MES: <b id="empacUsd">—</b></div>
+          <div class="chip">COLA (lbs): <b id="colaEmpacada">—</b></div>
+          <div class="chip">EQUIV. CONT.: <b id="equivCont">—</b></div>
+          <div class="chip">ENTERO (lbs): <b id="enteroDesc">—</b></div>
+          <div class="chip">PROMEDIO: <b id="promedioChip">—</b></div>
+        </div>
+
+        <div class="chartWrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- Modal Tarifas -->
+  <div id="tarifasModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:9999;padding:14px">
+    <div style="width:100%;max-width:820px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:linear-gradient(180deg,#dff2ff,#ffffff);border-bottom:1px solid var(--line)">
+        <div style="font-weight:900;font-size:13px">TARIFAS — BASE $/H por Área</div>
+        <button class="btn danger" id="btnTarifasClose">Cerrar</button>
+      </div>
+      <div style="padding:10px 12px">
+        <div style="color:var(--muted);font-size:12px;line-height:1.3;margin-bottom:8px">
+          Guarda las tarifas BASE $/H. Luego, al presionar <b>NUEVO</b>, se cargan automáticamente.
+        </div>
+        <div style="max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px">
+          <table id="tblTarifas">
+            <thead>
+              <tr>
+                <th>ÁREA</th>
+                <th>BASE $/H</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px">
+          <button class="btn" id="btnTarifasCancel">Cancelar</button>
+          <button class="btn primary" id="btnTarifasSave">Guardar / Actualizar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="toast hidden" id="toast"><div>
+  <div>
+    <b id="toastTitle">Listo</b>
+    <div class="msg" id="toastMsg"></div>
+  </div>
+  <button class="btn" id="toastClose">OK</button>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+    authDomain: "oceantreasure-app.firebaseapp.com",
+    projectId: "oceantreasure-app",
+    storageBucket: "oceantreasure-app.firebasestorage.app",
+    messagingSenderId: "553014659258",
+    appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+    measurementId: "G-HMMQKJY8NJ"
+  };
+
+  const DEFAULT_DATA = {"settings": {"company": "OCEANTREASURE", "module": "CMO — Costos Mano de Obra", "year": 2026, "month": 1, "incentiveAdd": 0.2, "jornadaLibras": 30000, "contenedorColaLbs": 52272, "colaFactor": 0.66}, "areas": [{"name": "RECEPCION", "cupo": 4, "baseRate": 1.7, "usesIncentive": true, "hi": "07:35", "hf": "12:00", "al": 1.0, "order": 0}, {"name": "DESCABEZADO C1", "cupo": 7, "baseRate": 2.0, "usesIncentive": true, "hi": "07:30", "hf": "12:00", "al": 1.5, "order": 1}, {"name": "DESCABEZADO C2", "cupo": 4, "baseRate": 2.0, "usesIncentive": true, "hi": "07:41", "hf": "12:00", "al": 1.5, "order": 2}, {"name": "PESADOR - SELLADOR MQ", "cupo": 6, "baseRate": 2.0, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 3}, {"name": "TOLVERO - OPERADOR", "cupo": 3, "baseRate": 2.0, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 4}, {"name": "CAJERO - AUXILIAR MQ", "cupo": 10, "baseRate": 1.9, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 5}, {"name": "VARIOS MQ1", "cupo": 6, "baseRate": 1.7, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 6}, {"name": "VARIOS MQ2", "cupo": 7, "baseRate": 1.7, "usesIncentive": true, "hi": "08:30", "hf": "12:00", "al": 1.5, "order": 7}, {"name": "PRECAJAS", "cupo": 6, "baseRate": 1.7, "usesIncentive": true, "hi": "08:16", "hf": "12:00", "al": 1.5, "order": 8}, {"name": "BODEGA", "cupo": 1, "baseRate": 1.7, "usesIncentive": true, "hi": "07:50", "hf": "12:00", "al": 1.5, "order": 9}, {"name": "CONGELACION", "cupo": 3, "baseRate": 2.0, "usesIncentive": true, "hi": "08:27", "hf": "12:00", "al": 1.5, "order": 10}, {"name": "PRODUCCION", "cupo": 12, "baseRate": 2.0, "usesIncentive": true, "hi": "08:00", "hf": "12:00", "al": 1.5, "order": 11}, {"name": "CALIDAD", "cupo": 0, "baseRate": 1.8, "usesIncentive": true, "hi": "", "hf": "12:00", "al": 0.0, "order": 12}, {"name": "MASTERIZADO", "cupo": 5, "baseRate": 2.0, "usesIncentive": true, "hi": "08:28", "hf": "12:00", "al": 1.5, "order": 13}, {"name": "CAMARA", "cupo": 5, "baseRate": 2.0, "usesIncentive": true, "hi": "08:28", "hf": "12:00", "al": 1.5, "order": 14}, {"name": "EMBARQUE", "cupo": 4, "baseRate": 2.0, "usesIncentive": true, "hi": "08:28", "hf": "12:00", "al": 1.5, "order": 15}, {"name": "CASILLEROS", "cupo": 1, "baseRate": 1.7, "usesIncentive": true, "hi": "07:13", "hf": "12:00", "al": 1.5, "order": 16}, {"name": "LAVADO MATERIAL", "cupo": 1, "baseRate": 1.7, "usesIncentive": true, "hi": "08:00", "hf": "12:00", "al": 1.0, "order": 17}, {"name": "BAÑOS", "cupo": 1, "baseRate": 2.0, "usesIncentive": true, "hi": "07:50", "hf": "12:00", "al": 1.0, "order": 18}, {"name": "Limpieza Turno noche", "cupo": 9, "baseRate": 1.7, "usesIncentive": false, "hi": "19:00", "hf": "06:00", "al": 1.0, "order": 19}], "days": [{"day": 2, "diaHint": "VIERNES", "cupo": 50, "valorNominal": 1091.0, "librasProcesadas": 8052.0}, {"day": 3, "diaHint": "SABADO", "cupo": 73, "valorNominal": 1340.0, "librasProcesadas": 19965.0}, {"day": 5, "diaHint": "LUNES", "cupo": 109, "valorNominal": 1844.0, "librasProcesadas": 90000.0}, {"day": 6, "diaHint": "MARTES", "cupo": 117, "valorNominal": 2282.0, "librasProcesadas": 52227.0}, {"day": 7, "diaHint": "MIERCOLES", "cupo": 112, "valorNominal": 2265.0, "librasProcesadas": 63000.0}, {"day": 8, "diaHint": "JUEVES", "cupo": 104, "valorNominal": 2075.0, "librasProcesadas": 82600.0}, {"day": 9, "diaHint": "VIERNES", "cupo": 110, "valorNominal": 2047.0, "librasProcesadas": 59714.0}, {"day": 10, "diaHint": "SABADO", "cupo": 104, "valorNominal": 1931.0, "librasProcesadas": 101183.0}]};
+  const UI_EDITOR_EMAIL = "milenalmeida@oceantreasure.local";
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+  const $ = (id) => document.getElementById(id);
+  const nf0 = new Intl.NumberFormat("es-EC", {maximumFractionDigits:0});
+  const nf2 = new Intl.NumberFormat("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const nfMoney = new Intl.NumberFormat("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const nfCost = new Intl.NumberFormat("es-EC", {minimumFractionDigits:4, maximumFractionDigits:6});
+
+  function toNum(v){
+    if(v==null) return 0;
+    if(typeof v === "number") return Number.isFinite(v) ? v : 0;
+    let s = String(v).trim();
+    if(!s) return 0;
+    s = s.replace(/\$/g,"").replace(/\s/g,"");
+    s = s.replace(/\.(?=\d{3}(\D|$))/g, "");
+    if(s.includes(",")) s = s.replace(/,/g, ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function fmtLbs(v){ return nf2.format(toNum(v)); }
+  function fmtMoney(v){ return "$ " + nfMoney.format(toNum(v)); }
+  function fmtCost(v){ return nfCost.format(toNum(v)); }
+  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c])); }
+
+  function timeToMinutes(hhmm){
+    if(hhmm==null) return null;
+    let s = String(hhmm).trim();
+    if(!s) return null;
+
+    // Normaliza separadores (acepta ":" "." "-" espacios, y colon unicode)
+    s = s.replace(/[：﹕]/g, ":");
+
+    // Acepta: H:MM, HH:MM, HH:MM:SS, HH.MM, HH-MM, etc.
+    const m = s.match(/^(\d{1,2})\D+(\d{1,2})(?:\D+(\d{1,2}))?$/);
+    if(!m) return null;
+
+    let h = parseInt(m[1],10);
+    let mm = parseInt(m[2],10);
+    if(!Number.isFinite(h) || !Number.isFinite(mm)) return null;
+
+    h = Math.max(0, Math.min(23, h));
+    mm = Math.max(0, Math.min(59, mm));
+    return h*60 + mm;
+  }
+  function calcHT(hi, hf, al){
+    const s = timeToMinutes(hi);
+    const e0 = timeToMinutes(hf);
+    if(s==null || e0==null) return 0;
+    let e = e0;
+    if(e < s) e += 24*60;
+    const hours = (e - s) / 60;
+    const a = Math.max(0, Math.min(24, toNum(al)));
+    return Math.max(0, hours - a);
+  }
+
+  function nowToast(title,msg){
+    $("toastTitle").textContent = title || "Listo";
+    $("toastMsg").textContent = msg || "";
+    $("toast").classList.remove("hidden");
+    clearTimeout(window.__tTO);
+    window.__tTO = setTimeout(()=>$("toast").classList.add("hidden"), 2100);
+  }
+  $("toastClose").onclick = () => $("toast").classList.add("hidden");
+
+
+  // ===== Persistencia local (no perder datos al recargar) =====
+  const DRAFT_KEY = "CMO_DRAFT_V1";
+
+  function saveDraft(){
+    try{
+      const draft = {
+        ts: Date.now(),
+        areas: (areas || []),
+        settings: {
+          incentiveAdd: toNum($("incentiveAdd")?.value),
+          jornadaLibras: toNum($("jornadaLbs")?.value),
+          calcDate: ($("calcDate")?.value || ""),
+          year: String($("year")?.value || ""),
+          month: String($("month")?.value || "")
+        }
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    }catch(e){}
+  }
+
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if(!raw) return false;
+      const d = JSON.parse(raw);
+      if(d && Array.isArray(d.areas)){
+        areas = d.areas;
+      }
+      if(d && d.settings){
+        if($("incentiveAdd") && d.settings.incentiveAdd!=null) $("incentiveAdd").value = (toNum(d.settings.incentiveAdd) ? nf2.format(toNum(d.settings.incentiveAdd)) : "");
+        if($("jornadaLbs") && d.settings.jornadaLibras!=null) $("jornadaLbs").value = (toNum(d.settings.jornadaLibras) ? nf2.format(toNum(d.settings.jornadaLibras)) : "");
+        if($("calcDate") && d.settings.calcDate) $("calcDate").value = d.settings.calcDate;
+        if($("year") && d.settings.year) $("year").value = d.settings.year;
+        if($("month") && d.settings.month) $("month").value = d.settings.month;
+      }
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function clearDraft(){
+    try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
+  }
+
+
+  // ===== Column resize (mouse) =====
+  function makeTableResizable(tableId){
+    const table = document.getElementById(tableId);
+    if(!table || table.dataset.resizableAttached === "1") return;
+
+    const thead = table.querySelector("thead");
+    const headRow = thead && thead.rows && thead.rows[0];
+    if(!headRow) return;
+
+    // Create/ensure colgroup
+    let colgroup = table.querySelector("colgroup");
+    const colCount = headRow.cells.length;
+    if(!colgroup){
+      colgroup = document.createElement("colgroup");
+      for(let i=0;i<colCount;i++){
+        const col = document.createElement("col");
+        colgroup.appendChild(col);
+      }
+      table.insertBefore(colgroup, thead);
+    } else {
+      // ensure count
+      while(colgroup.children.length < colCount){
+        colgroup.appendChild(document.createElement("col"));
+      }
+    }
+
+    // Attach resizers
+    for(let i=0;i<colCount;i++){
+      const th = headRow.cells[i];
+      if(th.querySelector(".col-resizer")) continue;
+      const res = document.createElement("div");
+      res.className = "col-resizer";
+      th.appendChild(res);
+
+      let startX = 0;
+      let startW = 0;
+
+      const onMove = (e) => {
+        const dx = (e.clientX - startX);
+        const newW = Math.max(40, startW + dx);
+        colgroup.children[i].style.width = newW + "px";
+        table.style.tableLayout = "fixed"; // manual resize => fixed
+      };
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        document.body.style.cursor = "";
+      };
+
+      res.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        startX = e.clientX;
+        // current width from th or col
+        const colW = parseFloat(colgroup.children[i].style.width || "0");
+        startW = colW > 0 ? colW : th.getBoundingClientRect().width;
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+        document.body.style.cursor = "col-resize";
+      });
+
+      // Double click => auto width (clear)
+      res.addEventListener("dblclick", (e) => {
+        e.preventDefault();
+        colgroup.children[i].style.width = "";
+        // If all cleared, revert to auto
+        const any = Array.from(colgroup.children).some(c => (c.style.width||"").trim() !== "");
+        if(!any) table.style.tableLayout = "auto";
+      });
+    }
+
+    table.dataset.resizableAttached = "1";
+  }
+
+  
+  // ===== Live row updates (evita perder el foco al escribir) =====
+  function getEffectiveRate(baseRate){
+    // BASE $/H ya incluye el incentivo aplicado
+    return toNum(baseRate);
+  }
+
+  function updateAreaRow(i){
+    const tbody = document.querySelector("#tblAreas tbody");
+    const tr = tbody ? tbody.querySelector(`tr[data-i="${i}"]`) : null;
+    if(!tr || !areas[i]) return;
+
+    const a = areas[i];
+    const rate = getEffectiveRate(a.baseRate);
+    const ht = calcHT(a.hi, a.hf, a.al);
+    const costoArea = rate * ht;
+    const totalArea = costoArea * toNum(a.cupo);
+
+    const htTd = tr.querySelector('[data-cell="ht"]');
+    const caTd = tr.querySelector('[data-cell="costoArea"]');
+    const taTd = tr.querySelector('[data-cell="totalArea"]');
+
+    if(htTd) htTd.textContent = (ht>0 ? nf2.format(ht) : "");
+    if(caTd) caTd.textContent = ((ht>0 && rate>0) ? fmtMoney(costoArea) : "");
+    if(taTd) taTd.textContent = ((ht>0 && rate>0 && toNum(a.cupo)>0) ? fmtMoney(totalArea) : "");
+}
+
+  function updateAllAreaRows(){
+    for(let i=0;i<(areas||[]).length;i++) updateAreaRow(i);
+  }
+
+  function updateDayRow(day){
+    const tbody = document.querySelector("#tblDays tbody");
+    const tr = tbody ? tbody.querySelector(`tr[data-day="${day}"]`) : null;
+    if(!tr) return;
+
+    const y = toNum($("year").value) || DEFAULT_DATA.settings.year;
+    const m = toNum($("month").value) || DEFAULT_DATA.settings.month;
+
+    const doc = (daysDocs || []).find(d => Number(d.day ?? d.n ?? 0) === Number(day));
+    const valor = doc ? toNum(doc.valorNominal) : 0;
+    const lbs = doc ? toNum(doc.librasProcesadas) : 0;
+    const costo = (lbs>0) ? (valor/lbs) : 0;
+
+    const cTd = tr.querySelector('[data-cell="costo"]');
+    if(cTd) cTd.textContent = (lbs>0 ? fmtCost(costo) : "");
+  }
+
+  function recalcMonthSummary(){
+    const y = toNum($("year").value) || DEFAULT_DATA.settings.year;
+    const m = toNum($("month").value) || DEFAULT_DATA.settings.month;
+
+    const list = (dedupeDaysDocs ? dedupeDaysDocs(daysDocs) : (daysDocs||[])).slice()
+      .map(d => ({
+        day: Number(d.day ?? d.n ?? 0),
+        cupo: toNum(d.cupo),
+        valorNominal: toNum(d.valorNominal),
+        librasProcesadas: toNum(d.librasProcesadas)
+      }))
+      .filter(r => r.day>=1 && r.day<=31)
+      .filter(r => (r.cupo!==0) || (r.valorNominal!==0) || (r.librasProcesadas!==0))
+      .sort((a,b)=>a.day-b.day);
+
+    const tCupo = list.reduce((a,b)=>a+b.cupo,0);
+    const tValor = list.reduce((a,b)=>a+b.valorNominal,0);
+    const tLbs = list.reduce((a,b)=>a+b.librasProcesadas,0);
+    const prom = (tLbs>0) ? (tValor/tLbs) : 0;
+
+    $("mTotCupo").textContent = nf0.format(tCupo);
+    $("mTotValor").textContent = fmtMoney(tValor);
+    $("mTotLbs").textContent  = nf2.format(tLbs);
+    $("mPromCosto").textContent = fmtCost(prom);
+
+    const s = getSettingsFromUI();
+    const cont = toNum(s.contenedorColaLbs ?? 52272);
+    const colaFactor = toNum(s.colaFactor ?? 0.66);
+
+    $("empacUsd").textContent = fmtMoney(tValor);
+    $("colaEmpacada").textContent = nf2.format(tLbs);
+    $("equivCont").textContent = nf2.format( (cont>0) ? (tLbs/cont) : 0 );
+    $("enteroDesc").textContent = nf2.format( (colaFactor>0) ? (tLbs/colaFactor) : 0 );
+    $("promedioChip").textContent = fmtCost(prom);
+  }
+
+  let __chartTO = null;
+  function scheduleChartUpdate(){
+    clearTimeout(__chartTO);
+    __chartTO = setTimeout(()=>{ try{ renderChart(); }catch(e){} }, 220);
+  }
+
+
+  // ===== Navegación con Enter (tipo Excel): baja a la siguiente fila en la misma columna =====
+  function handleEnterDown(e){
+    if(e.key !== "Enter") return;
+    const el = e.target;
+    const td = el.closest("td");
+    const tr = el.closest("tr");
+    if(!td || !tr) return;
+    e.preventDefault();
+    const col = td.cellIndex;
+    const next = tr.nextElementSibling;
+    if(!next || !next.cells || next.cells.length <= col) return;
+    const targetCell = next.cells[col];
+    if(!targetCell) return;
+    const focusEl = targetCell.querySelector("input,select,button");
+    if(focusEl && !focusEl.disabled){
+      focusEl.focus();
+      if(focusEl.select) focusEl.select();
+    }
+  }
+
+  function initResizableTables(){
+    makeTableResizable("tblAreas");
+    makeTableResizable("tblDays");
+  }
+
+
+  let currentUser=null, canEditUI=false;
+  let settings=null, areas=[], daysDocs=[];
+  let chart=null;
+
+  const settingsRef = db.collection("cmo_settings").doc("global");
+  const areasCol = db.collection("cmo_areas");
+  const daysCol = db.collection("cmo_days");
+  const tarifasRef = db.collection("cmo_tarifas").doc("base_rates");
+
+  $("btnLogin").addEventListener("click", doLogin);
+  $("pass").addEventListener("keydown", (e) => { if(e.key==="Enter") doLogin(); });
+
+  async function doLogin(){
+    $("loginErr").textContent = "";
+    const email = $("email").value.trim();
+    const pass  = $("pass").value;
+    if(!email || !pass) { $("loginErr").textContent = "Ingresa correo y contraseña."; return; }
+    try { await auth.signInWithEmailAndPassword(email, pass); }
+    catch(err) { $("loginErr").textContent = (err && err.message) ? err.message : String(err); }
+  }
+
+  $("btnLogout").addEventListener("click", async () => { try { await auth.signOut(); } catch(e) {} });
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user || null;
+    if(!currentUser) {
+      $("app").classList.add("hidden");
+      $("login").classList.remove("hidden");
+      return;
+    }
+    $("login").classList.add("hidden");
+    $("app").classList.remove("hidden");
+
+    const email = (currentUser.email || "").toLowerCase();
+    canEditUI = (email === UI_EDITOR_EMAIL);
+
+    $("userChip").innerHTML = "Usuario: <b>"+ esc(email || "—") +"</b>";
+    $("roleChip").innerHTML = "Rol: <b>"+ (canEditUI ? "EDITOR" : "SOLO VISTA") +"</b>";
+
+    for(const id of ["btnAddArea","btnSaveAreas","btnSaveSettings","btnSaveDays","btnAutoHoy","btnNuevo","btnApplyInc","btnTarifas"]) {
+      $(id).disabled = !canEditUI;
+    }
+
+    await loadAll();
+  });
+
+  $("btnReload").addEventListener("click", async () => {
+    await loadDaysByMonth();
+    renderDays();
+    renderChart();
+  });
+
+  async function loadAll(){
+    await loadSettings();
+    await loadAreas();
+    renderSettings();
+    await loadDaysByMonth();
+    renderAreas();
+    renderDays();
+    renderChart();
+    initResizableTables();
+
+  }
+
+  async function loadSettings(){
+    const snap = await settingsRef.get();
+    settings = snap.exists ? snap.data() : null;
+  }
+  async function loadAreas(){
+    const q = await areasCol.orderBy("order","asc").get();
+    areas = q.docs.map(d => ({id:d.id, ...d.data()}));
+  }
+
+  function monthName(m){ return ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][m] || "Mes"; }
+  function daysInMonth(year,month){ return new Date(year, month, 0).getDate(); }
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function weekdayES(dateObj){ return ["DOMINGO","LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO"][dateObj.getDay()]; }
+
+  // Quita duplicados por "day" (si quedaron docs antiguos con IDs distintos)
+  function dedupeDaysDocs(docs){
+    const map = new Map();
+    (docs || []).forEach(d => {
+      const day = Number(d.day ?? d.n ?? 0);
+      if(!day) return;
+
+      const prev = map.get(day);
+      if(!prev){ map.set(day, d); return; }
+
+      const tPrev = (prev.updatedAt && prev.updatedAt.toMillis) ? prev.updatedAt.toMillis() : 0;
+      const tCur  = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : 0;
+
+      // si no hay timestamps, preferir el último que llega
+      if(tCur >= tPrev) map.set(day, d);
+    });
+    return Array.from(map.values()).sort((a,b)=>Number(a.day??0)-Number(b.day??0));
+  }
+
+
+  async function loadDaysByMonth(){
+    const y = toNum($("year").value) || (settings?.year || DEFAULT_DATA.settings.year);
+    const m = toNum($("month").value) || (settings?.month || DEFAULT_DATA.settings.month);
+    $("monthTitle").textContent = monthName(m).toUpperCase() + " DEL " + y;
+    const q = await daysCol.where("year","==",y).where("month","==",m).get();
+    daysDocs = q.docs.map(d => ({id:d.id, ...d.data()}));
+  
+    daysDocs = dedupeDaysDocs(daysDocs);
+}
+
+  function renderSettings(){
+    const s = settings || DEFAULT_DATA.settings;
+    $("incentiveAdd").value = nf2.format(toNum(s.incentiveAdd ?? 0));
+    $("jornadaLbs").value = nf2.format(toNum(s.jornadaLibras ?? 0));
+    $("year").value = String(s.year ?? DEFAULT_DATA.settings.year);
+    $("month").value = String(s.month ?? DEFAULT_DATA.settings.month);
+    // Fecha de cálculo: por defecto HOY
+    $("calcDate")?.addEventListener("change", ()=>saveDraft());
+    if($("calcDate") && !$("calcDate").value){
+      const t = new Date();
+      const y = t.getFullYear();
+      const m = String(t.getMonth()+1).padStart(2,"0");
+      const d = String(t.getDate()).padStart(2,"0");
+      $("calcDate").value = `${y}-${m}-${d}`;
+    }
+    updateKpis();
+    recalcMonthSummary();
+    initResizableTables();
+  }
+
+  function getSettingsFromUI(){
+    const base = settings || DEFAULT_DATA.settings;
+    return {
+      ...base,
+      incentiveAdd: toNum($("incentiveAdd").value),
+      jornadaLibras: toNum($("jornadaLbs").value),
+      year: toNum($("year").value) || base.year,
+      month: toNum($("month").value) || base.month
+    };
+  }
+
+  function normalizeBlur(el, formatter){
+    el.addEventListener("blur", ()=>{ el.value = formatter(toNum(el.value)); });
+  }
+  normalizeBlur($("incentiveAdd"), (n)=>nf2.format(n));
+  $("incentiveAdd").addEventListener("input", ()=>saveDraft());
+  // Incentivo aplicado (para ajustar BASE $/H cuando cambie el incentivo)
+  let lastAppliedInc = 0;
+
+  function setLastAppliedIncFromSettings(){
+    const s = settings || DEFAULT_DATA.settings;
+    lastAppliedInc = toNum(s.incentiveAdd ?? 0);
+  }
+
+  function applyIncentiveToBases(){
+    if(!canEditUI) return;
+
+    const newInc = toNum($("incentiveAdd").value);
+    const delta = newInc - lastAppliedInc;
+
+    // si no cambia, nada
+    if(Math.abs(delta) < 1e-9) return;
+
+    // aplicar delta a todas las áreas (BASE $/H = BASE $/H + delta)
+    for(let i=0;i<(areas||[]).length;i++){
+      areas[i].baseRate = toNum(areas[i].baseRate) + delta;
+
+      // actualizar el input BASE $/H sin re-render
+      const tr = document.querySelector(`#tblAreas tbody tr[data-i="${i}"]`);
+      const inp = tr ? tr.querySelector('input[data-k="baseRate"]') : null;
+      if(inp) inp.value = nf2.format(toNum(areas[i].baseRate));
+
+      updateAreaRow(i);
+    }
+
+    lastAppliedInc = newInc;
+    $("incentiveAdd").value = nf2.format(newInc);
+    updateKpis();
+    saveDraft();
+    nowToast("Aplicado", "Incentivo aplicado a BASE $/H.");
+  }
+
+  $("btnApplyInc").addEventListener("click", applyIncentiveToBases);
+
+  // Aplicar con Enter desde el campo Incentivo
+  $("incentiveAdd").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); applyIncentiveToBases(); } });
+
+  normalizeBlur($("jornadaLbs"), (n)=>nf2.format(n));
+  $("jornadaLbs").addEventListener("input", ()=>saveDraft());
+
+  $("btnSaveSettings").addEventListener("click", async () => {
+    if(!canEditUI) return;
+    const s = getSettingsFromUI();
+    try {
+      await settingsRef.set(s, {merge:true});
+      settings = s;
+      nowToast("Guardado", "Ajustes guardados.");
+      updateAllAreaRows();
+      updateKpis();
+      await autoUpsertToday();
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  });
+
+  function calcAreasTotals(areaList, s){
+    let totalCupo=0, totalCostoArea=0, totalNominal=0;
+    for(const a of areaList){
+      totalCupo += toNum(a.cupo);
+      const rate = toNum(a.baseRate);
+const ht = calcHT(a.hi, a.hf, a.al);
+      const costoArea = rate * ht;
+      const totalArea = costoArea * toNum(a.cupo);
+      totalCostoArea += costoArea;
+      totalNominal += totalArea;
+    }
+    return {totalCupo, totalCostoArea, totalNominal};
+  }
+
+  function updateKpis(){
+    const s = getSettingsFromUI();
+    const list = (areas || []);
+    const totals = calcAreasTotals(list, s);
+    $("kpiLbs").textContent = fmtLbs(s.jornadaLibras || 0);
+    $("kpiNominal").textContent = fmtMoney(totals.totalNominal);
+    $("kpiCupo").textContent = nf0.format(totals.totalCupo);
+    $("kpiCosto").textContent = fmtCost( (toNum(s.jornadaLibras)>0) ? (totals.totalNominal / toNum(s.jornadaLibras)) : 0 );
+    $("totCupo").textContent = nf0.format(totals.totalCupo);
+    $("totCostoArea").textContent = fmtMoney(totals.totalCostoArea);
+    $("totNominal").textContent = fmtMoney(totals.totalNominal);
+  }
+
+  function renderAreas(){
+    const s = getSettingsFromUI();
+    const tbody = $("tblAreas").querySelector("tbody");
+    tbody.innerHTML = "";
+    const list = (areas || []);
+    list.forEach((a, idx) => {
+      const cupoN = toNum(a.cupo);
+      const rateN = toNum(a.baseRate);
+      const ht = calcHT(a.hi, a.hf, a.al);
+      const costoArea = rateN * ht;
+      const totalArea = costoArea * cupoN;
+      const showHT = ht > 0;
+      const showCosto = (showHT && rateN > 0);
+      const showTotal = (showCosto && cupoN > 0);
+const tr = document.createElement("tr");
+      tr.setAttribute("data-i", String(idx));
+      tr.innerHTML = `
+        <td><input data-k="name" data-i="${idx}" value="${esc(a.name||"")}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-k="cupo" data-i="${idx}" inputmode="numeric" value="${cupoN ? nf0.format(cupoN) : ""}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-k="baseRate" data-i="${idx}" inputmode="decimal" value="${rateN ? nf2.format(rateN) : ""}" ${canEditUI?'':'disabled'}></td>
+<td class="center"><input data-k="hi" data-i="${idx}" value="${esc(a.hi||"")}"  ${canEditUI?'':'disabled'}></td>
+        <td class="center"><input data-k="hf" data-i="${idx}" value="${esc(a.hf||"")}"  ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-k="al" data-i="${idx}" inputmode="decimal" value="${toNum(a.al) ? nf2.format(toNum(a.al)) : ""}" ${canEditUI?'':'disabled'}></td>
+        <td class="num" data-cell="ht" data-i="${idx}">${showHT ? nf2.format(ht) : ""}</td>
+        <td class="num" data-cell="costoArea" data-i="${idx}">${showCosto ? fmtMoney(costoArea) : ""}</td>
+        <td class="num" data-cell="totalArea" data-i="${idx}">${showTotal ? fmtMoney(totalArea) : ""}</td>
+        <td class="center"><button class="btn danger" data-del-area="${idx}" ${canEditUI?'':'disabled'}>X</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    if(canEditUI){
+      tbody.querySelectorAll("input,select").forEach(el => {
+        el.addEventListener("input", onAreaEdit);
+        el.addEventListener("keydown", handleEnterDown);
+        el.addEventListener("change", onAreaEdit);
+        if(el.getAttribute("inputmode")==="decimal") el.addEventListener("blur", ()=>{ el.value = nf2.format(toNum(el.value)); });
+      });
+      tbody.querySelectorAll("[data-del-area]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = parseInt(btn.getAttribute("data-del-area"),10);
+          areas.splice(i,1);
+          areas.forEach((x,k)=>x.order=k);
+          renderAreas(); updateKpis();
+        });
+      });
+    }
+    setLastAppliedIncFromSettings();
+    updateKpis();
+  }
+
+  function onAreaEdit(e){
+    const el = e.target;
+    const i = parseInt(el.getAttribute("data-i"),10);
+    const k = el.getAttribute("data-k");
+    if(!areas[i]) areas = DEFAULT_DATA.areas.map(x=>({...x}));
+    let v = el.value;
+    if(k==="cupo") v = Math.max(0, Math.round(toNum(v)));
+    if(k==="baseRate"||k==="al") v = toNum(v);
+        if(k==="name") v = String(v||"");
+    if(k==="hi"||k==="hf") v = String(v||"").trim();
+    areas[i][k] = v;
+    updateAreaRow(i);
+    updateKpis();
+    saveDraft();
+}
+
+  $("btnAddArea").addEventListener("click", () => {
+    if(!canEditUI) return;
+    areas.push({
+      name:"NUEVA AREA", cupo:0, baseRate:0, usesIncentive:true,
+      hi:"08:00", hf:"12:00", al:1.5, order: areas.length
+    });
+    renderAreas();
+  });
+
+  $("btnSaveAreas").addEventListener("click", async () => {
+    if(!canEditUI) return;
+    try {
+      const batch = db.batch();
+      const old = await areasCol.get();
+      old.forEach(doc => batch.delete(doc.ref));
+      areas.forEach((a, idx) => {
+        batch.set(areasCol.doc(), {
+          name: String(a.name||"").trim(),
+          cupo: Math.max(0, Math.round(toNum(a.cupo))),
+          baseRate: toNum(a.baseRate),
+          usesIncentive: !!a.usesIncentive,
+          hi: String(a.hi||"").trim(),
+          hf: String(a.hf||"").trim(),
+          al: toNum(a.al),
+          order: idx
+        });
+      });
+      await batch.commit();
+      nowToast("Guardado", "Áreas guardadas.");
+      await loadAreas();
+      renderAreas();
+  
+      await autoUpsertToday();
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  });
+
+  function buildCalendarRows(year,month){
+    const last = daysInMonth(year,month);
+    const rows = [];
+    for(let d=1; d<=last; d++) {
+      const dateObj = new Date(year, month-1, d);
+      rows.push({
+        year, month, day: d,
+        dia: weekdayES(dateObj),
+        cupo: 0, valorNominal: 0, librasProcesadas: 0
+      });
+    }
+    return rows;
+  }
+  function mergeDocs(rows, docs){
+    const map = new Map();
+    docs.forEach(doc => {
+      const day = Number(doc.day ?? doc.n ?? 0);
+      if(day) map.set(day, doc);
+    });
+    rows.forEach(r => {
+      const doc = map.get(r.day);
+      if(doc) {
+        r.cupo = toNum(doc.cupo);
+        r.valorNominal = toNum(doc.valorNominal);
+        r.librasProcesadas = toNum(doc.librasProcesadas);
+      }
+    });
+    return rows;
+  }
+
+  function renderDays(){
+    const y = toNum($("year").value) || DEFAULT_DATA.settings.year;
+    const m = toNum($("month").value) || DEFAULT_DATA.settings.month;
+
+    // Solo mostrar días existentes (docs en Firestore / cache local)
+    const list = dedupeDaysDocs(daysDocs).slice()
+      .map(d => ({
+        year: y, month: m,
+        day: Number(d.day ?? d.n ?? 0),
+        cupo: toNum(d.cupo),
+        valorNominal: toNum(d.valorNominal),
+        librasProcesadas: toNum(d.librasProcesadas)
+      }))
+      .filter(r => r.day >= 1 && r.day <= 31)
+      .sort((a,b)=>a.day-b.day);
+
+    const tbody = $("tblDays").querySelector("tbody");
+    tbody.innerHTML = "";
+
+    let tCupo=0, tValor=0, tLbs=0;
+
+    list.forEach(r => {
+      const dateObj = new Date(y, m-1, r.day);
+      const dia = weekdayES(dateObj);
+      const costo = (r.librasProcesadas>0) ? (r.valorNominal/r.librasProcesadas) : 0;
+
+      tCupo += r.cupo;
+      tValor += r.valorNominal;
+      tLbs  += r.librasProcesadas;
+
+      const tr = document.createElement("tr");
+      tr.setAttribute("data-day", String(r.day));
+      tr.innerHTML = `
+        <td class="center">${r.day}</td>
+        <td>${dia}</td>
+        <td class="num"><input data-day="${r.day}" data-k="cupo" inputmode="numeric" value="${r.cupo ? nf0.format(r.cupo) : ""}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-day="${r.day}" data-k="valorNominal" inputmode="decimal" value="${r.valorNominal? nfMoney.format(r.valorNominal):""}" ${canEditUI?'':'disabled'}></td>
+        <td class="num"><input data-day="${r.day}" data-k="librasProcesadas" inputmode="decimal" value="${r.librasProcesadas? nf2.format(r.librasProcesadas):""}" ${canEditUI?'':'disabled'}></td>
+        <td class="num" data-cell="costo" data-day="${r.day}">${(r.librasProcesadas>0 ? fmtCost(costo) : "")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    $("mTotCupo").textContent = nf0.format(tCupo);
+    $("mTotValor").textContent = fmtMoney(tValor);
+    $("mTotLbs").textContent  = nf2.format(tLbs);
+    const prom = (tLbs>0) ? (tValor/tLbs) : 0;
+    $("mPromCosto").textContent = fmtCost(prom);
+
+    const s = getSettingsFromUI();
+    const cont = toNum(s.contenedorColaLbs ?? 52272);
+    const colaFactor = toNum(s.colaFactor ?? 0.66);
+
+    $("empacUsd").textContent = fmtMoney(tValor);
+    $("colaEmpacada").textContent = nf2.format(tLbs);
+    $("equivCont").textContent = nf2.format( (cont>0) ? (tLbs/cont) : 0 );
+    $("enteroDesc").textContent = nf2.format( (colaFactor>0) ? (tLbs/colaFactor) : 0 );
+    $("promedioChip").textContent = fmtCost(prom);
+
+    if(canEditUI){
+      tbody.querySelectorAll("input").forEach(el => {
+        el.addEventListener("input", onDayEdit);
+        el.addEventListener("keydown", handleEnterDown);
+        el.addEventListener("blur", () => {
+          const k = el.getAttribute("data-k");
+          if(k==="cupo") el.value = nf0.format(toNum(el.value));
+          if(k==="valorNominal") el.value = nfMoney.format(toNum(el.value));
+          if(k==="librasProcesadas") el.value = nf2.format(toNum(el.value));
+        });
+      });
+    }
+    initResizableTables();
+  }
+
+  function onDayEdit(e){
+    const el = e.target;
+    const day = Number(el.getAttribute("data-day"));
+    const k = el.getAttribute("data-k");
+    const y = toNum($("year").value);
+    const m = toNum($("month").value);
+
+    let doc = daysDocs.find(d => Number(d.day ?? d.n ?? 0)===day);
+    if(!doc) {
+      doc = {year:y, month:m, day, cupo:0, valorNominal:0, librasProcesadas:0};
+      daysDocs.push(doc);
+    }
+    if(k==="cupo") doc.cupo = Math.max(0, Math.round(toNum(el.value)));
+    if(k==="valorNominal") doc.valorNominal = toNum(el.value);
+    if(k==="librasProcesadas") doc.librasProcesadas = Math.max(0, toNum(el.value));
+
+    updateDayRow(day);
+    recalcMonthSummary();
+    scheduleChartUpdate();
+}
+
+  function dayDocId(y,m,d){ return `y${y}m${pad2(m)}d${pad2(d)}`; }
+
+  function getCalcDateObj(){
+    const v = $("calcDate") ? $("calcDate").value : "";
+    if(v){
+      const parts = v.split("-").map(n=>Number(n));
+      if(parts.length===3 && parts[0] && parts[1] && parts[2]){
+        return new Date(parts[0], parts[1]-1, parts[2]);
+      }
+    }
+    return new Date();
+  }
+
+
+  $("btnSaveDays").addEventListener("click", async ()=>{
+    if(!canEditUI) return;
+    try {
+      const y = toNum($("year").value);
+      const m = toNum($("month").value);
+
+      // 1) Limpiar duplicados antiguos del mes (IDs no determinísticos)
+      const existing = await daysCol.where("year","==",y).where("month","==",m).get();
+      const batch = db.batch();
+      existing.forEach(docSnap => {
+        const data = docSnap.data() || {};
+        const day = Number(data.day ?? data.n ?? 0);
+        if(!day) return;
+        const expectedId = dayDocId(y,m,day);
+        if(docSnap.id !== expectedId){
+          batch.delete(docSnap.ref);
+        }
+      });
+
+      // 2) Guardar/actualizar días (solo con valores)
+      const normalized = dedupeDaysDocs(daysDocs);
+      normalized.forEach(d => {
+        const day = Number(d.day ?? d.n ?? 0);
+        if(!day) return;
+
+        const cupo = Math.max(0, Math.round(toNum(d.cupo)));
+        const valorNominal = toNum(d.valorNominal);
+        const librasProcesadas = Math.max(0, toNum(d.librasProcesadas));
+        if(cupo===0 && valorNominal===0 && librasProcesadas===0) return;
+
+        const ref = daysCol.doc(dayDocId(y,m,day));
+        batch.set(ref, {
+          year:y, month:m, day,
+          cupo, valorNominal, librasProcesadas,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      });
+
+      await batch.commit();
+      nowToast("Guardado", "Mes guardado (sin duplicados).");
+      await loadDaysByMonth();
+      renderDays();
+      renderChart();
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  });
+
+  async function autoUpsertToday(){
+    if(!canEditUI) return;
+
+    const t = getCalcDateObj(); // fecha elegida o hoy
+    const y = t.getFullYear();
+    const m = t.getMonth()+1;
+    const d = t.getDate();
+
+    const s = getSettingsFromUI();
+    const list = (areas || []);
+    const totals = calcAreasTotals(list, s);
+    const libras = Math.max(0, toNum(s.jornadaLibras));
+    const ref = daysCol.doc(dayDocId(y,m,d));
+
+    try {
+      // Guardar year/month en settings para comodidad
+      await settingsRef.set({year:y, month:m}, {merge:true});
+
+      // Validación: si ya existe la fecha con valores, confirmar actualización
+      const snap = await ref.get();
+      if(snap.exists){
+        const data = snap.data() || {};
+        const hasValues = (toNum(data.cupo)>0) || (toNum(data.valorNominal)>0) || (toNum(data.librasProcesadas)>0);
+        if(hasValues){
+          const dd = String(d).padStart(2,"0");
+          const mm = String(m).padStart(2,"0");
+          const ok = confirm(`Ya existen valores para la fecha ${dd}/${mm}/${y}.
+
+¿Deseas ACTUALIZAR esos valores?`);
+          if(!ok) return;
+        }
+      }
+
+      await ref.set({
+        year:y, month:m, day:d,
+        cupo: Math.max(0, Math.round(toNum(totals.totalCupo))),
+        valorNominal: toNum(totals.totalNominal),
+        librasProcesadas: libras,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true});
+
+      $("year").value = String(y);
+      $("month").value = String(m);
+      await loadDaysByMonth();
+      renderDays();
+      renderChart();
+      nowToast("OK", "Registro actualizado.");
+    } catch(e) {
+      nowToast("Error", (e && e.message) ? e.message : String(e));
+    }
+  }
+  $("btnAutoHoy").addEventListener("click", autoUpsertToday);
+
+  $("btnNuevo").addEventListener("click", newCalculation);
+  $("btnPDF").addEventListener("click", generatePDF);
+
+
+  function renderChart(){
+    const y = toNum($("year").value) || DEFAULT_DATA.settings.year;
+    const m = toNum($("month").value) || DEFAULT_DATA.settings.month;
+
+    // ✅ Solo días con valores (no mostrar días vacíos del mes)
+    const list = dedupeDaysDocs(daysDocs).slice()
+      .map(d => ({
+        day: Number(d.day ?? d.n ?? 0),
+        cupo: toNum(d.cupo),
+        valorNominal: toNum(d.valorNominal),
+        librasProcesadas: toNum(d.librasProcesadas)
+      }))
+      .filter(r => r.day >= 1 && r.day <= 31)
+      .filter(r => (r.cupo!==0) || (r.valorNominal!==0) || (r.librasProcesadas!==0))
+      .sort((a,b)=>a.day-b.day);
+
+    const labels = list.map(r => String(r.day));
+    const lbs = list.map(r => toNum(r.librasProcesadas));
+    const cost = list.map(r => (toNum(r.librasProcesadas)>0) ? (toNum(r.valorNominal)/toNum(r.librasProcesadas)) : 0);
+
+    const data = {
+      labels,
+      datasets: [
+        { type:"bar", label:"LIBRAS PROCESADAS", data: lbs, yAxisID:"y", borderWidth:0 },
+        { type:"line", label:"COSTO DE PRODUCCIÓN", data: cost, yAxisID:"y1", tension:.25, pointRadius:2 }
+      ]
+    };
+    const options = {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:"#0b1220"}},
+        tooltip:{callbacks:{label:(c)=>{const label=c.dataset.label||"";const v=c.raw; if(label.includes("LIBRAS")) return label+": "+nf2.format(v); return label+": "+nfCost.format(v);}}}
+      },
+      scales:{
+        x:{ticks:{color:"#0b1220"}, grid:{color:"rgba(11,18,32,.10)"}},
+        y:{position:"left", ticks:{color:"#0b1220"}, grid:{color:"rgba(11,18,32,.10)"}},
+        y1:{position:"right", ticks:{color:"#0b1220"}, grid:{drawOnChartArea:false}}
+      }
+    };
+    const ctx = $("chart");
+    if(chart){ chart.data=data; chart.options=options; chart.update(); }
+    else { chart = new Chart(ctx, {data, options}); }
+  }
+
+  // ===== NUEVO (limpia COSTOS POR ÁREA para nuevo cálculo) =====
+  
+  async function loadTarifas(){
+    try{
+      const snap = await tarifasRef.get();
+      if(!snap.exists) return {};
+      const data = snap.data() || {};
+      return data.rates || {};
+    }catch(e){ return {}; }
+  }
+
+  async function saveTarifas(rates){
+    await tarifasRef.set({ rates, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
+  }
+
+  function normalizeAreaKey(name){
+    return String(name||"").trim().toUpperCase();
+  }
+
+  async function openTarifasModal(){
+    if(!canEditUI) return;
+    const modal = document.getElementById("tarifasModal");
+    const tbody = document.querySelector("#tblTarifas tbody");
+    if(!modal || !tbody) return;
+
+    const rates = await loadTarifas();
+    const list = (areas && areas.length ? areas : DEFAULT_DATA.areas.map(x=>({...x})));
+
+    tbody.innerHTML = "";
+    list.forEach((a)=>{
+      const key = normalizeAreaKey(a.name);
+      const incNow = toNum(document.getElementById("incentiveAdd").value);
+      const v = (rates[key] != null) ? rates[key] : Math.max(0, toNum(a.baseRate) - incNow);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${esc(a.name)}</td>
+        <td class="num"><input data-rate-key="${esc(key)}" inputmode="decimal" value="${nf2.format(toNum(v))}"></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    modal.classList.remove("hidden");
+
+    document.getElementById("btnTarifasClose").onclick = ()=>modal.classList.add("hidden");
+    document.getElementById("btnTarifasCancel").onclick = ()=>modal.classList.add("hidden");
+
+    document.getElementById("btnTarifasSave").onclick = async ()=>{
+      const inputs = tbody.querySelectorAll("input[data-rate-key]");
+      const newRates = {};
+      inputs.forEach(inp=>{
+        newRates[inp.getAttribute("data-rate-key")] = toNum(inp.value);
+      });
+      try{
+        await saveTarifas(newRates);
+        // refrescar tabla principal con tarifas (y aplicar incentivo si existe)
+        await applyTarifasToAreas();
+        nowToast("Guardado", "Tarifas guardadas.");
+        modal.classList.add("hidden");
+      }catch(e){
+        nowToast("Error", (e && e.message) ? e.message : String(e));
+      }
+    };
+  }
+
+  document.getElementById("btnTarifas").addEventListener("click", openTarifasModal);
+
+  async function applyTarifasToAreas(){
+    const rates = await loadTarifas();
+    const incNow = toNum(document.getElementById("incentiveAdd").value);
+    const list = (areas || []);
+
+    list.forEach((a)=>{
+      const key = normalizeAreaKey(a.name);
+      if(rates[key] != null){
+        // En la tabla mostramos BASE ya incrementada si existe Incentivo
+        a.baseRate = toNum(rates[key]) + (incNow>0 ? incNow : 0);
+      }
+    });
+
+    areas = list;
+    renderAreas();
+    updateKpis();
+
+    // Mantener coherencia con el botón Aplicar (delta)
+    if(typeof lastAppliedInc !== "undefined"){
+      lastAppliedInc = incNow;
+    }
+  }
+
+  // Exportar tabla ENERO 2026 a Excel (.xlsx)
+  function exportMonthToXlsx(){
+    try{
+      if(!window.XLSX){
+        alert("No se pudo cargar XLSX (SheetJS). Revisa tu conexión.");
+        return;
+      }
+      const y = toNum($("year").value);
+      const m = toNum($("month").value);
+
+      const list = (dedupeDaysDocs ? dedupeDaysDocs(daysDocs) : (daysDocs||[])).slice()
+        .map(d=>{
+          const day = Number(d.day ?? d.n ?? 0);
+          const dia = weekdayES(new Date(y, m-1, day));
+          const valor = toNum(d.valorNominal);
+          const lbs = toNum(d.librasProcesadas);
+          const cupo = toNum(d.cupo);
+          const costo = (lbs>0) ? (valor/lbs) : 0;
+          return [day, dia, cupo, valor, lbs, costo];
+        })
+        .filter(r=>r[0]>=1 && r[0]<=31)
+        .filter(r => (r[2]!==0) || (r[3]!==0) || (r[4]!==0))
+        .sort((a,b)=>a[0]-b[0]);
+
+      const aoa = [["FECHA","DIA","CUPO","VALOR NOMINAL","LIBRAS PROCESADAS","COSTO"], ...list];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws["!cols"] = [{wch:6},{wch:12},{wch:8},{wch:16},{wch:18},{wch:12}];
+
+      // formatos numéricos
+      for(let r=2; r<=aoa.length; r++){
+        ["A","C","D","E","F"].forEach(col=>{
+          const cell = ws[col+r];
+          if(cell) cell.t = "n";
+        });
+        if(ws["D"+r]) ws["D"+r].z = "#,##0.00";
+        if(ws["E"+r]) ws["E"+r].z = "#,##0.00";
+        if(ws["F"+r]) ws["F"+r].z = "0.000000";
+      }
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "MES");
+      const mm = String(m).padStart(2,"0");
+      XLSX.writeFile(wb, `CMO_${mm}_${y}.xlsx`);
+    }catch(e){
+      alert("Error exportando Excel: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  document.getElementById("btnExportXlsx").addEventListener("click", exportMonthToXlsx);
+
+  function newCalculation(){
+    if(!canEditUI) return;
+    const ok = confirm("Esto limpiará los campos de la tabla COSTOS POR ÁREA.\n\n¿Deseas continuar?");
+    if(!ok) return;
+
+    clearDraft();
+    if($("incentiveAdd")) $("incentiveAdd").value = "";
+    if($("jornadaLbs")) $("jornadaLbs").value = "";
+    if(typeof lastAppliedInc !== "undefined") lastAppliedInc = 0;
+
+    // Mantiene nombres de área, limpia valores numéricos y horarios
+    areas = (areas.length ? areas : DEFAULT_DATA.areas.map(x=>({...x}))).map((a, idx) => ({
+      ...a,
+      cupo: 0,
+      baseRate: 0,
+      usesIncentive: true,
+      hi: "",
+      hf: "",
+      al: 0,
+      order: idx
+    }));
+    renderAreas();
+    updateKpis();
+    applyTarifasToAreas().catch(()=>{});
+    saveDraft();
+    nowToast("NUEVO", "Tabla COSTOS POR ÁREA lista para un nuevo cálculo.");
+  }
+
+  
+  
+  
+  async function loadImageAsDataURLWithSize(url){
+    // Carga imagen y la convierte vía canvas (manteniendo proporción). Retorna {dataUrl,w,h}
+    return await new Promise((resolve)=>{
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = ()=>{
+        try{
+          const maxW = 1200; // suficiente para PDF
+          const scale = (img.width > maxW) ? (maxW / img.width) : 1;
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          // fondo blanco para transparencias
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0,0,w,h);
+          ctx.drawImage(img, 0,0,w,h);
+          const dataUrl = canvas.toDataURL("image/png", 1.0);
+          resolve({dataUrl, w, h});
+        }catch(e){
+          resolve(null);
+        }
+      };
+      img.onerror = ()=>resolve(null);
+      const u = new URL(url, window.location.href);
+      u.searchParams.set("v", Date.now().toString());
+      img.src = u.toString();
+    });
+  }
+
+  // ===== PDF Ejecutivo =====
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function formatDateTimeForFile(dt){
+    const y = dt.getFullYear();
+    const m = pad2(dt.getMonth()+1);
+    const d = pad2(dt.getDate());
+    const hh = pad2(dt.getHours());
+    const mm = pad2(dt.getMinutes());
+    const ss = pad2(dt.getSeconds());
+    return `${y}-${m}-${d}_${hh}-${mm}-${ss}`;
+  }
+
+  function monthNameShort(m){
+    return ["","ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][m] || "";
+  }
+
+  async function generatePDF(){
+    try{
+      const { jsPDF } = window.jspdf || {};
+      if(!jsPDF){
+        alert("No se pudo cargar jsPDF. Revisa tu conexión a internet.");
+        return;
+      }
+
+      const now = new Date();
+      const fileStamp = formatDateTimeForFile(now);
+      const filename = `CMO-Costos-Mano-Obra-Firestore_${fileStamp}.pdf`;
+
+      
+
+      const logoUrl = new URL("logo.png", window.location.href).toString();
+      const logoObj = await loadImageAsDataURLWithSize(logoUrl);
+      const logoDataURL = logoObj ? logoObj.dataUrl : null;
+const ySel = toNum($("year").value) || DEFAULT_DATA.settings.year;
+      const mSel = toNum($("month").value) || DEFAULT_DATA.settings.month;
+
+      
+
+      const userEmail = (currentUser && currentUser.email) ? currentUser.email : "—";
+// Preparar datos
+      const s = getSettingsFromUI();
+      const areaList = (areas.length ? areas : DEFAULT_DATA.areas.map(x=>({...x})));
+      const totals = calcAreasTotals(areaList, s);
+
+      // Calendario (solo días con info para tabla ejecutiva)
+      const cal = (() => {
+        const out = (daysDocs || []).slice()
+          .map(d => {
+            const day = Number(d.day ?? d.n ?? 0);
+            const cupo = toNum(d.cupo);
+            const valor = toNum(d.valorNominal);
+            const lbs = toNum(d.librasProcesadas);
+            return { day, cupo, valor, lbs, costo: (lbs>0 ? (valor/lbs) : 0) };
+          })
+          .filter(r => r.day >= 1 && r.day <= 31)
+          .filter(r => (r.cupo!==0) || (r.valor!==0) || (r.lbs!==0))
+          .sort((a,b)=>a.day-b.day);
+        return out;
+      })();
+
+      const monthValor = cal.reduce((a,b)=>a+b.valor,0);
+      const monthLbs = cal.reduce((a,b)=>a+b.lbs,0);
+      const monthCupo = cal.reduce((a,b)=>a+b.cupo,0);
+      const monthProm = monthLbs>0 ? (monthValor/monthLbs) : 0;
+
+      // Chart imagen
+      let chartImg = null;
+      const canvas = $("chart");
+      if(canvas && canvas.toDataURL){
+        chartImg = canvas.toDataURL("image/png", 1.0);
+      }
+
+      // Doc (A4 landscape)
+      const doc = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+
+      // Paleta estilo "Power BI" (claro)
+      const cBlue = [30,136,229];
+      const cBlueSoft = [230,244,255];
+      const cGray = [240,244,248];
+      const cText = [11,18,32];
+
+      function text(x,y,t,fs=12,style="normal",color=cText){
+        doc.setFont("helvetica", style);
+        doc.setFontSize(fs);
+        doc.setTextColor(...color);
+        doc.text(String(t), x, y);
+      }
+      function box(x,y,w,h,fill=cGray,stroke=[217,227,242]){
+        doc.setFillColor(...fill);
+        doc.setDrawColor(...stroke);
+        doc.setLineWidth(1);
+        doc.roundedRect(x,y,w,h,8,8,"FD");
+      }
+
+      // ===== Portada Ejecutiva =====
+      const margin = 34;
+      const top = 34;
+
+      // Header bar
+      doc.setFillColor(255,255,255);
+      doc.rect(0,0,pageW,64,"F");
+      doc.setDrawColor(217,227,242);
+      doc.line(0,64,pageW,64);
+
+      let headerTextX = margin; // se ajusta si hay logo
+      let logoDrawW = 0;
+
+
+      
+      if(logoDataURL){
+        try{
+          const targetH = 52;
+          let targetW = targetH;
+          if(logoObj && logoObj.w && logoObj.h){
+            targetW = targetH * (logoObj.w / logoObj.h);
+          }
+          const maxW = 140;
+          if(targetW > maxW){
+            targetW = maxW;
+          }
+          logoDrawW = targetW;
+          const targetY = 6;
+          doc.addImage(logoDataURL, "PNG", margin, targetY, targetW, targetH);
+          headerTextX = margin + targetW + 14;
+        }catch(e){}
+      }
+text(headerTextX, 40, "CMO — Costos por Mano de Obra", 18, "bold", [0,80,45]);
+      text(headerTextX, 58, `Usuario: ${userEmail}`, 11, "normal", [75,85,99]);
+
+      
+      doc.text(`Periodo: ${monthNameShort(mSel)} ${ySel}   •   Generado: ${now.toLocaleString("es-EC")}`, pageW - margin, 58, { align:"right" });
+
+      // KPI row
+      const kY = 80;
+      const kH = 70;
+      const kGap = 10;
+      const kW = (pageW - margin*2 - kGap*3)/4;
+
+      const kpis = [
+        {t:"LIBRAS JORNADA", v: nf2.format(toNum(s.jornadaLibras))},
+        {t:"VALOR NOMINAL JORNADA", v: "$ " + nfMoney.format(totals.totalNominal)},
+        {t:"CUPO (JORNADA)", v: nf0.format(totals.totalCupo)},
+        {t:"COSTO PRODUCCIÓN (JORNADA)", v: nfCost.format( (toNum(s.jornadaLibras)>0)? (totals.totalNominal/toNum(s.jornadaLibras)) : 0 )}
+      ];
+
+      kpis.forEach((k, i)=>{
+        const x = margin + i*(kW+kGap);
+        box(x, kY, kW, kH, [255,255,255]);
+        doc.setDrawColor(...cBlue);
+        doc.setLineWidth(2);
+        doc.line(x, kY, x+kW, kY);
+        text(x+12, kY+24, k.t, 9, "bold", [75,85,99]);
+        text(x+12, kY+52, k.v, 18, "bold", cText);
+      });
+
+      // Month summary small boxes
+      const msY = kY + kH + 10;
+      const msW = (pageW - margin*2 - kGap*4)/5;
+      const msH = 52;
+
+      const cont = toNum(s.contenedorColaLbs ?? 52272);
+      const colaFactor = toNum(s.colaFactor ?? 0.66);
+      const enteroLbs = (colaFactor>0) ? (monthLbs/colaFactor) : 0;
+      const equivCont = (cont>0) ? (monthLbs/cont) : 0;
+
+      const ms = [
+        {t:"COSTO MES", v:"$ " + nfMoney.format(monthValor)},
+        {t:"COLA (lbs) MES", v: nf2.format(monthLbs)},
+        {t:"ENTERO (lbs)", v: nf2.format(enteroLbs)},
+        {t:"PROMEDIO MES", v: nfCost.format(monthProm)},
+        {t:"EQUIV. CONT.", v: nf2.format(equivCont)}
+      ];
+
+      ms.forEach((k,i)=>{
+        const x = margin + i*(msW+kGap);
+        box(x, msY, msW, msH, [255,255,255]);
+        text(x+10, msY+18, k.t, 9, "bold", [75,85,99]);
+        text(x+10, msY+40, k.v, 14, "bold", cText);
+      });
+
+      // Chart area
+      const chartY = msY + msH + 10;
+      const chartH = pageH - chartY - margin;
+      const leftW = (pageW - margin*2) * 0.62;
+      const rightW = (pageW - margin*2) - leftW - 10;
+
+      // Chart box
+      box(margin, chartY, leftW, chartH, [255,255,255]);
+      text(margin+12, chartY+18, "Tendencia: Libras procesadas vs Costo de producción (por día)", 10, "bold", [75,85,99]);
+
+      if(chartImg){
+        // Fit image inside box
+        const imgX = margin + 12;
+        const imgY = chartY + 28;
+        const imgW = leftW - 24;
+        const imgH = chartH - 40;
+        doc.addImage(chartImg, "PNG", imgX, imgY, imgW, imgH);
+      } else {
+        text(margin+12, chartY+50, "Gráfico no disponible.", 11, "normal", [75,85,99]);
+      }
+
+      // Right: top areas summary (Top 10 por Total Área)
+      const sortedAreasAll = areaList.map(a=>{
+        const rate = toNum(a.baseRate);
+const ht = calcHT(a.hi, a.hf, a.al);
+        const costoArea = rate*ht;
+        const totalArea = costoArea*toNum(a.cupo);
+        return { area: a.name, cupo: toNum(a.cupo), ht, rate, totalArea };
+      }).sort((a,b)=>b.totalArea - a.totalArea);
+
+      // Ajustar cantidad de filas para llenar el espacio disponible
+      const approxRowH = 18; // px/pt aproximado por fila en autoTable
+      const headerH = 42;
+      const maxRows = Math.max(8, Math.floor((chartH - headerH - 20) / approxRowH));
+      const sortedAreas = sortedAreasAll.slice(0, maxRows);
+
+      box(margin + leftW + 10, chartY, rightW, chartH, [255,255,255]);
+      text(margin + leftW + 22, chartY+18, "Top áreas por costo total", 10, "bold", [75,85,99]);
+
+      // Use autoTable if available
+      if(doc.autoTable){
+        doc.autoTable({
+          startY: chartY+28,
+          margin: { left: margin + leftW + 18, right: margin + 10 },
+          tableWidth: rightW - 16,
+          head: [["Área", "Cupo", "HT", "$/H", "Total $"]],
+          body: sortedAreas.map(r=>[
+            r.area,
+            nf0.format(r.cupo),
+            nf2.format(r.ht),
+            nfMoney.format(r.rate),
+            nfMoney.format(r.totalArea)
+          ]),
+          styles: { font:"helvetica", fontSize:9, cellPadding:4, textColor:[11,18,32], lineColor:[217,227,242], lineWidth:0.7 },
+          headStyles: { fillColor:cBlue, textColor:[255,255,255], fontStyle:"bold" },
+          alternateRowStyles: { fillColor:[247,251,255] },
+          theme:"grid"
+        });
+      } else {
+        text(margin + leftW + 22, chartY+40, "autoTable no disponible.", 10, "normal", [75,85,99]);
+      }
+
+      // ===== Página 2: Detalle =====
+      doc.addPage("a4", "landscape");
+      doc.setFillColor(...cBlueSoft);
+      doc.rect(0,0,pageW,54,"F");
+      doc.setDrawColor(217,227,242);
+      doc.line(0,54,pageW,54);
+      text(margin, 34, "Detalle Operativo", 16, "bold");
+      text(margin, 50, `Áreas + registros del mes • ${monthNameShort(mSel)} ${ySel}`, 10, "normal", [75,85,99]);
+
+      // Tabla áreas completa
+      const fullAreas = areaList.map(a=>{
+        const rate = toNum(a.baseRate);
+const ht = calcHT(a.hi, a.hf, a.al);
+        const costoArea = rate*ht;
+        const totalArea = costoArea*toNum(a.cupo);
+        return [
+          a.name,
+          nf0.format(toNum(a.cupo)),
+          nfMoney.format(toNum(a.baseRate)),
+          (a.hi || ""),
+          (a.hf || ""),
+          nf2.format(toNum(a.al)),
+          nf2.format(ht),
+          "$ " + nfMoney.format(costoArea),
+          "$ " + nfMoney.format(totalArea)
+        ];
+      });
+
+      if(doc.autoTable){
+        doc.autoTable({
+          startY: 70,
+          margin: { left: margin, right: margin },
+          head: [["Área","Cupo","Base $/H","HI","HF","AL","HT","Costo Área","Total Área"]],
+          body: fullAreas,
+          styles: { font:"helvetica", fontSize:8.5, cellPadding:3, textColor:[11,18,32], lineColor:[217,227,242], lineWidth:0.7 },
+          headStyles: { fillColor:cBlue, textColor:[255,255,255], fontStyle:"bold" },
+          alternateRowStyles: { fillColor:[247,251,255] },
+          theme:"grid"
+        });
+
+        // Tabla mes (solo días con registro) => Página 3
+        doc.addPage("a4", "landscape");
+        doc.setFillColor(...cBlueSoft);
+        doc.rect(0,0,pageW,54,"F");
+        doc.setDrawColor(217,227,242);
+        doc.line(0,54,pageW,54);
+        text(margin, 34, "Resumen del Mes", 16, "bold");
+        text(margin, 50, `Registro diario • ${monthNameShort(mSel)} ${ySel}`, 10, "normal", [75,85,99]);
+
+        const monthRows = cal.map(r=>[
+          String(r.day).padStart(2,"0"),
+          "$ " + nfMoney.format(r.valor),
+          nf2.format(r.lbs),
+          nfCost.format(r.costo),
+          nf0.format(r.cupo)
+        ]);
+
+        doc.autoTable({
+          startY: 70,
+          margin: { left: margin, right: margin },
+          head: [["Día","Valor Nominal","Libras","Costo","Cupo"]],
+          body: monthRows.length ? monthRows : [["—","—","—","—","—"]],
+          styles: { font:"helvetica", fontSize:10, cellPadding:4, textColor:[11,18,32], lineColor:[217,227,242], lineWidth:0.7 },
+          headStyles: { fillColor:[11,79,138], textColor:[255,255,255], fontStyle:"bold" },
+          alternateRowStyles: { fillColor:[247,251,255] },
+          theme:"grid"
+        });
+      }
+
+      // Footer
+      doc.setTextColor(75,85,99);
+      doc.setFontSize(9);
+      doc.text("OCEANTREASURE • Reporte generado desde CMO (Firestore)", margin, pageH - 18);
+
+      doc.save(filename);
+    } catch(err){
+      console.error(err);
+      alert("Error generando PDF: " + (err && err.message ? err.message : err));
+    }
+  }
+</script>
+</body>
+</html>
