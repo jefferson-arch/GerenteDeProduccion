@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SAC | Análisis Materia Prima</title>
+  <link rel="icon" href="favicon.ico?v=1">
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.10);
+      --text:#e5e7eb;
+      --muted:rgba(255,255,255,.75);
+      --head:#1f3a66;
+      --blue1:#132a52;
+      --blue2:#0f203f;
+      --accent:#38bdf8;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --white:#ffffff;
+      --black:#0b0b0b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    .safe{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+    header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15));backdrop-filter: blur(8px);
+      border-bottom:1px solid var(--border)}
+    .bar{max-width:1200px;margin:0 auto;padding:14px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center;min-width:280px}
+    .brand img{width:44px;height:auto;display:block;object-fit:contain}
+    .brand h1{margin:0;font-size:16px;letter-spacing:.4px}
+    .brand .sub{margin:2px 0 0;font-size:12px;color:var(--muted)}
+    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .chip{padding:6px 10px;border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:999px;font-size:12px;color:var(--muted)}
+    .btn{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);
+      border-radius:10px;padding:9px 12px;font-weight:700;cursor:pointer}
+    .btn:hover{background:rgba(255,255,255,.10)}
+    .btn.primary{border-color:rgba(56,189,248,.35);background:rgba(56,189,248,.12)}
+    .btn.primary:hover{background:rgba(56,189,248,.18)}
+    .btn.danger{border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.10)}
+    .btn.danger:hover{background:rgba(239,68,68,.16)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+
+    main{max-width:1200px;margin:0 auto;padding:14px}
+    .grid{display:grid;grid-template-columns: 1.05fr .95fr;gap:12px}
+    @media (max-width: 1020px){.grid{grid-template-columns:1fr}}
+
+    .card{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:12px}
+    .card h2{margin:0 0 10px;font-size:14px;letter-spacing:.35px}
+    .card .hint{color:var(--muted);font-size:12px;margin-top:-6px;margin-bottom:10px}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 720px){.row{grid-template-columns:1fr}}
+
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input, select, textarea{
+      width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--border);
+      background:rgba(0,0,0,.18);color:var(--text);outline:none
+    }
+    textarea{min-height:82px;resize:vertical}
+    input:disabled, select:disabled, textarea:disabled{opacity:.65}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .tab{padding:8px 10px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;font-weight:700;font-size:12px;color:var(--muted)}
+    .tab.active{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.35);color:var(--text)}
+
+    table{width:100%;border-collapse:collapse}
+    th, td{border:1px solid rgba(0,0,0,.25)}
+
+    .twrap{overflow:auto;border:1px solid var(--border);border-radius:12px;background:rgba(0,0,0,.16)}
+    .t{min-width:980px}
+    .t th{background:var(--head);color:#fff;font-size:12px;padding:6px 6px;text-align:left;white-space:nowrap}
+    .t td{font-size:12px;padding:4px 6px;background:rgba(255,255,255,.02)}
+    .t tr:nth-child(odd) td{background:rgba(30,58,138,.14)}
+    .t tr:nth-child(even) td{background:rgba(56,189,248,.08)}
+    .t td.num{text-align:right;white-space:nowrap}
+    .t td.center{text-align:center}
+    .t td input{padding:6px 6px;border-radius:8px;background:rgba(0,0,0,.18)}
+
+    .mini{min-width:860px}
+    .mini td{background:rgba(255,255,255,.02)}
+    .mini tr:nth-child(odd) td{background:rgba(30,58,138,.12)}
+    .mini tr:nth-child(even) td{background:rgba(56,189,248,.07)}
+
+    .split{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
+    @media (max-width: 900px){.split{grid-template-columns:1fr}}
+
+    .kpis{display:grid;grid-template-columns: 1fr 1fr;gap:10px}
+    .kpi{border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:12px;padding:10px}
+    .kpi .k{color:var(--muted);font-size:12px}
+    .kpi .v{font-size:14px;font-weight:800;margin-top:4px}
+
+    /* login */
+    .loginWrap{max-width:440px;margin:30px auto;border:1px solid var(--border);background:var(--panel);border-radius:16px;padding:14px}
+    .loginWrap h2{margin:0 0 10px}
+    .loginWrap .row{grid-template-columns:1fr}
+    .err{color:#fecaca;background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.35);padding:8px 10px;border-radius:10px;font-size:12px;display:none}
+    .okmsg{color:#bbf7d0;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.28);padding:8px 10px;border-radius:10px;font-size:12px;display:none}
+
+    /* PRINT (PDF) */
+    @media print{
+      body{background:#fff;color:#000}
+      header{display:none}
+      main{max-width:none;padding:0}
+      .card{border:0;background:#fff;border-radius:0;padding:0}
+      .twrap{border:0;background:#fff}
+      .t th{background:#23395d !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .t td{background:#fff !important}
+      .t tr:nth-child(odd) td, .t tr:nth-child(even) td{background:#fff !important}
+      .printHeader{display:flex;gap:12px;align-items:flex-start;margin:10px 12px 8px}
+      .printHeader img{width:56px;height:auto;object-fit:contain}
+      .printHeader .ptitle{font-size:18px;font-weight:900;margin:0}
+      .printHeader .pmeta{font-size:12px;margin-top:4px}
+      .printGrid{display:grid;grid-template-columns: 1fr 1fr;gap:12px;margin:0 12px 10px}
+      .printBox{border:1px solid #cbd5e1;border-radius:8px;padding:8px}
+      .printBox h3{margin:0 0 6px;font-size:12px;background:#23395d;color:#fff;padding:6px 8px;border-radius:6px}
+      .printKV{width:100%;border-collapse:collapse}
+      .printKV td{border:1px solid #e5e7eb;padding:6px 8px;font-size:12px}
+      .printKV td.k{width:55%;font-weight:700}
+      .printKV td.v{text-align:right}
+      .noPrint{display:none !important}
+      .pageBreak{page-break-before:always}
+    }
+
+    .noPrint{ }
+  </style>
+</head>
+<body>
+  <header class="safe">
+    <div class="bar">
+      <div class="brand">
+        <img src="logo.png" alt="Oceantreasure" />
+        <div>
+          <h1>SISTEMA SAC | ANÁLISIS DE MATERIA PRIMA</h1>
+          <div class="sub" id="who">Sin sesión</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="chip" id="roleChip">Rol: -</span>
+        <button class="btn" id="btnSignOut" style="display:none">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="login" class="loginWrap safe">
+    <h2>Ingreso</h2>
+    <div class="err" id="loginErr"></div>
+    <div class="row">
+      <div>
+        <label>Correo</label>
+        <input id="email" type="email" autocomplete="username" placeholder="usuario@oceantreasure.local" />
+      </div>
+      <div>
+        <label>Contraseña</label>
+        <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+      <button class="btn primary" id="btnLogin">ENTRAR</button>
+      <span class="chip">Solo usuarios autorizados</span>
+    </div>
+  </div>
+
+  <main id="app" class="safe" style="display:none">
+    <div class="tabs noPrint">
+      <button class="tab active" data-tab="form">Registro</button>
+      <button class="tab" data-tab="hist">Historial</button>
+    </div>
+
+    <section id="tab-form">
+      <div class="grid">
+        <div class="card">
+          <h2>DATOS DE RECEPCIÓN</h2>
+          <div class="row">
+            <div>
+              <label>Fecha</label>
+              <input id="fFecha" type="date" />
+            </div>
+            <div>
+              <label>Hora de llegada</label>
+              <input id="fHoraLlegada" type="time" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>Proveedor</label>
+              <input id="fProveedor" type="text" placeholder="Ej: CAMASIG" />
+            </div>
+            <div>
+              <label>Procedencia</label>
+              <input id="fOrigen" type="text" placeholder="Ej: TAURA" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label># Lote de Planta</label>
+              <input id="fLotePlanta" type="text" placeholder="Ej: 0218-28/12/2025" />
+            </div>
+            <div>
+              <label># Lote de Cliente</label>
+              <input id="fLoteCliente" type="text" placeholder="Ej: 3663-3664-3665" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>Peso remitido (Libras)</label>
+              <input id="fPesoRemitido" inputmode="decimal" placeholder="0,00" />
+            </div>
+            <div>
+              <label>N° Kv o Bines</label>
+              <input id="fBines" inputmode="numeric" placeholder="0" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>N° Piscina</label>
+              <input id="fPiscina" type="text" placeholder="Ej: FO002" />
+            </div>
+            <div>
+              <label>N° Guía de Remisión</label>
+              <input id="fGuia" type="text" placeholder="Ej: SU-5D25" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>N° de móviles (placa)</label>
+              <input id="fPlaca" type="text" placeholder="Ej: GSB-1234" />
+            </div>
+            <div>
+              <label>Hora de análisis</label>
+              <input id="fHoraAnalisis" type="time" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>Temperatura °C</label>
+              <input id="fTemp" inputmode="decimal" placeholder="0,0" />
+            </div>
+            <div>
+              <label>Residual SO2 (ppm)</label>
+              <input id="fSO2" inputmode="decimal" placeholder="0,0" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>Presenta carta de garantía</label>
+              <select id="fGarantia">
+                <option value="">Seleccione</option>
+                <option value="SI">SI</option>
+                <option value="NO">NO</option>
+              </select>
+            </div>
+            <div>
+              <label>Observaciones generales</label>
+              <input id="fObsCorta" type="text" placeholder="(opcional)" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>ENSORIAL</h2>
+          <div class="hint">Listas basadas en tu hoja <b>SENSORIAL</b>.</div>
+          <div class="row">
+            <div>
+              <label>Sabor</label>
+              <select id="fSabor">
+                <option value="">Seleccione</option>
+                <option>NORMAL</option>
+                <option>TIERRA LEVE</option>
+                <option>TIERRA MODERADA</option>
+                <option>TIERRA FUERTE</option>
+                <option>CHOCLO LEVE</option>
+                <option>CHOCLO MODERADO</option>
+                <option>CHOCLO FUERTE</option>
+                <option>COMBUSTIBLE</option>
+              </select>
+            </div>
+            <div>
+              <label>Color</label>
+              <select id="fColor">
+                <option value="">Seleccione</option>
+                <option>A1</option>
+                <option>A2</option>
+                <option>A3</option>
+                <option>A4</option>
+                <option>A5</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>Olor</label>
+              <input id="fOlor" type="text" placeholder="Ej: Fresco / Normal" />
+            </div>
+            <div>
+              <label>Estado (opcional)</label>
+              <select id="fEstado">
+                <option value="">(sin estado)</option>
+                <option>APROBADO</option>
+                <option>RECHAZADO</option>
+                <option>CONDICIONADO</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="kpis" style="margin-top:12px">
+            <div class="kpi">
+              <div class="k">Total piezas muestreadas</div>
+              <div class="v" id="kTotalPiezas">0</div>
+            </div>
+            <div class="kpi">
+              <div class="k">Peso muestra (g)</div>
+              <div class="v" id="kPesoMuestra">0,00</div>
+            </div>
+            <div class="kpi">
+              <div class="k">Gramaje promedio entero (g)</div>
+              <div class="v" id="kGramProm">0,00</div>
+            </div>
+            <div class="kpi">
+              <div class="k">Talla promedio cola</div>
+              <div class="v" id="kTallaCola">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="split" style="margin-top:12px">
+        <div class="card">
+          <h2>VALORACIÓN DE GRAMAJE EN MATERIA PRIMA</h2>
+          <div class="twrap">
+            <table class="t mini" id="tblGramaje">
+              <thead>
+                <tr>
+                  <th style="width:80px">Gramos</th>
+                  <th style="width:110px">Piezas</th>
+                  <th style="width:120px">Total (g)</th>
+                  <th style="width:130px">Peso sin cabeza (g)</th>
+                  <th style="width:120px">Entero cuenta</th>
+                  <th style="width:120px">Entero talla</th>
+                  <th style="width:120px">Cola cuenta</th>
+                  <th style="width:120px">Cola talla</th>
+                  <th class="noPrint" style="width:80px">Quitar</th>
+                </tr>
+              </thead>
+              <tbody id="gramajeBody"></tbody>
+            </table>
+          </div>
+          <div class="noPrint" style="display:flex;gap:10px;align-items:center;margin-top:10px">
+            <button class="btn" id="btnAddRow">+ Fila</button>
+            <span class="chip">Tip: escribe piezas, lo demás es automático</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>ANÁLISIS ORGANOLÉPTICO</h2>
+          <div class="twrap">
+            <table class="t" id="tblDefectos" style="min-width:760px">
+              <thead>
+                <tr>
+                  <th>Parámetro</th>
+                  <th style="width:130px">Valor</th>
+                  <th style="width:120px">%</th>
+                </tr>
+              </thead>
+              <tbody id="defBody"></tbody>
+            </table>
+          </div>
+
+          <div style="margin-top:10px" class="row">
+            <div>
+              <label>Observaciones (detalle)</label>
+              <textarea id="fObs"></textarea>
+            </div>
+            <div>
+              <label>Elaborado por</label>
+              <input id="fElaborado" type="text" placeholder="Analista" />
+              <div style="height:10px"></div>
+              <label>Verificado por</label>
+              <input id="fVerificado" type="text" placeholder="Jefe/Calidad" />
+              <div style="height:10px"></div>
+              <label>Revisado por</label>
+              <input id="fRevisado" type="text" placeholder="Gerencia" />
+            </div>
+          </div>
+
+          <div class="noPrint" style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+            <button class="btn primary" id="btnSave">GUARDAR</button>
+            <button class="btn" id="btnNew">NUEVO</button>
+            <button class="btn" id="btnPrint">IMPRIMIR / PDF</button>
+            <button class="btn danger" id="btnDelete" style="margin-left:auto">ELIMINAR</button>
+          </div>
+          <div class="okmsg" id="okmsg"></div>
+          <div class="err" id="errmsg"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-hist" style="display:none">
+      <div class="card">
+        <h2>HISTORIAL</h2>
+        <div class="hint">Selecciona un registro para cargarlo en pantalla.</div>
+        <div class="row">
+          <div>
+            <label>Buscar (Proveedor / Lote / Guía)</label>
+            <input id="q" type="text" placeholder="Ej: CAMASIG" />
+          </div>
+          <div>
+            <label>Orden</label>
+            <select id="qOrder">
+              <option value="desc">Más reciente primero</option>
+              <option value="asc">Más antiguo primero</option>
+            </select>
+          </div>
+        </div>
+        <div class="twrap" style="margin-top:12px">
+          <table class="t" id="tblHist" style="min-width:860px">
+            <thead>
+              <tr>
+                <th style="width:110px">Fecha</th>
+                <th>Proveedor</th>
+                <th style="width:180px">Lote Planta</th>
+                <th style="width:180px">Lote Cliente</th>
+                <th style="width:140px">Guía</th>
+                <th style="width:120px">Estado</th>
+                <th style="width:160px">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="histBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- print header (only used in print) -->
+    <div class="printHeader" style="display:none">
+      <img src="logo.png" alt="logo" />
+      <div>
+        <p class="ptitle">REGISTRO ANÁLISIS ORGANOLÉPTICO DE MATERIA PRIMA</p>
+        <div class="pmeta" id="pMeta"></div>
+      </div>
+    </div>
+    <div class="printGrid" style="display:none">
+      <div class="printBox">
+        <h3>CONTROL</h3>
+        <table class="printKV">
+          <tr><td class="k">Total piezas muestreadas</td><td class="v" id="pTotP"></td></tr>
+          <tr><td class="k">Peso muestra (g)</td><td class="v" id="pPesoG"></td></tr>
+          <tr><td class="k">Gramaje promedio entero (g)</td><td class="v" id="pGram"></td></tr>
+          <tr><td class="k">Talla promedio entero</td><td class="v" id="pTallaE"></td></tr>
+          <tr><td class="k">Talla promedio cola</td><td class="v" id="pTallaC"></td></tr>
+        </table>
+      </div>
+      <div class="printBox">
+        <h3>DATOS</h3>
+        <table class="printKV">
+          <tr><td class="k">Proveedor</td><td class="v" id="pProv"></td></tr>
+          <tr><td class="k">Lote Planta</td><td class="v" id="pLP"></td></tr>
+          <tr><td class="k">Lote Cliente</td><td class="v" id="pLC"></td></tr>
+          <tr><td class="k">Guía</td><td class="v" id="pGuia"></td></tr>
+          <tr><td class="k">Peso remitido (lb)</td><td class="v" id="pPesoLb"></td></tr>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // --- Helpers ---
+    const fmt2 = (n)=> new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2}).format(isFinite(n)?n:0);
+    const fmt0 = (n)=> new Intl.NumberFormat('es-EC',{maximumFractionDigits:0}).format(isFinite(n)?n:0);
+
+    function parseDec(s){
+      if(s==null) return NaN;
+      if(typeof s==='number') return s;
+      s=String(s).trim();
+      if(!s) return NaN;
+      // remove spaces
+      s=s.replace(/\s+/g,'');
+      // allow 1.234,56 or 1234,56 or 1234.56
+      // if has comma, treat comma as decimal and remove thousand dots
+      if(s.includes(',')){
+        s=s.replace(/\./g,'').replace(',','.');
+      }
+      // remove thousand commas if decimal dot
+      // (rare)
+      const n=Number(s);
+      return isFinite(n)?n:NaN;
+    }
+
+    function upperClean(v){
+      return (v||'').toString().trim().toUpperCase();
+    }
+
+    function onlyInt(v){
+      v=(v||'').toString();
+      v=v.replace(/[^0-9]/g,'');
+      return v;
+    }
+
+    // Clasificaciones copiadas de fórmulas del Excel
+    function clasificarEntero(cuenta){
+      if(!isFinite(cuenta) || cuenta<10) return '';
+      if(cuenta>=10 && cuenta<=19.99) return '10-20';
+      if(cuenta>=20 && cuenta<=29.99) return '20-30';
+      if(cuenta>=30 && cuenta<=39.99) return '30-40';
+      if(cuenta>=40 && cuenta<=49.99) return '40-50';
+      if(cuenta>=50 && cuenta<=59.99) return '50-60';
+      if(cuenta>=60 && cuenta<=69.99) return '60-70';
+      if(cuenta>=70 && cuenta<=79.99) return '70-80';
+      if(cuenta>=80 && cuenta<=99.99) return '80-100';
+      if(cuenta>=100 && cuenta<=119.99) return '100-120';
+      if(cuenta>=120 && cuenta<=149.99) return '120-150';
+      if(cuenta>=150 && cuenta<=199.99) return 'Juvenil';
+      if(cuenta>=200) return 'Larva';
+      return '';
+    }
+
+    function clasificarCola(cuenta){
+      if(!isFinite(cuenta) || cuenta<=11.99) return '';
+      if(cuenta>=12 && cuenta<15) return 'U15';
+      if(cuenta>=16 && cuenta<20) return '16-20';
+      if(cuenta>=20 && cuenta<25) return '21-25';
+      if(cuenta>=25 && cuenta<30) return '26-30';
+      if(cuenta>=30 && cuenta<35) return '31-35';
+      if(cuenta>=35 && cuenta<40) return '36-40';
+      if(cuenta>=40 && cuenta<50) return '41-50';
+      if(cuenta>=50 && cuenta<60) return '51-60';
+      if(cuenta>=60 && cuenta<70) return '61-70';
+      if(cuenta>=70 && cuenta<90) return '71-90';
+      if(cuenta>=90 && cuenta<110) return '91-110';
+      if(cuenta>=110 && cuenta<130) return '111-130';
+      if(cuenta>=130 && cuenta<150) return 'Juvenil';
+      if(cuenta>=150) return 'Larva';
+      return '';
+    }
+
+    const DEFECTOS = [
+      {key:'flacido', label:'Flácido / Soft', type:'pieces'},
+      {key:'mudados', label:'Mudados / Molt', type:'pieces'},
+      {key:'cabezasRojas', label:'Cabezas rojas / Red Heads', type:'pieces'},
+      {key:'cabezasFlojas', label:'Cabezas flojas / Heads Off the Hook', type:'pieces'},
+      {key:'cabezasAnaranjadas', label:'Cabezas anaranjadas / Orange heads', type:'pieces'},
+      {key:'cabezasReventadas', label:'Cabezas reventadas / Blown Heads', type:'pieces'},
+      {key:'picadoFuerte', label:'Picado fuerte / Strong Spot', type:'pieces'},
+      {key:'deshidratadoLeve', label:'Deshidratado leve / Mild Dehydrated', type:'pieces'},
+      {key:'deshidratadoFuerte', label:'Deshidratado fuerte / Strong Dehydrated', type:'pieces'},
+      {key:'branquiasSucias', label:'Branquias sucias / Dirty Gills', type:'pieces'},
+      {key:'quebrados', label:'Quebrados / Broken', type:'pieces'},
+      {key:'rosados', label:'Rosados / Red Dish', type:'pieces'},
+      {key:'necrosisLeve', label:'Necrosis leve / Mild Necrosis', type:'pieces'},
+      {key:'necrosisFuerte', label:'Necrosis fuerte / Strong Necrosis', type:'pieces'},
+      {key:'ataqueBacteriano', label:'Ataque bacteriano / Bacterial Attack', type:'pieces'},
+      {key:'melanosis', label:'Melanosis / Black Spot', type:'pieces'},
+      {key:'deforme', label:'Camarón deforme / Misshapen', type:'pieces'},
+      {key:'leche', label:'Camarón leche / Milk shrimp', type:'pieces'},
+      {key:'pequeno', label:'Pequeño / Small', type:'pieces'},
+      {key:'juvenilG', label:'Camarón juvenil (g)', type:'grams'},
+      {key:'basuraG', label:'Basura (g)', type:'grams'},
+      {key:'otrosG', label:'Otros (g)', type:'grams'}
+    ];
+
+    const DEFAULT_GRAMOS = [17,16,15,14,13,12,11,10,9,8];
+
+    const allowedEditors = new Set([
+      'analistamateriaprima@oceantreasure.local',
+      'jeffersonfigueroa@oceantreasure.local'
+    ]);
+    const allowedView = new Set([
+      'gerenciageneral@oceantreasure.local'
+    ]);
+
+    let currentUser = null;
+    let role = 'none'; // editor | view
+    let currentId = null;
+
+    const el = (id)=>document.getElementById(id);
+
+    function setMsg(kind, msg){
+      const ok=el('okmsg');
+      const err=el('errmsg');
+      ok.style.display='none';
+      err.style.display='none';
+      if(!msg) return;
+      if(kind==='ok'){
+        ok.textContent=msg;
+        ok.style.display='block';
+      }else{
+        err.textContent=msg;
+        err.style.display='block';
+      }
+      setTimeout(()=>{ ok.style.display='none'; err.style.display='none'; }, 2800);
+    }
+
+    function setLoginError(msg){
+      const e=el('loginErr');
+      e.textContent=msg||'';
+      e.style.display=msg? 'block':'none';
+    }
+
+    function todayISO(){
+      const d=new Date();
+      const tz = d.getTimezoneOffset()*60000;
+      return new Date(d - tz).toISOString().slice(0,10);
+    }
+
+    function initDefaults(){
+      el('fFecha').value = todayISO();
+      el('fGarantia').value='';
+      el('fEstado').value='';
+      // default signatures
+      if(!el('fElaborado').value) el('fElaborado').value = role==='editor' ? (currentUser?.email||'') : '';
+
+      // build gramaje rows
+      const body = el('gramajeBody');
+      body.innerHTML='';
+      DEFAULT_GRAMOS.forEach(g=> body.appendChild(buildGramRow({gramos:g, piezas:''})));
+      // a few blank rows
+      for(let i=0;i<4;i++) body.appendChild(buildGramRow({gramos:'', piezas:''}));
+
+      // defects
+      const defB=el('defBody');
+      defB.innerHTML='';
+      DEFECTOS.forEach(d=> defB.appendChild(buildDefRow(d)));
+
+      recalcAll();
+    }
+
+    function buildGramRow(row){
+      const tr=document.createElement('tr');
+      tr.innerHTML = `
+        <td class="center"><input data-g="gramos" placeholder="" value="${row.gramos??''}" /></td>
+        <td class="center"><input data-g="piezas" placeholder="" value="${row.piezas??''}" /></td>
+        <td class="num" data-out="totalG">0,00</td>
+        <td class="num" data-out="sinCabeza">0,00</td>
+        <td class="num" data-out="enteroCuenta">0,00</td>
+        <td class="center" data-out="enteroTalla">-</td>
+        <td class="num" data-out="colaCuenta">0,00</td>
+        <td class="center" data-out="colaTalla">-</td>
+        <td class="center noPrint"><button class="btn danger" data-act="del" style="padding:6px 10px;border-radius:10px">X</button></td>
+      `;
+      const inpG = tr.querySelector('input[data-g="gramos"]');
+      const inpP = tr.querySelector('input[data-g="piezas"]');
+      inpG.addEventListener('input', ()=>{
+        // allow decimals but keep clean
+        inpG.value = inpG.value.replace(/[^0-9.,]/g,'');
+        recalcAll();
+      });
+      inpP.addEventListener('input', ()=>{
+        inpP.value = onlyInt(inpP.value);
+        recalcAll();
+      });
+      tr.querySelector('button[data-act="del"]').addEventListener('click', ()=>{
+        tr.remove();
+        recalcAll();
+      });
+      return tr;
+    }
+
+    function buildDefRow(def){
+      const tr=document.createElement('tr');
+      const ph = def.type==='pieces' ? '0' : '0,00';
+      tr.innerHTML = `
+        <td>${def.label}</td>
+        <td class="center"><input data-def="${def.key}" placeholder="${ph}" /></td>
+        <td class="num" data-defp="${def.key}">0,00%</td>
+      `;
+      const inp=tr.querySelector('input');
+      inp.addEventListener('input', ()=>{
+        if(def.type==='pieces') inp.value = onlyInt(inp.value);
+        else inp.value = inp.value.replace(/[^0-9.,]/g,'');
+        recalcAll();
+      });
+      return tr;
+    }
+
+    function getGramRows(){
+      const rows=[];
+      [...el('gramajeBody').querySelectorAll('tr')].forEach(tr=>{
+        const g=parseDec(tr.querySelector('input[data-g="gramos"]').value);
+        const p=parseDec(tr.querySelector('input[data-g="piezas"]').value);
+        rows.push({g:isFinite(g)?g:NaN, p:isFinite(p)?p:NaN, tr});
+      });
+      return rows;
+    }
+
+    function getDefValues(){
+      const out={};
+      DEFECTOS.forEach(d=>{
+        const inp=document.querySelector(`input[data-def="${d.key}"]`);
+        if(!inp){ out[d.key]=0; return; }
+        const v = d.type==='pieces' ? parseDec(inp.value) : parseDec(inp.value);
+        out[d.key]=isFinite(v)?v:0;
+      });
+      return out;
+    }
+
+    function recalcAll(){
+      // 1) Gramaje table
+      const rows=getGramRows();
+      let totalPieces=0;
+      let totalWeightG=0;
+      rows.forEach(({g,p,tr})=>{
+        const gramos=isFinite(g)?g:0;
+        const piezas=isFinite(p)?p:0;
+        const totalG = (gramos*piezas);
+        const sinCabeza = totalG ? totalG*0.66 : 0;
+        const enteroCuenta = gramos ? (1000/gramos) : 0;
+        const enteroTalla = clasificarEntero(enteroCuenta);
+        const colaCuenta = gramos ? (454/(gramos*0.66)) : 0;
+        const colaTalla = clasificarCola(colaCuenta);
+
+        tr.querySelector('[data-out="totalG"]').textContent = totalG? fmt2(totalG): '';
+        tr.querySelector('[data-out="sinCabeza"]').textContent = totalG? fmt2(sinCabeza): '';
+        tr.querySelector('[data-out="enteroCuenta"]').textContent = gramos? fmt2(enteroCuenta): '';
+        tr.querySelector('[data-out="enteroTalla"]').textContent = enteroTalla || '';
+        tr.querySelector('[data-out="colaCuenta"]').textContent = gramos? fmt2(colaCuenta): '';
+        tr.querySelector('[data-out="colaTalla"]').textContent = colaTalla || '';
+
+        if(piezas>0 && gramos>0){
+          totalPieces += piezas;
+          totalWeightG += totalG;
+        }
+      });
+
+      // include gram-type defects into sample weight
+      const defs=getDefValues();
+      const juvenilG=defs.juvenilG||0;
+      const basuraG=defs.basuraG||0;
+      const otrosG=defs.otrosG||0;
+      totalWeightG += (juvenilG + basuraG + otrosG);
+
+      const gramProm = (totalPieces>0) ? (totalWeightG/totalPieces) : 0;
+      const enteroCuentaProm = gramProm>0 ? (1000/gramProm) : 0;
+      const tallaEnteroProm = clasificarEntero(enteroCuentaProm);
+      const colaCuentaProm = gramProm>0 ? (454/(gramProm*0.66)) : 0;
+      const tallaColaProm = clasificarCola(colaCuentaProm);
+
+      el('kTotalPiezas').textContent = totalPieces? fmt0(totalPieces): '0';
+      el('kPesoMuestra').textContent = totalWeightG? fmt2(totalWeightG): '0,00';
+      el('kGramProm').textContent = gramProm? fmt2(gramProm): '0,00';
+      el('kTallaCola').textContent = tallaColaProm || '-';
+
+      // 2) Defects %
+      let sumDefPieces=0;
+      DEFECTOS.forEach(d=>{
+        const v=defs[d.key]||0;
+        if(d.type==='pieces') sumDefPieces += v;
+      });
+      const goodPieces = Math.max(0, totalPieces - sumDefPieces);
+
+      DEFECTOS.forEach(d=>{
+        const v=defs[d.key]||0;
+        let pct=0;
+        if(d.type==='pieces') pct = (totalPieces>0)? (v/totalPieces*100):0;
+        else pct = (totalWeightG>0)? (v/totalWeightG*100):0;
+        const out=document.querySelector(`[data-defp="${d.key}"]`);
+        if(out) out.textContent = (v? fmt2(pct): '0,00') + '%';
+      });
+
+      // keep print meta values updated
+      el('pMeta').textContent = `Usuario: ${currentUser?.email||''}  |  Fecha/Hora: ${new Date().toLocaleString('es-EC')}`;
+      el('pTotP').textContent = totalPieces? fmt0(totalPieces): '0';
+      el('pPesoG').textContent = totalWeightG? fmt2(totalWeightG): '0,00';
+      el('pGram').textContent = gramProm? fmt2(gramProm): '0,00';
+      el('pTallaE').textContent = tallaEnteroProm || '-';
+      el('pTallaC').textContent = tallaColaProm || '-';
+      el('pProv').textContent = (el('fProveedor').value||'').toUpperCase();
+      el('pLP').textContent = (el('fLotePlanta').value||'');
+      el('pLC').textContent = (el('fLoteCliente').value||'');
+      el('pGuia').textContent = (el('fGuia').value||'');
+      el('pPesoLb').textContent = isFinite(parseDec(el('fPesoRemitido').value)) ? fmt2(parseDec(el('fPesoRemitido').value)) : '';
+
+      // store computed in dataset for save
+      window.__computed = {
+        totalPieces, totalWeightG, gramProm,
+        enteroCuentaProm, tallaEnteroProm,
+        colaCuentaProm, tallaColaProm,
+        sumDefPieces, goodPieces
+      };
+    }
+
+    // --- UI events ---
+    document.addEventListener('input', (e)=>{
+      const id = e.target?.id;
+      if(['fProveedor','fOrigen','fLotePlanta','fLoteCliente','fPiscina','fGuia','fPlaca','fObsCorta'].includes(id)){
+        // some uppercase fields
+        if(['fProveedor','fOrigen','fPiscina'].includes(id)) e.target.value = upperClean(e.target.value);
+        recalcAll();
+      }
+    });
+
+    // enforce formats
+    el('fBines').addEventListener('input', ()=>{ el('fBines').value=onlyInt(el('fBines').value); });
+    el('fPesoRemitido').addEventListener('input', ()=>{ el('fPesoRemitido').value=el('fPesoRemitido').value.replace(/[^0-9.,]/g,''); recalcAll(); });
+    el('fTemp').addEventListener('input', ()=>{ el('fTemp').value=el('fTemp').value.replace(/[^0-9.,]/g,''); });
+    el('fSO2').addEventListener('input', ()=>{ el('fSO2').value=el('fSO2').value.replace(/[^0-9.,]/g,''); });
+    el('fPiscina').addEventListener('input', ()=>{ el('fPiscina').value=upperClean(el('fPiscina').value); });
+
+    // tabs
+    [...document.querySelectorAll('.tab')].forEach(b=>b.addEventListener('click', ()=>{
+      [...document.querySelectorAll('.tab')].forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const t=b.dataset.tab;
+      el('tab-form').style.display = (t==='form')?'block':'none';
+      el('tab-hist').style.display = (t==='hist')?'block':'none';
+    }));
+
+    el('btnAddRow').addEventListener('click', ()=>{
+      el('gramajeBody').appendChild(buildGramRow({gramos:'', piezas:''}));
+    });
+
+    el('btnNew').addEventListener('click', ()=>{ clearForm(true); });
+    el('btnPrint').addEventListener('click', ()=>{ 
+      // show print blocks (they'll appear only in print)
+      window.print();
+    });
+
+    function clearForm(keepDate){
+      currentId=null;
+      // inputs
+      const ids=[
+        'fProveedor','fOrigen','fLotePlanta','fLoteCliente','fPesoRemitido','fBines','fPiscina','fGuia','fPlaca','fHoraLlegada','fHoraAnalisis','fTemp','fSO2','fGarantia','fSabor','fColor','fOlor','fEstado','fObsCorta','fObs','fElaborado','fVerificado','fRevisado'
+      ];
+      ids.forEach(id=> el(id).value='');
+      if(keepDate!==false) el('fFecha').value=todayISO();
+      initDefaults();
+      setMsg('ok','Listo para nuevo registro.');
+      updateButtons();
+    }
+
+    function updateButtons(){
+      const canEdit = role==='editor';
+      el('btnSave').disabled = !canEdit;
+      el('btnNew').disabled = !canEdit;
+      el('btnDelete').disabled = !canEdit || !currentId;
+      // disable inputs for viewer
+      const disable = (role!=='editor');
+      [...document.querySelectorAll('input,select,textarea')].forEach(x=>{
+        if(x.id==='email' || x.id==='pass') return;
+        // allow search inputs always
+        if(['q','qOrder'].includes(x.id)) return;
+        x.disabled = disable;
+      });
+      // but allow print
+      el('btnPrint').disabled = false;
+      // still allow selecting from history
+      if(disable){
+        // allow history action buttons
+        [...document.querySelectorAll('#histBody button')].forEach(b=>b.disabled=false);
+      }
+    }
+
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const COL = 'mp_analisis';
+
+    const el = (id)=>document.getElementById(id);
+
+    function setLoginError(msg){
+      const e=el('loginErr');
+      e.textContent=msg||'';
+      e.style.display=msg? 'block':'none';
+    }
+
+    function roleFromEmail(email){
+      email=(email||'').toLowerCase();
+      const editors = new Set(['analistamateriaprima@oceantreasure.local','jeffersonfigueroa@oceantreasure.local']);
+      const viewers = new Set(['gerenciageneral@oceantreasure.local']);
+      if(editors.has(email)) return 'editor';
+      if(viewers.has(email)) return 'view';
+      return 'none';
+    }
+
+    function hardDeny(){
+      // sign out and show denial
+      signOut(auth).catch(()=>{});
+      el('app').style.display='none';
+      el('login').style.display='block';
+      document.getElementById('btnSignOut').style.display='none';
+      document.getElementById('roleChip').textContent='Rol: -';
+      document.getElementById('who').textContent='Acceso denegado';
+      setLoginError('Acceso denegado. Usuario no autorizado.');
+    }
+
+    // login
+    document.getElementById('btnLogin').addEventListener('click', async ()=>{
+      setLoginError('');
+      const email=(el('email').value||'').trim();
+      const pass=(el('pass').value||'').trim();
+      if(!email || !pass){ setLoginError('Ingresa correo y contraseña.'); return; }
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(err){
+        setLoginError('No se pudo iniciar sesión. Verifica correo/contraseña.');
+        console.error(err);
+      }
+    });
+
+    document.getElementById('btnSignOut').addEventListener('click', ()=> signOut(auth));
+
+    // app state
+    let currentUser=null;
+    let role='none';
+    let currentId=null;
+    let unsub=null;
+
+    // expose to non-module script
+    window.__setCurrentId = (id)=>{ currentId=id; window.__currentId=id; };
+    window.__getCurrentId = ()=> currentId;
+
+    function setMsg(kind, msg){
+      const ok=document.getElementById('okmsg');
+      const err=document.getElementById('errmsg');
+      ok.style.display='none';
+      err.style.display='none';
+      if(!msg) return;
+      if(kind==='ok'){
+        ok.textContent=msg; ok.style.display='block';
+      }else{
+        err.textContent=msg; err.style.display='block';
+      }
+      setTimeout(()=>{ ok.style.display='none'; err.style.display='none'; }, 2800);
+    }
+
+    function collectForm(){
+      const parseDec = window.parseDec;
+      const upperClean = window.upperClean;
+      const onlyInt = window.onlyInt;
+      const c = window.__computed||{};
+
+      return {
+        fecha: el('fFecha').value||'',
+        horaLlegada: el('fHoraLlegada').value||'',
+        proveedor: upperClean(el('fProveedor').value||''),
+        origen: upperClean(el('fOrigen').value||''),
+        lotePlanta: (el('fLotePlanta').value||'').trim(),
+        loteCliente: (el('fLoteCliente').value||'').trim(),
+        pesoRemitidoLb: isFinite(parseDec(el('fPesoRemitido').value)) ? parseDec(el('fPesoRemitido').value) : null,
+        bines: (onlyInt(el('fBines').value)||''),
+        piscina: upperClean(el('fPiscina').value||''),
+        guia: (el('fGuia').value||'').trim(),
+        placa: (el('fPlaca').value||'').trim().toUpperCase(),
+        horaAnalisis: el('fHoraAnalisis').value||'',
+        tempC: isFinite(parseDec(el('fTemp').value)) ? parseDec(el('fTemp').value) : null,
+        so2ppm: isFinite(parseDec(el('fSO2').value)) ? parseDec(el('fSO2').value) : null,
+        garantia: el('fGarantia').value||'',
+        sabor: el('fSabor').value||'',
+        color: el('fColor').value||'',
+        olor: (el('fOlor').value||'').trim(),
+        estado: el('fEstado').value||'',
+        obsCorta: (el('fObsCorta').value||'').trim(),
+        obs: (el('fObs').value||'').trim(),
+        elaborado: (el('fElaborado').value||'').trim(),
+        verificado: (el('fVerificado').value||'').trim(),
+        revisado: (el('fRevisado').value||'').trim(),
+
+        // tables
+        gramajeRows: [...document.querySelectorAll('#gramajeBody tr')].map(tr=>({
+          gramos: (tr.querySelector('input[data-g="gramos"]').value||'').trim(),
+          piezas: (tr.querySelector('input[data-g="piezas"]').value||'').trim()
+        })),
+        defectos: window.getDefValues(),
+
+        // computed
+        totalPieces: c.totalPieces||0,
+        pesoMuestraG: c.totalWeightG||0,
+        gramProm: c.gramProm||0,
+        tallaEnteroProm: c.tallaEnteroProm||'',
+        tallaColaProm: c.tallaColaProm||'',
+        goodPieces: c.goodPieces||0,
+      };
+    }
+
+    function fillForm(data){
+      const fmt2 = window.fmt2;
+      const fmt0 = window.fmt0;
+      el('fFecha').value=data.fecha||'';
+      el('fHoraLlegada').value=data.horaLlegada||'';
+      el('fProveedor').value=data.proveedor||'';
+      el('fOrigen').value=data.origen||'';
+      el('fLotePlanta').value=data.lotePlanta||'';
+      el('fLoteCliente').value=data.loteCliente||'';
+      el('fPesoRemitido').value=(data.pesoRemitidoLb!=null)? fmt2(data.pesoRemitidoLb):'';
+      el('fBines').value=data.bines||'';
+      el('fPiscina').value=data.piscina||'';
+      el('fGuia').value=data.guia||'';
+      el('fPlaca').value=data.placa||'';
+      el('fHoraAnalisis').value=data.horaAnalisis||'';
+      el('fTemp').value=(data.tempC!=null)? fmt2(data.tempC):'';
+      el('fSO2').value=(data.so2ppm!=null)? fmt2(data.so2ppm):'';
+      el('fGarantia').value=data.garantia||'';
+      el('fSabor').value=data.sabor||'';
+      el('fColor').value=data.color||'';
+      el('fOlor').value=data.olor||'';
+      el('fEstado').value=data.estado||'';
+      el('fObsCorta').value=data.obsCorta||'';
+      el('fObs').value=data.obs||'';
+      el('fElaborado').value=data.elaborado||'';
+      el('fVerificado').value=data.verificado||'';
+      el('fRevisado').value=data.revisado||'';
+
+      // gramaje rows rebuild
+      const body=document.getElementById('gramajeBody');
+      body.innerHTML='';
+      (data.gramajeRows||[]).forEach(r=> body.appendChild(window.buildGramRow({gramos:r.gramos, piezas:r.piezas})));
+      if(!(data.gramajeRows||[]).length) window.initDefaults();
+
+      // defects
+      const defs=data.defectos||{};
+      Object.keys(defs).forEach(k=>{
+        const inp=document.querySelector(`input[data-def="${k}"]`);
+        if(inp){
+          if(typeof defs[k]==='number') inp.value = fmt2(defs[k]).replace('.',',');
+          else inp.value = defs[k]||'';
+        }
+      });
+      window.recalcAll();
+    }
+
+    function updateButtons(){
+      const canEdit = role==='editor';
+      document.getElementById('btnSave').disabled = !canEdit;
+      document.getElementById('btnNew').disabled = !canEdit;
+      document.getElementById('btnDelete').disabled = !canEdit || !currentId;
+      // disable inputs for viewer
+      const disable = (role!=='editor');
+      [...document.querySelectorAll('input,select,textarea')].forEach(x=>{
+        if(x.id==='email' || x.id==='pass') return;
+        if(['q','qOrder'].includes(x.id)) return;
+        x.disabled = disable;
+      });
+      document.getElementById('btnPrint').disabled = false;
+    }
+
+    function mountHistory(){
+      const tbody=document.getElementById('histBody');
+      if(unsub) unsub();
+      const qy = query(collection(db, COL), orderBy('createdAt','desc'));
+      unsub = onSnapshot(qy, (snap)=>{
+        const list=[];
+        snap.forEach(d=> list.push({id:d.id, ...d.data()}));
+        // filter
+        const term=(document.getElementById('q').value||'').trim().toLowerCase();
+        const ord=document.getElementById('qOrder').value;
+        let arr=list;
+        if(term){
+          arr = arr.filter(x=>
+            (x.proveedor||'').toLowerCase().includes(term) ||
+            (x.lotePlanta||'').toLowerCase().includes(term) ||
+            (x.loteCliente||'').toLowerCase().includes(term) ||
+            (x.guia||'').toLowerCase().includes(term)
+          );
+        }
+        if(ord==='asc') arr = [...arr].reverse();
+
+        tbody.innerHTML='';
+        arr.forEach(x=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML = `
+            <td>${x.fecha||''}</td>
+            <td>${(x.proveedor||'')}</td>
+            <td>${(x.lotePlanta||'')}</td>
+            <td>${(x.loteCliente||'')}</td>
+            <td>${(x.guia||'')}</td>
+            <td>${(x.estado||'')}</td>
+            <td class="center"><button class="btn" data-open="${x.id}" style="padding:6px 10px;border-radius:10px">ABRIR</button></td>
+          `;
+          tr.querySelector('button').addEventListener('click', ()=> openDoc(x.id));
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    async function openDoc(id){
+      // simplest: snapshot already has data; but we re-query by scanning last snapshot isn't stored.
+      // We'll fetch via onSnapshot doc listener in next iteration; for now, just read from existing list by querying again.
+      // To keep this file lightweight, we do a one-shot read via dynamic import of getDoc.
+      const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+      const ref=doc(db, COL, id);
+      const snap=await getDoc(ref);
+      if(!snap.exists()) return;
+      currentId=id;
+      window.__setCurrentId(id);
+      fillForm(snap.data());
+      updateButtons();
+      // switch to form
+      document.querySelector('.tab[data-tab="form"]').click();
+      setMsg('ok','Registro cargado.');
+    }
+
+    // search live
+    document.getElementById('q').addEventListener('input', ()=> mountHistory());
+    document.getElementById('qOrder').addEventListener('change', ()=> mountHistory());
+
+    // save
+    document.getElementById('btnSave').addEventListener('click', async ()=>{
+      if(role!=='editor') return;
+      try{
+        const payload=collectForm();
+        // basic validation
+        if(!payload.fecha){ setMsg('err','Falta fecha.'); return; }
+        if(!payload.proveedor){ setMsg('err','Falta proveedor.'); return; }
+
+        if(!currentId){
+          const ref=await addDoc(collection(db, COL), {
+            ...payload,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            createdBy: currentUser.email
+          });
+          currentId=ref.id;
+          window.__setCurrentId(ref.id);
+          setMsg('ok','Guardado.');
+        }else{
+          await updateDoc(doc(db, COL, currentId), {
+            ...payload,
+            updatedAt: serverTimestamp()
+          });
+          setMsg('ok','Actualizado.');
+        }
+        updateButtons();
+      }catch(err){
+        console.error(err);
+        setMsg('err','No se pudo guardar. Revisa consola.');
+      }
+    });
+
+    // delete
+    document.getElementById('btnDelete').addEventListener('click', async ()=>{
+      if(role!=='editor' || !currentId) return;
+      if(!confirm('¿Eliminar este registro?')) return;
+      try{
+        await deleteDoc(doc(db, COL, currentId));
+        currentId=null;
+        window.__setCurrentId(null);
+        // clear form
+        document.getElementById('btnNew').click();
+        setMsg('ok','Eliminado.');
+        updateButtons();
+      }catch(err){
+        console.error(err);
+        setMsg('err','No se pudo eliminar.');
+      }
+    });
+
+    // auth state
+    onAuthStateChanged(auth, (u)=>{
+      if(!u){
+        currentUser=null;
+        role='none';
+        document.getElementById('app').style.display='none';
+        document.getElementById('login').style.display='block';
+        document.getElementById('btnSignOut').style.display='none';
+        document.getElementById('who').textContent='Sin sesión';
+        document.getElementById('roleChip').textContent='Rol: -';
+        return;
+      }
+
+      const r = roleFromEmail(u.email);
+      if(r==='none'){
+        hardDeny();
+        return;
+      }
+
+      currentUser=u;
+      role=r;
+
+      // expose for other script
+      window.currentUser = u;
+      window.role = r;
+
+      document.getElementById('login').style.display='none';
+      document.getElementById('app').style.display='block';
+      document.getElementById('btnSignOut').style.display='inline-block';
+      document.getElementById('who').textContent = `${u.email} (${r==='editor'?'EDITOR':'SOLO VISTA'})`;
+      document.getElementById('roleChip').textContent = `Rol: ${r==='editor'?'Editor':'Solo vista'}`;
+
+      // init
+      window.recalcAll();
+      window.initDefaults();
+      updateButtons();
+      mountHistory();
+    });
+
+  </script>
+</body>
+</html>
