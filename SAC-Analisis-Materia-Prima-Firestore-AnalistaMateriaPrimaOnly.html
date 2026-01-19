@@ -1,0 +1,1784 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SAC | Análisis Materia Prima</title>
+  <link rel="icon" href="favicon.ico?v=1">
+  <style>
+    :root{
+      --bg:#ffffff;
+      --panel:#fffaf2;         /* beige muy claro */
+      --panel2:#ffffff;
+      --border:#d8cbb7;
+      --grid:#cfc2ad;
+      --text:#111827;
+      --muted:#6b7280;
+      --head:#b08968;          /* encabezados (beige oscuro) */
+      --accent:#8a6a3f;        /* acento */
+      --ok:#15803d;
+      --warn:#b45309;
+      --bad:#b91c1c;
+      --white:#ffffff;
+      --black:#111111;
+      --row1:#f5ead7;          /* filas impares */
+      --row2:#fff7ea;          /* filas pares */
+      --chipbg:#f4ead8;
+      --btnbg:#f3e7d2;
+      --btnbg2:#efe0c6;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    .safe{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+    header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg, #fffaf2, #f5ead7);
+      border-bottom:1px solid var(--border)}
+    .bar{max-width:1200px;margin:0 auto;padding:10px 12px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center;min-width:280px}
+    .brand img{width:44px;height:auto;display:block;object-fit:contain}
+    .brand h1{margin:0;font-size:15px;letter-spacing:.35px}
+    .brand .sub{margin:2px 0 0;font-size:12px;color:var(--muted)}
+    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .chip{padding:6px 10px;border:1px solid var(--border);background:var(--chipbg);border-radius:999px;font-size:12px;color:var(--muted)}
+    .btn{border:1px solid var(--border);background:var(--btnbg);color:var(--text);
+      border-radius:12px;padding:8px 11px;font-weight:800;cursor:pointer;transition:transform .05s ease,filter .15s ease,background .15s ease,box-shadow .15s ease;box-shadow:0 1px 0 rgba(17,24,39,.04)}
+    .btn:hover{background:var(--btnbg2);filter:brightness(1.02)}
+    .btn.primary{border-color:rgba(138,106,63,.45);background:rgba(138,106,63,.12)}
+    .btn.primary:hover{background:rgba(138,106,63,.18)}
+    .btn.danger{border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.10)}
+    .btn.danger:hover{background:rgba(239,68,68,.16)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+
+    main{max-width:1200px;margin:0 auto;padding:14px}
+    .grid{display:grid;grid-template-columns: 1.05fr .95fr;gap:10px}
+    @media (max-width: 1020px){.grid{grid-template-columns:1fr}}
+
+    .card{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:10px;box-shadow:0 1px 0 rgba(17,24,39,.02),0 10px 22px rgba(17,24,39,.06)}
+    .card h2{margin:0 0 10px;font-size:14px;letter-spacing:.35px}
+    .card .hint{color:var(--muted);font-size:12px;margin-top:-6px;margin-bottom:10px}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media (max-width: 720px){.row{grid-template-columns:1fr}}
+
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input, select, textarea{
+      width:100%;padding:6px 8px;border-radius:10px;border:1px solid var(--border);
+      background:#fff;color:var(--text);outline:none;
+      box-shadow:inset 0 1px 0 rgba(17,24,39,.03)
+    }
+    input:focus, select:focus, textarea:focus{border-color:rgba(138,106,63,.55);box-shadow:0 0 0 3px rgba(138,106,63,.15), inset 0 1px 0 rgba(17,24,39,.03)}
+    textarea{min-height:82px;resize:vertical}
+    input:disabled, select:disabled, textarea:disabled{opacity:.65}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .tab{padding:8px 10px;border-radius:12px;border:1px solid var(--border);background:var(--chipbg);cursor:pointer;font-weight:700;font-size:12px;color:var(--muted)}
+    .tab.active{background:rgba(176,137,104,.22);border-color:rgba(138,106,63,.45);color:var(--text)}
+
+    table{width:100%;border-collapse:collapse}
+    th, td{border:1px solid var(--grid)}
+
+    .twrap{overflow:auto;border:1px solid var(--border);border-radius:12px;background:var(--panel2)}
+    .t{min-width:686px;table-layout:fixed}
+    .t th{background:var(--head);color:#fff;font-size:11px;padding:4px 5px;text-align:left;white-space:nowrap}
+    .t td{font-size:11px;padding:3px 4px;background:#fff;line-height:1.15}
+    .t tr:nth-child(odd) td{background:var(--row1)}
+    .t tr:nth-child(even) td{background:var(--row2)}
+    .t td.num{text-align:right;white-space:nowrap}
+    .t td.center{text-align:center}
+    .t td input{padding:4px 5px;border-radius:8px;background:#fff;min-height:26px}
+
+    .mini{min-width:602px}
+    .mini td{background:#fff}
+    .mini tr:nth-child(odd) td{background:var(--row1)}
+    .mini tr:nth-child(even) td{background:var(--row2)}
+
+    .split{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
+    @media (max-width: 900px){.split{grid-template-columns:1fr}}
+
+    .kpis{display:grid;grid-template-columns: 1fr 1fr;gap:10px}
+    .kpi{border:1px solid var(--border);background:var(--chipbg);border-radius:12px;padding:10px}
+    .kpi .k{color:var(--muted);font-size:12px}
+    .kpi .v{font-size:14px;font-weight:800;margin-top:4px}
+
+    /* login */
+    .loginWrap{max-width:440px;margin:30px auto;border:1px solid var(--border);background:var(--panel);border-radius:16px;padding:14px}
+    .loginWrap h2{margin:0 0 10px}
+    .loginWrap .row{grid-template-columns:1fr}
+    .err{color:#fecaca;background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.35);padding:8px 10px;border-radius:10px;font-size:12px;display:none}
+    .okmsg{color:#bbf7d0;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.28);padding:8px 10px;border-radius:10px;font-size:12px;display:none}
+
+    /* PRINT (PDF) */
+    @media print{
+      body{background:#fff;color:#000}
+      header{display:none}
+      main{max-width:none;padding:0}
+      .card{border:0;background:#fff;border-radius:0;padding:0}
+      .twrap{border:0;background:#fff}
+      .t th{background:#b08968 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .t td{background:#fff !important}
+      .t tr:nth-child(odd) td, .t tr:nth-child(even) td{background:#fff !important}
+      .printHeader{display:flex;gap:12px;align-items:flex-start;margin:10px 12px 8px}
+      .printHeader img{width:56px;height:auto;object-fit:contain}
+      .printHeader .ptitle{font-size:18px;font-weight:900;margin:0}
+      .printHeader .pmeta{font-size:12px;margin-top:4px}
+      .printGrid{display:grid;grid-template-columns: 1fr 1fr;gap:12px;margin:0 12px 10px}
+      .printBox{border:1px solid #d8cbb7;border-radius:8px;padding:8px}
+      .printBox h3{margin:0 0 6px;font-size:12px;background:#b08968;color:#fff;padding:6px 8px;border-radius:6px}
+      .printKV{width:100%;border-collapse:collapse}
+      .printKV td{border:1px solid #e6d8c4;padding:6px 8px;font-size:12px}
+      .printKV td.k{width:55%;font-weight:700}
+      .printKV td.v{text-align:right}
+      .noPrint{display:none !important}
+      .pageBreak{page-break-before:always}
+    }
+
+    #tblDefectos td:first-child{white-space:normal;overflow:visible;text-overflow:clip}
+    #tblDefectos th:first-child{white-space:nowrap}
+
+    .noPrint{ }
+  
+
+    /* ====== COMPACT "SIN SCROLL" (layout fijo + paneles colapsables) ====== */
+    body.appNoScroll{overflow:hidden}
+    main#app{min-height:0}
+    .shell{display:grid;grid-template-columns: 1fr 1fr;gap:10px;
+      height:calc(100vh - 128px); /* header+tabs aprox */
+      min-height:520px}
+    @media (max-width: 1020px){
+      body.appNoScroll{overflow:auto}
+      .shell{grid-template-columns:1fr;height:auto}
+    }
+    .col{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto;padding-right:2px}
+
+    details.panel{border:1px solid var(--border);background:var(--panel);border-radius:14px;
+      box-shadow:0 1px 0 rgba(17,24,39,.02),0 10px 22px rgba(17,24,39,.06)}
+    details.panel[open]{background:var(--panel)}
+    details.panel > summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;
+      padding:10px 12px;font-weight:900;letter-spacing:.35px;font-size:12px;
+      background:linear-gradient(180deg, #fff7ea, #f5ead7);border-bottom:1px solid var(--border);
+      border-radius:14px}
+    details.panel > summary::-webkit-details-marker{display:none}
+    details.panel .chev{opacity:.7;font-weight:900;transition:transform .15s ease}
+    details.panel[open] .chev{transform:rotate(180deg)}
+    .panelBody{padding:10px 12px}
+
+    /* tablas internas con scroll propio para reducir scroll general */
+    .twrapTall{max-height: 36vh}
+    @media (max-width: 1020px){.twrapTall{max-height:none}}
+
+    /* inputs más compactos */
+    input, select{padding:6px 8px}
+    .t td input{min-height:22px;padding:3px 5px}
+
+    /* ====== PRINT estilo como formato oficial ====== */
+    @media print{
+      body{background:#fff !important}
+      header, #login, .tabs, #tab-form, #tab-hist{display:none !important}
+      #printArea{display:block !important}
+      @page{size:A4; margin:10mm}
+
+      :root{--pblue:#1e3a8a}
+      #printArea *{font-family:Arial,Helvetica,sans-serif}
+      .pHeader{width:100%;border-collapse:collapse;border:2px solid var(--pblue)}
+      .pHeader td{border:2px solid var(--pblue);vertical-align:middle;padding:6px 8px;font-size:11px}
+      .phLogo{width:18%}
+      .phLogo img{width:62px;height:auto;object-fit:contain;display:block;margin-bottom:6px}
+      .phOrg{font-size:10px;font-weight:800;line-height:1.1}
+      .phOrg span{font-weight:700;opacity:.9}
+      .phAddr{width:28%;font-size:10px;line-height:1.2}
+      .phTitle{width:36%}
+      .phMain{font-size:11px;font-weight:900;letter-spacing:.2px}
+      .phSub{font-size:10px;font-weight:800;margin-top:2px}
+      .phSub2{font-size:9px;font-weight:700;margin-top:2px}
+      .phMeta{width:18%;font-size:10px;line-height:1.25}
+
+      .pFields{width:100%;border-collapse:collapse;border-left:2px solid var(--pblue);border-right:2px solid var(--pblue);border-bottom:2px solid var(--pblue)}
+      .pFields td{border:1.5px solid var(--pblue);padding:5px 7px;font-size:10px}
+      .pFields td.k{width:22%;font-weight:800}
+      .pFields td.v{width:28%;font-weight:700}
+
+      .pDef{width:100%;border-collapse:collapse;border:2px solid var(--pblue);margin-top:8px}
+      .pDef th{border:2px solid var(--pblue);background:#e7efff;color:#0b1b44;
+        font-size:10px;padding:6px 7px;text-align:left;font-weight:900}
+      .pDef td{border:1.5px solid var(--pblue);padding:4px 7px;font-size:10px}
+      .pDef td.num{text-align:right;white-space:nowrap}
+      .pTot td{background:#2c3e66;color:#fff;font-weight:900}
+      .pFoot td{background:#e5e7eb;color:#111827;font-weight:800}
+
+      .pBottom{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
+      .pObs{flex:1;border:2px solid var(--pblue);padding:8px}
+      .pObsTitle{font-size:10px;font-weight:900;margin-bottom:6px}
+      .pObsLine{min-height:40px;font-size:10px;white-space:pre-wrap}
+      .pPhoto{width:40mm;border:2px solid var(--pblue);padding:6px}
+      .pPhoto img{width:100%;height:34mm;object-fit:cover;border:1px solid #93a4c7}
+
+      .pSigs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:18px}
+      .pSigs .line{border-bottom:2px solid var(--pblue);height:22px}
+      .pSigs .cap{font-size:9px;text-align:center;margin-top:6px;font-weight:800}
+      .pSigs .name{font-size:9px;text-align:center;margin-top:2px}
+    }
+
+  </style>
+</head>
+<body>
+  <header class="safe">
+    <div class="bar">
+      <div class="brand">
+        <img src="logo.png" alt="Oceantreasure" />
+        <div>
+          <h1>SISTEMA SAC | ANÁLISIS DE MATERIA PRIMA</h1>
+          <div class="sub" id="who">Sin sesión</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="chip" id="roleChip">Rol: -</span>
+        <button class="btn" id="btnSignOut" style="display:none">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="login" class="loginWrap safe">
+    <h2>Ingreso</h2>
+    <div class="err" id="loginErr"></div>
+    <div class="row">
+      <div>
+        <label>Correo</label>
+        <input id="email" type="email" autocomplete="username" />
+      </div>
+      <div>
+        <label>Contraseña</label>
+        <input id="pass" type="password" autocomplete="current-password" />
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+      <button class="btn primary" id="btnLogin">ENTRAR</button>
+      <span class="chip">Solo usuarios autorizados</span>
+    </div>
+  </div>
+
+  <main id="app" class="safe" style="display:none">
+    <div class="tabs noPrint">
+      <button class="tab active" data-tab="form">Registro</button>
+      <button class="tab" data-tab="hist">Historial</button>
+    </div>
+
+    <section id="tab-form">
+      <div class="shell">
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="col">
+          <details class="panel" open>
+            <summary>
+              <span>DATOS DE RECEPCIÓN</span>
+              <span class="chev">▾</span>
+            </summary>
+            <div class="panelBody">
+              <div class="row">
+                <div>
+                  <label>Fecha</label>
+                  <input id="fFecha" type="date" />
+                </div>
+                <div>
+                  <label>Hora de llegada</label>
+                  <input id="fHoraLlegada" type="time" />
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label>Proveedor</label>
+                  <input id="fProveedor" type="text" />
+                </div>
+                <div>
+                  <label>Procedencia</label>
+                  <input id="fOrigen" type="text" />
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label># Lote de Planta</label>
+                  <input id="fLotePlanta" type="text" />
+                </div>
+                <div>
+                  <label># Lote de Cliente</label>
+                  <input id="fLoteCliente" type="text" />
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label>Peso remitido (Libras)</label>
+                  <input id="fPesoRemitido" inputmode="decimal" />
+                </div>
+                <div>
+                  <label>N° Kv o Bines</label>
+                  <input id="fBines" inputmode="numeric" />
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label>N° Piscina</label>
+                  <input id="fPiscina" type="text" />
+                </div>
+                <div>
+                  <label>N° Guía de Remisión</label>
+                  <input id="fGuia" type="text" />
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label>N° de móviles (placa)</label>
+                  <input id="fPlaca" type="text" />
+                </div>
+                <div>
+                  <label>Hora de análisis</label>
+                  <input id="fHoraAnalisis" type="time" />
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label>Temperatura °C</label>
+                  <input id="fTemp" inputmode="decimal" />
+                </div>
+                <div>
+                  <label>Residual SO2 (ppm)</label>
+                  <input id="fSO2" inputmode="decimal" />
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label>Presenta carta de garantía</label>
+                  <select id="fGarantia">
+                    <option value="">Seleccione</option>
+                    <option value="SI">SI</option>
+                    <option value="NO">NO</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Observaciones generales</label>
+                  <input id="fObsCorta" type="text" />
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="panel" open>
+            <summary>
+              <span>VALORACIÓN DE GRAMAJE EN MATERIA PRIMA</span>
+              <span class="chev">▾</span>
+            </summary>
+            <div class="panelBody">
+              <div class="twrap twrapTall">
+                <table class="t mini" id="tblGramaje">
+                  <thead>
+                    <tr>
+                      <th style="width:48px">Gramos</th>
+                      <th style="width:62px">Piezas</th>
+                      <th style="width:70px">Total (g)</th>
+                      <th style="width:84px">Peso sin cabeza (g)</th>
+                      <th style="width:76px">Entero cuenta</th>
+                      <th style="width:74px">Entero talla</th>
+                      <th style="width:74px">Cola cuenta</th>
+                      <th style="width:74px">Cola talla</th>
+                      <th class="noPrint" style="width:46px">Quitar</th>
+                    </tr>
+                  </thead>
+                  <tbody id="gramajeBody"></tbody>
+                </table>
+              </div>
+              <div class="noPrint" style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap">
+                <button class="btn" id="btnAddRow">+ Fila</button>
+                <span class="chip">Tip: escribe piezas, lo demás es automático</span>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- COLUMNA DERECHA -->
+        <div class="col">
+          <details class="panel" open>
+            <summary>
+              <span>ENSORIAL</span>
+              <span class="chev">▾</span>
+            </summary>
+            <div class="panelBody">
+              <div class="hint" style="margin:0 0 8px">Listas basadas en tu hoja <b>SENSORIAL</b>.</div>
+              <div class="row">
+                <div>
+                  <label>Sabor</label>
+                  <select id="fSabor">
+                    <option value="">Seleccione</option>
+                    <option>NORMAL</option>
+                    <option>TIERRA LEVE</option>
+                    <option>TIERRA MODERADA</option>
+                    <option>TIERRA FUERTE</option>
+                    <option>CHOCLO LEVE</option>
+                    <option>CHOCLO MODERADO</option>
+                    <option>CHOCLO FUERTE</option>
+                    <option>COMBUSTIBLE</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Color</label>
+                  <select id="fColor">
+                    <option value="">Seleccione</option>
+                    <option>A1</option>
+                    <option>A2</option>
+                    <option>A3</option>
+                    <option>A4</option>
+                    <option>A5</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px">
+                <div>
+                  <label>Olor</label>
+                  <input id="fOlor" type="text" />
+                </div>
+                <div>
+                  <label>Estado (opcional)</label>
+                  <select id="fEstado">
+                    <option value="">(sin estado)</option>
+                    <option>APROBADO</option>
+                    <option>RECHAZADO</option>
+                    <option>CONDICIONADO</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="kpis" style="margin-top:10px">
+                <div class="kpi">
+                  <div class="k">Total piezas muestreadas</div>
+                  <div class="v" id="kTotalPiezas">0</div>
+                </div>
+                <div class="kpi">
+                  <div class="k">Peso muestra (g)</div>
+                  <div class="v" id="kPesoMuestra">0,00</div>
+                </div>
+                <div class="kpi">
+                  <div class="k">Gramaje promedio entero (g)</div>
+                  <div class="v" id="kGramProm">0,00</div>
+                </div>
+                <div class="kpi">
+                  <div class="k">Talla promedio cola</div>
+                  <div class="v" id="kTallaCola">-</div>
+                </div>
+              </div>
+
+              <div class="photoBox noPrint" style="margin-top:10px" id="photoBox">
+                <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+                  <div>
+                    <div style="font-weight:900;font-size:12px;letter-spacing:.25px">EVIDENCIA FOTOGRÁFICA</div>
+                    <div style="color:var(--muted);font-size:11px;margin-top:2px">Opcional (tomar foto desde el dispositivo)</div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <button class="btn" id="btnPhoto" type="button">Tomar foto</button>
+                    <button class="btn danger" id="btnPhotoClear" type="button" style="display:none">Quitar</button>
+                  </div>
+                </div>
+                <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none" />
+                <div id="photoPreview" style="display:none;margin-top:10px">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <img id="photoImg" alt="foto" style="width:120px;max-width:120px;border-radius:12px;border:1px solid var(--border);object-fit:cover" />
+                    <div style="flex:1">
+                      <div style="font-size:12px;font-weight:800">Vista previa</div>
+                      <div id="photoMeta" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </details>
+
+          <details class="panel" open>
+            <summary>
+              <span>ANÁLISIS ORGANOLÉPTICO</span>
+              <span class="chev">▾</span>
+            </summary>
+            <div class="panelBody">
+              <div class="twrap twrapTall">
+                <table class="t" id="tblDefectos" style="min-width:520px">
+                  <thead>
+                    <tr>
+                      <th>Parámetro</th>
+                      <th style="width:88px">Valor</th>
+                      <th style="width:76px">%</th>
+                    </tr>
+                  </thead>
+                  <tbody id="defBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+
+          <details class="panel" open>
+            <summary>
+              <span>OBSERVACIONES Y FIRMAS</span>
+              <span class="chev">▾</span>
+            </summary>
+            <div class="panelBody">
+              <div class="row">
+                <div>
+                  <label>Observaciones (detalle)</label>
+                  <textarea id="fObs"></textarea>
+                </div>
+                <div>
+                  <label>Elaborado por</label>
+                  <input id="fElaborado" type="text" />
+                  <div style="height:10px"></div>
+                  <label>Verificado por</label>
+                  <input id="fVerificado" type="text" />
+                  <div style="height:10px"></div>
+                  <label>Revisado por</label>
+                  <input id="fRevisado" type="text" />
+                </div>
+              </div>
+
+              <div class="noPrint" style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
+                <button class="btn primary" id="btnSave">GUARDAR</button>
+                <button class="btn" id="btnNew">NUEVO</button>
+                <button class="btn" id="btnPrint">IMPRIMIR / PDF</button>
+                <button class="btn danger" id="btnDelete" style="margin-left:auto">ELIMINAR</button>
+              </div>
+              <div class="okmsg" id="okmsg"></div>
+              <div class="err" id="errmsg"></div>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-hist" style="display:none">
+      <div class="card">
+        <h2>HISTORIAL</h2>
+        <div class="hint">Selecciona un registro para cargarlo en pantalla.</div>
+        <div class="row">
+          <div>
+            <label>Buscar (Proveedor / Lote / Guía)</label>
+            <input id="q" type="text" />
+          </div>
+          <div>
+            <label>Orden</label>
+            <select id="qOrder">
+              <option value="desc">Más reciente primero</option>
+              <option value="asc">Más antiguo primero</option>
+            </select>
+          </div>
+        </div>
+        <div class="twrap" style="margin-top:12px">
+          <table class="t" id="tblHist" style="min-width:602px">
+            <thead>
+              <tr>
+                <th style="width:77px">Fecha</th>
+                <th>Proveedor</th>
+                <th style="width:126px">Lote Planta</th>
+                <th style="width:126px">Lote Cliente</th>
+                <th style="width:98px">Guía</th>
+                <th style="width:84px">Estado</th>
+                <th style="width:112px">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="histBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRINT AREA (solo PDF) -->
+    <div id="printArea" style="display:none">
+      <table class="pHeader">
+        <tr>
+          <td class="phLogo">
+            <img src="logo.png" alt="logo" />
+            <div class="phOrg">OCEANTREASURE S.A.<br><span>100% ECUADORIAN QUALITY</span></div>
+          </td>
+          <td class="phAddr">
+            Cantón Durán Parroquia Eloy Alfaro (Durán) Km. 4,5<br>
+            Vía Durán Tambo a tres cuadras del centro de alto rendimiento
+          </td>
+          <td class="phTitle">
+            <div class="phMain">REGISTROS DE ASEGURAMIENTO DE LA CALIDAD</div>
+            <div class="phSub">ANÁLISIS ORGANOLÉPTICO DE MATERIA PRIMA</div>
+            <div class="phSub2">ORGANOLEPTIC ANALYSIS OF RAW MATERIAL</div>
+          </td>
+          <td class="phMeta">
+            <div><b>Cod:</b> CC.AR. 001</div>
+            <div><b>Versión:</b> 001</div>
+            <div style="margin-top:8px"><b>Edición:</b> 2022</div>
+          </td>
+        </tr>
+      </table>
+
+      <table class="pFields">
+        <tr>
+          <td class="k">Fecha / Date:</td><td class="v" id="pFecha"></td>
+          <td class="k"># Lote de Planta / Plant Lot:</td><td class="v" id="pLotePlanta"></td>
+        </tr>
+        <tr>
+          <td class="k">Proveedor / Supplier:</td><td class="v" id="pProveedor"></td>
+          <td class="k"># Lote de Cliente / Client Lot:</td><td class="v" id="pLoteCliente"></td>
+        </tr>
+        <tr>
+          <td class="k">Procedencia / Origin:</td><td class="v" id="pOrigen"></td>
+          <td class="k">Peso remitido (lb) / Submitted Weight:</td><td class="v" id="pPesoRem"></td>
+        </tr>
+        <tr>
+          <td class="k">Hora de llegada / Arrival Time:</td><td class="v" id="pHoraLlegada"></td>
+          <td class="k">Carta de garantía / Present Letter of Guarantee:</td><td class="v" id="pGarantia"></td>
+        </tr>
+        <tr>
+          <td class="k">Hora de análisis / Analysis Time:</td><td class="v" id="pHoraAnalisis"></td>
+          <td class="k">Color / Colour:</td><td class="v" id="pColor"></td>
+        </tr>
+        <tr>
+          <td class="k">Olor / Smell:</td><td class="v" id="pOlor"></td>
+          <td class="k">Sabor / Taste:</td><td class="v" id="pSabor"></td>
+        </tr>
+        <tr>
+          <td class="k">N. de móviles (placa) / Plate:</td><td class="v" id="pPlaca"></td>
+          <td class="k">N. de guía de remisión / Referral Guide:</td><td class="v" id="pGuia"></td>
+        </tr>
+        <tr>
+          <td class="k">N. de Kv o Bines:</td><td class="v" id="pBines"></td>
+          <td class="k">N. de piscina / Pond:</td><td class="v" id="pPiscina"></td>
+        </tr>
+        <tr>
+          <td class="k">Temperatura °C / Temperature:</td><td class="v" id="pTemp"></td>
+          <td class="k">Residual SO2 (ppm):</td><td class="v" id="pSO2"></td>
+        </tr>
+      </table>
+
+      <table class="pDef">
+        <thead>
+          <tr>
+            <th style="width:56%">Unidades de porcentaje / Percentage units</th>
+            <th style="width:22%">N°</th>
+            <th style="width:22%">%</th>
+          </tr>
+        </thead>
+        <tbody id="pDefRows"></tbody>
+        <tfoot>
+          <tr class="pTot">
+            <td>Total Piezas / Total Pieces</td>
+            <td id="pTotPieces"></td>
+            <td id="pTotPct"></td>
+          </tr>
+          <tr class="pFoot">
+            <td>Gramaje Promedio / Average Grammage</td>
+            <td colspan="2" id="pGramAvg"></td>
+          </tr>
+          <tr class="pFoot">
+            <td>Clasificación promedio / Average Size</td>
+            <td colspan="2" id="pSizeAvg"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="pBottom">
+        <div class="pObs">
+          <div class="pObsTitle">Observaciones generales / General Remarks:</div>
+          <div class="pObsLine" id="pObs"></div>
+        </div>
+        <div class="pPhoto" id="pPhotoWrap" style="display:none">
+          <div class="pObsTitle">Evidencia</div>
+          <img id="pPhoto" alt="foto" />
+        </div>
+      </div>
+
+      <div class="pSigs">
+        <div><div class="line"></div><div class="cap">Elaborado por / Elaborated by</div><div class="name" id="pElab"></div></div>
+        <div><div class="line"></div><div class="cap">Verificado por / Verified by</div><div class="name" id="pVerif"></div></div>
+        <div><div class="line"></div><div class="cap">Revisado por / Reviewed by</div><div class="name" id="pRev"></div></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // --- Helpers ---
+    const fmt2 = (n)=> new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2}).format(isFinite(n)?n:0);
+    const fmt0 = (n)=> new Intl.NumberFormat('es-EC',{maximumFractionDigits:0}).format(isFinite(n)?n:0);
+
+    function parseDec(s){
+      if(s==null) return NaN;
+      if(typeof s==='number') return s;
+      s=String(s).trim();
+      if(!s) return NaN;
+      // remove spaces
+      s=s.replace(/\s+/g,'');
+      // allow 1.234,56 or 1234,56 or 1234.56
+      // if has comma, treat comma as decimal and remove thousand dots
+      if(s.includes(',')){
+        s=s.replace(/\./g,'').replace(',','.');
+      }
+      // remove thousand commas if decimal dot
+      // (rare)
+      const n=Number(s);
+      return isFinite(n)?n:NaN;
+    }
+
+    function upperClean(v){
+      return (v||'').toString().trim().toUpperCase();
+    }
+
+    function onlyInt(v){
+      v=(v||'').toString();
+      v=v.replace(/[^0-9]/g,'');
+      return v;
+    }
+
+    // Clasificaciones copiadas de fórmulas del Excel
+    function clasificarEntero(cuenta){
+      if(!isFinite(cuenta) || cuenta<10) return '';
+      if(cuenta>=10 && cuenta<=19.99) return '10-20';
+      if(cuenta>=20 && cuenta<=29.99) return '20-30';
+      if(cuenta>=30 && cuenta<=39.99) return '30-40';
+      if(cuenta>=40 && cuenta<=49.99) return '40-50';
+      if(cuenta>=50 && cuenta<=59.99) return '50-60';
+      if(cuenta>=60 && cuenta<=69.99) return '60-70';
+      if(cuenta>=70 && cuenta<=79.99) return '70-80';
+      if(cuenta>=80 && cuenta<=99.99) return '80-100';
+      if(cuenta>=100 && cuenta<=119.99) return '100-120';
+      if(cuenta>=120 && cuenta<=149.99) return '120-150';
+      if(cuenta>=150 && cuenta<=199.99) return 'Juvenil';
+      if(cuenta>=200) return 'Larva';
+      return '';
+    }
+
+    function clasificarCola(cuenta){
+      if(!isFinite(cuenta) || cuenta<=11.99) return '';
+      if(cuenta>=12 && cuenta<15) return 'U15';
+      if(cuenta>=16 && cuenta<20) return '16-20';
+      if(cuenta>=20 && cuenta<25) return '21-25';
+      if(cuenta>=25 && cuenta<30) return '26-30';
+      if(cuenta>=30 && cuenta<35) return '31-35';
+      if(cuenta>=35 && cuenta<40) return '36-40';
+      if(cuenta>=40 && cuenta<50) return '41-50';
+      if(cuenta>=50 && cuenta<60) return '51-60';
+      if(cuenta>=60 && cuenta<70) return '61-70';
+      if(cuenta>=70 && cuenta<90) return '71-90';
+      if(cuenta>=90 && cuenta<110) return '91-110';
+      if(cuenta>=110 && cuenta<130) return '111-130';
+      if(cuenta>=130 && cuenta<150) return 'Juvenil';
+      if(cuenta>=150) return 'Larva';
+      return '';
+    }
+
+    const DEFECTOS = [
+      {key:'flacido', label:'Flácido / Soft', type:'pieces'},
+      {key:'mudados', label:'Mudados / Molt', type:'pieces'},
+      {key:'cabezasRojas', label:'Cabezas rojas / Red Heads', type:'pieces'},
+      {key:'cabezasFlojas', label:'Cabezas flojas / Heads Off the Hook', type:'pieces'},
+      {key:'cabezasAnaranjadas', label:'Cabezas anaranjadas / Orange heads', type:'pieces'},
+      {key:'cabezasReventadas', label:'Cabezas reventadas / Blown Heads', type:'pieces'},
+      {key:'picadoFuerte', label:'Picado fuerte / Strong Spot', type:'pieces'},
+      {key:'deshidratadoLeve', label:'Deshidratado leve / Mild Dehydrated', type:'pieces'},
+      {key:'deshidratadoFuerte', label:'Deshidratado fuerte / Strong Dehydrated', type:'pieces'},
+      {key:'branquiasSucias', label:'Branquias sucias / Dirty Gills', type:'pieces'},
+      {key:'quebrados', label:'Quebrados / Broken', type:'pieces'},
+      {key:'rosados', label:'Rosados / Red Dish', type:'pieces'},
+      {key:'necrosisLeve', label:'Necrosis leve / Mild Necrosis', type:'pieces'},
+      {key:'necrosisFuerte', label:'Necrosis fuerte / Strong Necrosis', type:'pieces'},
+      {key:'ataqueBacteriano', label:'Ataque bacteriano / Bacterial Attack', type:'pieces'},
+      {key:'melanosis', label:'Melanosis / Black Spot', type:'pieces'},
+      {key:'deforme', label:'Camarón deforme / Misshapen', type:'pieces'},
+      {key:'leche', label:'Camarón leche / Milk shrimp', type:'pieces'},
+      {key:'pequeno', label:'Pequeño / Small', type:'pieces'},
+      {key:'juvenilG', label:'Camarón juvenil (g)', type:'grams'},
+      {key:'basuraG', label:'Basura (g)', type:'grams'},
+      {key:'otrosG', label:'Otros (g)', type:'grams'}
+    ];
+
+    const DEFAULT_GRAMOS = [17,16,15,14,13,12,11,10,9,8];
+
+    const allowedEditors = new Set([
+      'analistamateriaprima@oceantreasure.local',
+      'jeffersonfigueroa@oceantreasure.local'
+    ]);
+    const allowedView = new Set([
+      'gerenciageneral@oceantreasure.local'
+    ]);
+
+    let currentUser = null;
+    let role = 'none'; // editor | view
+    let currentId = null;
+
+    const el = (id)=>document.getElementById(id);
+
+    function setMsg(kind, msg){
+      const ok=el('okmsg');
+      const err=el('errmsg');
+      ok.style.display='none';
+      err.style.display='none';
+      if(!msg) return;
+      if(kind==='ok'){
+        ok.textContent=msg;
+        ok.style.display='block';
+      }else{
+        err.textContent=msg;
+        err.style.display='block';
+      }
+      setTimeout(()=>{ ok.style.display='none'; err.style.display='none'; }, 2800);
+    }
+
+    function setLoginError(msg){
+      const e=el('loginErr');
+      e.textContent=msg||'';
+      e.style.display=msg? 'block':'none';
+    }
+
+    function todayISO(){
+      const d=new Date();
+      const tz = d.getTimezoneOffset()*60000;
+      return new Date(d - tz).toISOString().slice(0,10);
+    }
+
+    function initDefaults(){
+      el('fFecha').value = todayISO();
+      el('fGarantia').value='';
+      el('fEstado').value='';
+      // default signatures
+      if(!el('fElaborado').value) el('fElaborado').value = ((window.role||role)==='editor') ? (((window.currentUser||currentUser)?.email)||'') : '';
+
+      // build gramaje rows
+      const body = el('gramajeBody');
+      body.innerHTML='';
+      DEFAULT_GRAMOS.forEach(g=> body.appendChild(buildGramRow({gramos:g, piezas:''})));
+      // a few blank rows
+      for(let i=0;i<4;i++) body.appendChild(buildGramRow({gramos:'', piezas:''}));
+
+      // defects
+      const defB=el('defBody');
+      defB.innerHTML='';
+      DEFECTOS.forEach(d=> defB.appendChild(buildDefRow(d)));
+
+      recalcAll();
+      // reset foto en pantalla
+      if(window.__photo){
+        window.__photo=null;
+        const prev=document.getElementById('photoPreview');
+        const clr=document.getElementById('btnPhotoClear');
+        const pi=document.getElementById('photoInput');
+        if(prev) prev.style.display='none';
+        if(clr) clr.style.display='none';
+        if(pi) pi.value='';
+      }
+    }
+
+    function buildGramRow(row){
+      const tr=document.createElement('tr');
+      tr.innerHTML = `
+        <td class="center"><input data-g="gramos" value="${row.gramos??''}" /></td>
+        <td class="center"><input data-g="piezas" value="${row.piezas??''}" /></td>
+        <td class="num" data-out="totalG">0,00</td>
+        <td class="num" data-out="sinCabeza">0,00</td>
+        <td class="num" data-out="enteroCuenta">0,00</td>
+        <td class="center" data-out="enteroTalla">-</td>
+        <td class="num" data-out="colaCuenta">0,00</td>
+        <td class="center" data-out="colaTalla">-</td>
+        <td class="center noPrint"><button class="btn danger" data-act="del" style="padding:6px 10px;border-radius:10px">X</button></td>
+      `;
+      const inpG = tr.querySelector('input[data-g="gramos"]');
+      const inpP = tr.querySelector('input[data-g="piezas"]');
+      inpG.addEventListener('input', ()=>{
+        // allow decimals but keep clean
+        inpG.value = inpG.value.replace(/[^0-9.,]/g,'');
+        recalcAll();
+      });
+      inpP.addEventListener('input', ()=>{
+        inpP.value = onlyInt(inpP.value);
+        recalcAll();
+      });
+      tr.querySelector('button[data-act="del"]').addEventListener('click', ()=>{
+        tr.remove();
+        recalcAll();
+      });
+      return tr;
+    }
+
+    function buildDefRow(def){
+      const tr=document.createElement('tr');
+      const ph = def.type==='pieces' ? '0' : '0,00';
+      tr.innerHTML = `
+        <td>${def.label}</td>
+        <td class="center"><input data-def="${def.key}" /></td>
+        <td class="num" data-defp="${def.key}">0,00%</td>
+      `;
+      const inp=tr.querySelector('input');
+      inp.addEventListener('input', ()=>{
+        if(def.type==='pieces') inp.value = onlyInt(inp.value);
+        else inp.value = inp.value.replace(/[^0-9.,]/g,'');
+        recalcAll();
+      });
+      return tr;
+    }
+
+    function getGramRows(){
+      const rows=[];
+      [...el('gramajeBody').querySelectorAll('tr')].forEach(tr=>{
+        const g=parseDec(tr.querySelector('input[data-g="gramos"]').value);
+        const p=parseDec(tr.querySelector('input[data-g="piezas"]').value);
+        rows.push({g:isFinite(g)?g:NaN, p:isFinite(p)?p:NaN, tr});
+      });
+      return rows;
+    }
+
+    function getDefValues(){
+      const out={};
+      DEFECTOS.forEach(d=>{
+        const inp=document.querySelector(`input[data-def="${d.key}"]`);
+        if(!inp){ out[d.key]=0; return; }
+        const v = d.type==='pieces' ? parseDec(inp.value) : parseDec(inp.value);
+        out[d.key]=isFinite(v)?v:0;
+      });
+      return out;
+    }
+
+    function recalcAll(){
+      // 1) Gramaje table
+      const rows=getGramRows();
+      let totalPieces=0;
+      let totalWeightG=0;
+      rows.forEach(({g,p,tr})=>{
+        const gramos=isFinite(g)?g:0;
+        const piezas=isFinite(p)?p:0;
+        const totalG = (gramos*piezas);
+        const sinCabeza = totalG ? totalG*0.66 : 0;
+        const enteroCuenta = gramos ? (1000/gramos) : 0;
+        const enteroTalla = clasificarEntero(enteroCuenta);
+        const colaCuenta = gramos ? (454/(gramos*0.66)) : 0;
+        const colaTalla = clasificarCola(colaCuenta);
+
+        tr.querySelector('[data-out="totalG"]').textContent = totalG? fmt2(totalG): '';
+        tr.querySelector('[data-out="sinCabeza"]').textContent = totalG? fmt2(sinCabeza): '';
+        tr.querySelector('[data-out="enteroCuenta"]').textContent = gramos? fmt2(enteroCuenta): '';
+        tr.querySelector('[data-out="enteroTalla"]').textContent = enteroTalla || '';
+        tr.querySelector('[data-out="colaCuenta"]').textContent = gramos? fmt2(colaCuenta): '';
+        tr.querySelector('[data-out="colaTalla"]').textContent = colaTalla || '';
+
+        if(piezas>0 && gramos>0){
+          totalPieces += piezas;
+          totalWeightG += totalG;
+        }
+      });
+
+      // include gram-type defects into sample weight
+      const defs=getDefValues();
+      const juvenilG=defs.juvenilG||0;
+      const basuraG=defs.basuraG||0;
+      const otrosG=defs.otrosG||0;
+      totalWeightG += (juvenilG + basuraG + otrosG);
+
+      const gramProm = (totalPieces>0) ? (totalWeightG/totalPieces) : 0;
+      const enteroCuentaProm = gramProm>0 ? (1000/gramProm) : 0;
+      const tallaEnteroProm = clasificarEntero(enteroCuentaProm);
+      const colaCuentaProm = gramProm>0 ? (454/(gramProm*0.66)) : 0;
+      const tallaColaProm = clasificarCola(colaCuentaProm);
+
+      el('kTotalPiezas').textContent = totalPieces? fmt0(totalPieces): '0';
+      el('kPesoMuestra').textContent = totalWeightG? fmt2(totalWeightG): '0,00';
+      el('kGramProm').textContent = gramProm? fmt2(gramProm): '0,00';
+      el('kTallaCola').textContent = tallaColaProm || '-';
+
+      // 2) Defects %
+      let sumDefPieces=0;
+      DEFECTOS.forEach(d=>{
+        const v=defs[d.key]||0;
+        if(d.type==='pieces') sumDefPieces += v;
+      });
+      const goodPieces = Math.max(0, totalPieces - sumDefPieces);
+
+      DEFECTOS.forEach(d=>{
+        const v=defs[d.key]||0;
+        let pct=0;
+        if(d.type==='pieces') pct = (totalPieces>0)? (v/totalPieces*100):0;
+        else pct = (totalWeightG>0)? (v/totalWeightG*100):0;
+        const out=document.querySelector(`[data-defp="${d.key}"]`);
+        if(out) out.textContent = (v? fmt2(pct): '0,00') + '%';
+      });
+
+      // Actualiza el formato de impresión (PDF) estilo ORGANOLEPTICO
+      updatePrintArea({ totalPieces, totalWeightG, gramProm, tallaEnteroProm, tallaColaProm, goodPieces, defs });
+
+      // store computed in dataset for save
+      window.__computed = {
+        totalPieces, totalWeightG, gramProm,
+        enteroCuentaProm, tallaEnteroProm,
+        colaCuentaProm, tallaColaProm,
+        sumDefPieces, goodPieces
+      };
+    }
+
+
+    // --- IMPRESIÓN (PDF) estilo ORGANOLEPTICO ---
+    function esc(s){
+      return (s==null)? '' : String(s);
+    }
+
+    function updatePrintArea(ctx){
+      try{
+        const fecha = el('fFecha')?.value || '';
+        const horaLlegada = el('fHoraLlegada')?.value || '';
+        const proveedor = (el('fProveedor')?.value || '').toUpperCase();
+        const origen = (el('fOrigen')?.value || '').toUpperCase();
+        const lp = el('fLotePlanta')?.value || '';
+        const lc = el('fLoteCliente')?.value || '';
+        const pesoLb = isFinite(parseDec(el('fPesoRemitido')?.value)) ? fmt2(parseDec(el('fPesoRemitido')?.value)) : '';
+        const bines = el('fBines')?.value || '';
+        const piscina = (el('fPiscina')?.value || '').toUpperCase();
+        const guia = el('fGuia')?.value || '';
+        const placa = (el('fPlaca')?.value || '').toUpperCase();
+        const horaAnalisis = el('fHoraAnalisis')?.value || '';
+        const temp = el('fTemp')?.value || '';
+        const so2 = el('fSO2')?.value || '';
+        const garantia = el('fGarantia')?.value || '';
+        const color = el('fColor')?.value || '';
+        const sabor = el('fSabor')?.value || '';
+        const olor = (el('fOlor')?.value || '').toUpperCase();
+
+        const obs = el('fObs')?.value || '';
+        const elab = (el('fElaborado')?.value || '').toUpperCase();
+        const verif = (el('fVerificado')?.value || '').toUpperCase();
+        const rev = (el('fRevisado')?.value || '').toUpperCase();
+
+        const setT = (id, v)=>{ const x=document.getElementById(id); if(x) x.textContent = esc(v); };
+
+        setT('pFecha', fecha);
+        setT('pProveedor', proveedor);
+        setT('pOrigen', origen);
+        setT('pLotePlanta', lp);
+        setT('pLoteCliente', lc);
+        setT('pPesoRem', pesoLb);
+        setT('pHoraLlegada', horaLlegada);
+        setT('pGarantia', garantia);
+        setT('pHoraAnalisis', horaAnalisis);
+        setT('pColor', color);
+        setT('pSabor', sabor);
+        setT('pOlor', olor);
+        setT('pPlaca', placa);
+        setT('pGuia', guia);
+        setT('pBines', bines);
+        setT('pPiscina', piscina);
+        setT('pTemp', temp);
+        setT('pSO2', so2);
+
+        const totalPieces = ctx?.totalPieces || 0;
+        const gramProm = ctx?.gramProm || 0;
+        const tallaEnteroProm = ctx?.tallaEnteroProm || '';
+        const defs = ctx?.defs || getDefValues();
+
+        // Render de filas de defectos
+        const tb = document.getElementById('pDefRows');
+        if(tb){
+          tb.innerHTML='';
+          const sumDefPieces = ctx?.sumDefPieces ?? (()=>{ let s=0; DEFECTOS.forEach(d=>{ if(d.type==='pieces') s += (defs[d.key]||0); }); return s; })();
+          const goodPieces = ctx?.goodPieces ?? Math.max(0, totalPieces - sumDefPieces);
+
+          def_row(tb, 'Camarones buenos / Good shrimp', goodPieces, totalPieces>0 ? (goodPieces/totalPieces*100) : 0);
+
+          for(const d of DEFECTOS){
+            const v = defs[d.key]||0;
+            let pct = 0;
+            if(d.type==='pieces') pct = totalPieces>0 ? (v/totalPieces*100) : 0;
+            else {
+              const totalWeightG = ctx?.totalWeightG || 0;
+              pct = totalWeightG>0 ? (v/totalWeightG*100) : 0;
+            }
+            def_row(tb, d.label, v, pct);
+          }
+
+          setT('pTotPieces', totalPieces? fmt2(totalPieces).replace(/,00$/,'') : '0');
+          setT('pTotPct', '100,00');
+          setT('pGramAvg', gramProm? fmt2(gramProm) : '');
+          setT('pSizeAvg', tallaEnteroProm || '');
+        }
+
+        setT('pObs', obs);
+        setT('pElab', elab);
+        setT('pVerif', verif);
+        setT('pRev', rev);
+
+        // Foto discreta
+        const pw = document.getElementById('pPhotoWrap');
+        const pi = document.getElementById('pPhoto');
+        if(pw && pi){
+          if(window.__photo && window.__photo.dataUrl){
+            pi.src = window.__photo.dataUrl;
+            pw.style.display = 'block';
+          }else{
+            pw.style.display = 'none';
+            pi.removeAttribute('src');
+          }
+        }
+
+      }catch(err){
+        console.warn('updatePrintArea', err);
+      }
+    }
+
+    function def_row(tb, label, n, pct){
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td'); td1.textContent = label;
+      const td2 = document.createElement('td'); td2.textContent = (n && n!==0) ? String(n) : '-';
+      const td3 = document.createElement('td'); td3.textContent = (pct && pct!==0) ? (fmt2(pct) + '%') : '-';
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+      tb.appendChild(tr);
+    }
+
+
+    
+
+    // --- Navegación de teclado ---
+    function focusNextInForm(current){
+      const candidates = [...document.querySelectorAll('#tab-form input, #tab-form select, #tab-form textarea')]
+        .filter(x=> !x.disabled && x.offsetParent!==null);
+      const i = candidates.indexOf(current);
+      if(i>=0 && candidates[i+1]) candidates[i+1].focus();
+    }
+
+    function focusNextRowSameCol(input){
+      const td = input.closest('td');
+      const tr = input.closest('tr');
+      const table = input.closest('table');
+      if(!td || !tr || !table) return false;
+      const colIndex = [...tr.children].indexOf(td);
+      const tbody = tr.parentElement;
+      if(!tbody) return false;
+      let next = tr.nextElementSibling;
+      if(!next && table.id==='tblGramaje'){
+        // auto agrega fila
+        const btn = document.getElementById('btnAddRow');
+        if(btn) btn.click();
+        next = tbody.lastElementChild;
+      }
+      if(!next) return false;
+      const nextTd = next.children[colIndex];
+      if(!nextTd) return false;
+      const nxt = nextTd.querySelector('input,select,textarea,button');
+      if(nxt){ nxt.focus(); return true; }
+      return false;
+    }
+
+    document.addEventListener('keydown', (e)=>{
+      const t = e.target;
+      if(!t) return;
+      if(e.key==='Enter'){
+        if(t.tagName==='TEXTAREA') return; // permite salto de linea
+        // En tablas: Enter baja a la siguiente fila (misma columna)
+        if(t.closest('table')){
+          const moved = focusNextRowSameCol(t);
+          if(moved){ e.preventDefault(); return; }
+        }
+        // En formulario: Enter avanza al siguiente campo
+        if(t.matches('input,select')){
+          e.preventDefault();
+          focusNextInForm(t);
+        }
+      }
+    });
+
+// --- UI events ---
+    document.addEventListener('input', (e)=>{
+      const id = e.target?.id;
+      if(['fProveedor','fOrigen','fLotePlanta','fLoteCliente','fPiscina','fGuia','fPlaca','fObsCorta'].includes(id)){
+        // some uppercase fields
+        if(['fProveedor','fOrigen','fPiscina'].includes(id)) e.target.value = upperClean(e.target.value);
+        recalcAll();
+      }
+    });
+
+    // enforce formats
+    el('fBines').addEventListener('input', ()=>{ el('fBines').value=onlyInt(el('fBines').value); });
+    el('fPesoRemitido').addEventListener('input', ()=>{ el('fPesoRemitido').value=el('fPesoRemitido').value.replace(/[^0-9.,]/g,''); recalcAll(); });
+    el('fTemp').addEventListener('input', ()=>{ el('fTemp').value=el('fTemp').value.replace(/[^0-9.,]/g,''); });
+    el('fSO2').addEventListener('input', ()=>{ el('fSO2').value=el('fSO2').value.replace(/[^0-9.,]/g,''); });
+    el('fPiscina').addEventListener('input', ()=>{ el('fPiscina').value=upperClean(el('fPiscina').value); });
+
+    // tabs
+    [...document.querySelectorAll('.tab')].forEach(b=>b.addEventListener('click', ()=>{
+      [...document.querySelectorAll('.tab')].forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const t=b.dataset.tab;
+      el('tab-form').style.display = (t==='form')?'block':'none';
+      el('tab-hist').style.display = (t==='hist')?'block':'none';
+    }));
+
+    el('btnAddRow').addEventListener('click', ()=>{
+      el('gramajeBody').appendChild(buildGramRow({gramos:'', piezas:''}));
+    });
+
+    el('btnNew').addEventListener('click', ()=>{ clearForm(true); });
+    el('btnPrint').addEventListener('click', ()=>{
+      recalcAll();
+      updatePrintArea({ ...(window.__computed||{}), defs:getDefValues(), tallaEnteroProm:(window.__computed&&window.__computed.tallaEnteroProm)||'' });
+      window.print();
+    });
+
+    // --- Foto (cámara) ---
+    window.__photo = null; // {dataUrl,name,type,kb}
+
+    const btnPhoto = document.getElementById('btnPhoto');
+    const btnPhotoClear = document.getElementById('btnPhotoClear');
+    const photoInput = document.getElementById('photoInput');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoImg = document.getElementById('photoImg');
+    const photoMeta = document.getElementById('photoMeta');
+
+    function showPhoto(p){
+      if(!p){
+        window.__photo = null;
+        photoPreview.style.display = 'none';
+        btnPhotoClear.style.display = 'none';
+        if(photoInput) photoInput.value='';
+        return;
+      }
+      window.__photo = p;
+      photoImg.src = p.dataUrl;
+      photoMeta.textContent = `${p.name||'foto' } — ${p.kb||0} KB`;
+      photoPreview.style.display = 'block';
+      btnPhotoClear.style.display = 'inline-block';
+    }
+
+    async function compressToJpeg(file, maxW=1024, quality=0.72){
+      const dataUrl = await new Promise((res, rej)=>{
+        const fr = new FileReader();
+        fr.onload = ()=> res(fr.result);
+        fr.onerror = rej;
+        fr.readAsDataURL(file);
+      });
+      const img = await new Promise((res, rej)=>{
+        const i = new Image();
+        i.onload = ()=> res(i);
+        i.onerror = rej;
+        i.src = dataUrl;
+      });
+      const scale = Math.min(1, maxW / (img.width||1));
+      const w = Math.round((img.width||1) * scale);
+      const h = Math.round((img.height||1) * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const out = canvas.toDataURL('image/jpeg', quality);
+      const kb = Math.round((out.length * 3/4) / 1024);
+      return { dataUrl: out, name: file.name||'foto.jpg', type:'image/jpeg', kb };
+    }
+
+    if(btnPhoto && photoInput){
+      btnPhoto.addEventListener('click', ()=> photoInput.click());
+      photoInput.addEventListener('change', async ()=>{
+        const f = photoInput.files && photoInput.files[0];
+        if(!f) return;
+        try{
+          const p = await compressToJpeg(f);
+          // Firestore doc limit ~1MB: mantenemos la foto compacta
+          if(p.kb > 650){
+            setMsg('err','La foto es muy grande. Intenta otra (más cerca) o toma en menor resolución.');
+            showPhoto(null);
+            return;
+          }
+          showPhoto(p);
+          setMsg('ok','Foto cargada.');
+        }catch(e){
+          console.error(e);
+          setMsg('err','No se pudo cargar la foto.');
+        }
+      });
+    }
+
+
+    // --- Navegación teclado ---
+    function focusNextRowSameCol(input){
+      const td = input.closest('td');
+      const tr = input.closest('tr');
+      const table = input.closest('table');
+      if(!td || !tr || !table) return false;
+      const tbody = tr.parentElement;
+      if(!tbody || tbody.tagName!=='TBODY') return false;
+      const colIndex = Array.from(tr.children).indexOf(td);
+      let next = tr.nextElementSibling;
+      if(!next && table.id==='tblGramaje'){
+        // auto agrega fila en gramaje
+        const btn = document.getElementById('btnAddRow');
+        if(btn) btn.click();
+        next = tr.nextElementSibling; // puede ser null si no se agregó aún
+        // si no, busca última fila
+        next = next || tbody.lastElementChild;
+      }
+      if(!next) return false;
+      const nextTd = next.children[colIndex];
+      if(!nextTd) return false;
+      const nextInput = nextTd.querySelector('input,select,textarea');
+      if(nextInput && !nextInput.disabled){
+        nextInput.focus();
+        if(nextInput.select) nextInput.select();
+        return true;
+      }
+      return false;
+    }
+
+    document.addEventListener('keydown', (e)=>{
+      if(e.key !== 'Enter') return;
+      const t = e.target;
+      if(!t) return;
+      if(t.tagName==='TEXTAREA') return; // permitir saltos de línea
+
+      // si está dentro de una tabla editable: ENTER baja a la siguiente fila misma columna
+      const inTable = t.closest('#tblGramaje, #tblDefectos, #tblHist');
+      if(inTable && inTable.id !== 'tblHist'){
+        e.preventDefault();
+        if(!focusNextRowSameCol(t)){
+          // fallback: como TAB
+          const focusables = Array.from(document.querySelectorAll('input,select,textarea,button')).filter(x=>!x.disabled && x.offsetParent!==null);
+          const i = focusables.indexOf(t);
+          if(i>=0 && focusables[i+1]) focusables[i+1].focus();
+        }
+        return;
+      }
+
+      // fuera de tabla: ENTER avanza al siguiente campo visible
+      if(['INPUT','SELECT'].includes(t.tagName)){
+        e.preventDefault();
+        const focusables = Array.from(document.querySelectorAll('#tab-form input,#tab-form select,#tab-form textarea')).filter(x=>!x.disabled && x.offsetParent!==null);
+        const i = focusables.indexOf(t);
+        if(i>=0 && focusables[i+1]) focusables[i+1].focus();
+      }
+    });
+    if(btnPhotoClear){
+      btnPhotoClear.addEventListener('click', ()=> showPhoto(null));
+    }
+
+
+    function clearForm(keepDate){
+      currentId=null;
+      // inputs
+      const ids=[
+        'fProveedor','fOrigen','fLotePlanta','fLoteCliente','fPesoRemitido','fBines','fPiscina','fGuia','fPlaca','fHoraLlegada','fHoraAnalisis','fTemp','fSO2','fGarantia','fSabor','fColor','fOlor','fEstado','fObsCorta','fObs','fElaborado','fVerificado','fRevisado'
+      ];
+      ids.forEach(id=> el(id).value='');
+      if(keepDate!==false) el('fFecha').value=todayISO();
+      initDefaults();
+      if(window.__photo){
+        const pp=document.getElementById('photoPreview');
+        if(pp) pp.style.display='none';
+        const pc=document.getElementById('btnPhotoClear');
+        if(pc) pc.style.display='none';
+        window.__photo=null;
+        const pi=document.getElementById('photoInput');
+        if(pi) pi.value='';
+      }
+      setMsg('ok','Listo para nuevo registro.');
+      updateButtons();
+    }
+
+    function updateButtons(){
+      const canEdit = (window.role||role)==='editor';
+      el('btnSave').disabled = !canEdit;
+      el('btnNew').disabled = !canEdit;
+      el('btnDelete').disabled = !canEdit || !currentId;
+      // disable inputs for viewer
+      const disable = ((window.role||role)!=='editor');
+      [...document.querySelectorAll('input,select,textarea')].forEach(x=>{
+        if(x.id==='email' || x.id==='pass') return;
+        // allow search inputs always
+        if(['q','qOrder'].includes(x.id)) return;
+        x.disabled = disable;
+      });
+      // but allow print
+      el('btnPrint').disabled = false;
+      // foto
+      const bp=document.getElementById('btnPhoto');
+      const bpc=document.getElementById('btnPhotoClear');
+      if(bp) bp.disabled = disable;
+      if(bpc) bpc.disabled = disable;
+
+      // still allow selecting from history
+      if(disable){
+        // allow history action buttons
+        [...document.querySelectorAll('#histBody button')].forEach(b=>b.disabled=false);
+      }
+    }
+
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const COL = 'mp_analisis';
+
+    const el = (id)=>document.getElementById(id);
+
+    function setLoginError(msg){
+      const e=el('loginErr');
+      e.textContent=msg||'';
+      e.style.display=msg? 'block':'none';
+    }
+
+    function roleFromEmail(email){
+      email=(email||'').toLowerCase();
+      const editors = new Set(['analistamateriaprima@oceantreasure.local','jeffersonfigueroa@oceantreasure.local']);
+      const viewers = new Set(['gerenciageneral@oceantreasure.local']);
+      if(editors.has(email)) return 'editor';
+      if(viewers.has(email)) return 'view';
+      return 'none';
+    }
+
+    function hardDeny(){
+      // sign out and show denial
+      signOut(auth).catch(()=>{});
+      el('app').style.display='none';
+      document.body.classList.remove('appNoScroll');
+      el('login').style.display='block';
+      document.getElementById('btnSignOut').style.display='none';
+      document.getElementById('roleChip').textContent='Rol: -';
+      document.getElementById('who').textContent='Acceso denegado';
+      setLoginError('Acceso denegado. Usuario no autorizado.');
+    }
+
+    // login
+    document.getElementById('btnLogin').addEventListener('click', async ()=>{
+      setLoginError('');
+      const email=(el('email').value||'').trim();
+      const pass=(el('pass').value||'').trim();
+      if(!email || !pass){ setLoginError('Ingresa correo y contraseña.'); return; }
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(err){
+        setLoginError('No se pudo iniciar sesión. Verifica correo/contraseña.');
+        console.error(err);
+      }
+    });
+
+    document.getElementById('btnSignOut').addEventListener('click', ()=> signOut(auth));
+
+    // app state
+    let currentUser=null;
+    let role='none';
+    let currentId=null;
+    let unsub=null;
+
+    // expose to non-module script
+    window.__setCurrentId = (id)=>{ currentId=id; window.__currentId=id; };
+    window.__getCurrentId = ()=> currentId;
+
+    function setMsg(kind, msg){
+      const ok=document.getElementById('okmsg');
+      const err=document.getElementById('errmsg');
+      ok.style.display='none';
+      err.style.display='none';
+      if(!msg) return;
+      if(kind==='ok'){
+        ok.textContent=msg; ok.style.display='block';
+      }else{
+        err.textContent=msg; err.style.display='block';
+      }
+      setTimeout(()=>{ ok.style.display='none'; err.style.display='none'; }, 2800);
+    }
+
+    function collectForm(){
+      const parseDec = window.parseDec;
+      const upperClean = window.upperClean;
+      const onlyInt = window.onlyInt;
+      const c = window.__computed||{};
+
+      return {
+        fecha: el('fFecha').value||'',
+        horaLlegada: el('fHoraLlegada').value||'',
+        proveedor: upperClean(el('fProveedor').value||''),
+        origen: upperClean(el('fOrigen').value||''),
+        lotePlanta: (el('fLotePlanta').value||'').trim(),
+        loteCliente: (el('fLoteCliente').value||'').trim(),
+        pesoRemitidoLb: isFinite(parseDec(el('fPesoRemitido').value)) ? parseDec(el('fPesoRemitido').value) : null,
+        bines: (onlyInt(el('fBines').value)||''),
+        piscina: upperClean(el('fPiscina').value||''),
+        guia: (el('fGuia').value||'').trim(),
+        placa: (el('fPlaca').value||'').trim().toUpperCase(),
+        horaAnalisis: el('fHoraAnalisis').value||'',
+        tempC: isFinite(parseDec(el('fTemp').value)) ? parseDec(el('fTemp').value) : null,
+        so2ppm: isFinite(parseDec(el('fSO2').value)) ? parseDec(el('fSO2').value) : null,
+        garantia: el('fGarantia').value||'',
+        sabor: el('fSabor').value||'',
+        color: el('fColor').value||'',
+        olor: (el('fOlor').value||'').trim(),
+        estado: el('fEstado').value||'',
+        obsCorta: (el('fObsCorta').value||'').trim(),
+        obs: (el('fObs').value||'').trim(),
+        elaborado: (el('fElaborado').value||'').trim(),
+        verificado: (el('fVerificado').value||'').trim(),
+        revisado: (el('fRevisado').value||'').trim(),
+
+        // tables
+        gramajeRows: [...document.querySelectorAll('#gramajeBody tr')].map(tr=>({
+          gramos: (tr.querySelector('input[data-g="gramos"]').value||'').trim(),
+          piezas: (tr.querySelector('input[data-g="piezas"]').value||'').trim()
+        })),
+        defectos: window.getDefValues(),
+
+        // computed
+        totalPieces: c.totalPieces||0,
+        pesoMuestraG: c.totalWeightG||0,
+        gramProm: c.gramProm||0,
+        tallaEnteroProm: c.tallaEnteroProm||'',
+        tallaColaProm: c.tallaColaProm||'',
+        goodPieces: c.goodPieces||0,
+        foto: (window.__photo && window.__photo.dataUrl) ? window.__photo : null,
+      };
+    }
+
+    function fillForm(data){
+      const fmt2 = window.fmt2;
+      const fmt0 = window.fmt0;
+      el('fFecha').value=data.fecha||'';
+      el('fHoraLlegada').value=data.horaLlegada||'';
+      el('fProveedor').value=data.proveedor||'';
+      el('fOrigen').value=data.origen||'';
+      el('fLotePlanta').value=data.lotePlanta||'';
+      el('fLoteCliente').value=data.loteCliente||'';
+      el('fPesoRemitido').value=(data.pesoRemitidoLb!=null)? fmt2(data.pesoRemitidoLb):'';
+      el('fBines').value=data.bines||'';
+      el('fPiscina').value=data.piscina||'';
+      el('fGuia').value=data.guia||'';
+      el('fPlaca').value=data.placa||'';
+      el('fHoraAnalisis').value=data.horaAnalisis||'';
+      el('fTemp').value=(data.tempC!=null)? fmt2(data.tempC):'';
+      el('fSO2').value=(data.so2ppm!=null)? fmt2(data.so2ppm):'';
+      el('fGarantia').value=data.garantia||'';
+      el('fSabor').value=data.sabor||'';
+      el('fColor').value=data.color||'';
+      el('fOlor').value=data.olor||'';
+      el('fEstado').value=data.estado||'';
+      el('fObsCorta').value=data.obsCorta||'';
+      el('fObs').value=data.obs||'';
+      el('fElaborado').value=data.elaborado||'';
+      el('fVerificado').value=data.verificado||'';
+      el('fRevisado').value=data.revisado||'';
+
+      // foto
+      if(data.foto && data.foto.dataUrl){
+        try{
+          window.__photo = data.foto;
+          const img=document.getElementById('photoImg');
+          const meta=document.getElementById('photoMeta');
+          const prev=document.getElementById('photoPreview');
+          const clr=document.getElementById('btnPhotoClear');
+          if(img) img.src = data.foto.dataUrl;
+          if(meta) meta.textContent = `${data.foto.name||'foto'} — ${data.foto.kb||''} KB`;
+          if(prev) prev.style.display='block';
+          if(clr && role==='editor') clr.style.display='inline-block';
+        }catch(e){ console.error(e); }
+      }else{
+        window.__photo=null;
+        const prev=document.getElementById('photoPreview');
+        const clr=document.getElementById('btnPhotoClear');
+        if(prev) prev.style.display='none';
+        if(clr) clr.style.display='none';
+      }
+
+      // gramaje rows rebuild
+      const body=document.getElementById('gramajeBody');
+      body.innerHTML='';
+      (data.gramajeRows||[]).forEach(r=> body.appendChild(window.buildGramRow({gramos:r.gramos, piezas:r.piezas})));
+      if(!(data.gramajeRows||[]).length) window.initDefaults();
+
+      // defects
+      const defs=data.defectos||{};
+      Object.keys(defs).forEach(k=>{
+        const inp=document.querySelector(`input[data-def="${k}"]`);
+        if(inp){
+          if(typeof defs[k]==='number') inp.value = fmt2(defs[k]).replace('.',',');
+          else inp.value = defs[k]||'';
+        }
+      });
+      window.recalcAll();
+    }
+
+    function updateButtons(){
+      const canEdit = (window.role||role)==='editor';
+      document.getElementById('btnSave').disabled = !canEdit;
+      document.getElementById('btnNew').disabled = !canEdit;
+      document.getElementById('btnDelete').disabled = !canEdit || !currentId;
+      // disable inputs for viewer
+      const disable = ((window.role||role)!=='editor');
+      [...document.querySelectorAll('input,select,textarea')].forEach(x=>{
+        if(x.id==='email' || x.id==='pass') return;
+        if(['q','qOrder'].includes(x.id)) return;
+        x.disabled = disable;
+      });
+      document.getElementById('btnPrint').disabled = false;
+      // foto
+      const bp=document.getElementById('btnPhoto');
+      const bpc=document.getElementById('btnPhotoClear');
+      if(bp) bp.disabled = disable;
+      if(bpc) { bpc.disabled = disable; if(disable) bpc.style.display='none'; }
+    }
+
+    function mountHistory(){
+      const tbody=document.getElementById('histBody');
+      if(unsub) unsub();
+      const qy = query(collection(db, COL), orderBy('createdAt','desc'));
+      unsub = onSnapshot(qy, (snap)=>{
+        const list=[];
+        snap.forEach(d=> list.push({id:d.id, ...d.data()}));
+        // filter
+        const term=(document.getElementById('q').value||'').trim().toLowerCase();
+        const ord=document.getElementById('qOrder').value;
+        let arr=list;
+        if(term){
+          arr = arr.filter(x=>
+            (x.proveedor||'').toLowerCase().includes(term) ||
+            (x.lotePlanta||'').toLowerCase().includes(term) ||
+            (x.loteCliente||'').toLowerCase().includes(term) ||
+            (x.guia||'').toLowerCase().includes(term)
+          );
+        }
+        if(ord==='asc') arr = [...arr].reverse();
+
+        tbody.innerHTML='';
+        arr.forEach(x=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML = `
+            <td>${x.fecha||''}</td>
+            <td>${(x.proveedor||'')}</td>
+            <td>${(x.lotePlanta||'')}</td>
+            <td>${(x.loteCliente||'')}</td>
+            <td>${(x.guia||'')}</td>
+            <td>${(x.estado||'')}</td>
+            <td class="center"><button class="btn" data-open="${x.id}" style="padding:6px 10px;border-radius:10px">ABRIR</button></td>
+          `;
+          tr.querySelector('button').addEventListener('click', ()=> openDoc(x.id));
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    async function openDoc(id){
+      // simplest: snapshot already has data; but we re-query by scanning last snapshot isn't stored.
+      // We'll fetch via onSnapshot doc listener in next iteration; for now, just read from existing list by querying again.
+      // To keep this file lightweight, we do a one-shot read via dynamic import of getDoc.
+      const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+      const ref=doc(db, COL, id);
+      const snap=await getDoc(ref);
+      if(!snap.exists()) return;
+      currentId=id;
+      window.__setCurrentId(id);
+      fillForm(snap.data());
+      updateButtons();
+      // switch to form
+      document.querySelector('.tab[data-tab="form"]').click();
+      setMsg('ok','Registro cargado.');
+    }
+
+    // search live
+    document.getElementById('q').addEventListener('input', ()=> mountHistory());
+    document.getElementById('qOrder').addEventListener('change', ()=> mountHistory());
+
+    // save
+    document.getElementById('btnSave').addEventListener('click', async ()=>{
+      if(role!=='editor') return;
+      try{
+        const payload=collectForm();
+        // basic validation
+        if(!payload.fecha){ setMsg('err','Falta fecha.'); return; }
+        if(!payload.proveedor){ setMsg('err','Falta proveedor.'); return; }
+
+        if(!currentId){
+          const ref=await addDoc(collection(db, COL), {
+            ...payload,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            createdBy: currentUser.email
+          });
+          currentId=ref.id;
+          window.__setCurrentId(ref.id);
+          setMsg('ok','Guardado.');
+        }else{
+          await updateDoc(doc(db, COL, currentId), {
+            ...payload,
+            updatedAt: serverTimestamp()
+          });
+          setMsg('ok','Actualizado.');
+        }
+        updateButtons();
+      }catch(err){
+        console.error(err);
+        setMsg('err','No se pudo guardar. Revisa consola.');
+      }
+    });
+
+    // delete
+    document.getElementById('btnDelete').addEventListener('click', async ()=>{
+      if(role!=='editor' || !currentId) return;
+      if(!confirm('¿Eliminar este registro?')) return;
+      try{
+        await deleteDoc(doc(db, COL, currentId));
+        currentId=null;
+        window.__setCurrentId(null);
+        // clear form
+        document.getElementById('btnNew').click();
+        setMsg('ok','Eliminado.');
+        updateButtons();
+      }catch(err){
+        console.error(err);
+        setMsg('err','No se pudo eliminar.');
+      }
+    });
+
+    // auth state
+    onAuthStateChanged(auth, (u)=>{
+      if(!u){
+        currentUser=null;
+        role='none';
+        document.getElementById('app').style.display='none';
+        document.body.classList.remove('appNoScroll');
+        document.getElementById('login').style.display='block';
+        document.getElementById('btnSignOut').style.display='none';
+        document.getElementById('who').textContent='Sin sesión';
+        document.getElementById('roleChip').textContent='Rol: -';
+        return;
+      }
+
+      const r = roleFromEmail(u.email);
+      if(r==='none'){
+        hardDeny();
+        return;
+      }
+
+      currentUser=u;
+      role=r;
+
+      // expose for other script
+      window.currentUser = u;
+      window.role = r;
+
+      document.getElementById('login').style.display='none';
+      document.getElementById('app').style.display='block';
+      document.body.classList.add('appNoScroll');
+      document.getElementById('btnSignOut').style.display='inline-block';
+      document.getElementById('who').textContent = `${u.email} (${r==='editor'?'EDITOR':'SOLO VISTA'})`;
+      document.getElementById('roleChip').textContent = `Rol: ${r==='editor'?'Editor':'Solo vista'}`;
+
+      // init
+      window.recalcAll();
+      window.initDefaults();
+      updateButtons();
+      mountHistory();
+    });
+
+  </script>
+</body>
+</html>
