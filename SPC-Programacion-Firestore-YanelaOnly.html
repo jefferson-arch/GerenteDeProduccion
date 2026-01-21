@@ -620,19 +620,31 @@
   const ADMIN_EMAIL = "jeffersonfigueroa@oceantreasure.local";
   const EDITOR_LIMITED_EMAIL = "yanelavinueza@oceantreasure.local";
   const VIEWER_FULL_EMAIL = "gerenciageneral@oceantreasure.local";
+  const VIEWER_ONLY_EMAILS = [
+  "victoriacajias@oceantreasure.local",
+  "lisbethmurillo@oceantreasure.local",
+  "vanesasuarez@oceantreasure.local"
+];
+
 
   const $ = (id)=>document.getElementById(id);
   const nf2 = new Intl.NumberFormat("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
   const auth = getAuth(initializeApp(firebaseConfig));
   const db = getFirestore();
 
-  function getRoleByEmail(email){
-    const e = String(email || "").toLowerCase();
-    if(e === ADMIN_EMAIL) return "admin";
-    if(e === EDITOR_LIMITED_EMAIL) return "editor_limited";
-    if(e === VIEWER_FULL_EMAIL) return "viewer_full";
-    return "viewer_limited";
-  }
+function getRoleByEmail(email){
+  const e = String(email || "").toLowerCase();
+
+  if(e === ADMIN_EMAIL) return "admin";
+  if(e === EDITOR_LIMITED_EMAIL) return "editor_limited";
+  if(e === VIEWER_FULL_EMAIL) return "viewer_full";
+
+  // 👀 SOLO VISTA COMPLETA (NUEVOS USUARIOS)
+  if(VIEWER_ONLY_EMAILS.includes(e)) return "viewer_full";
+
+  return "viewer_limited";
+}
+
   function roleLabel(role){
     if(role === "admin") return "ADMIN (EDITA TODO)";
     if(role === "editor_limited") return "EDITOR (HASTA LIBRAS)";
