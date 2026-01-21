@@ -235,20 +235,47 @@
     .table-wrap tbody tr:nth-child(odd) td{background:rgba(29,78,216,.18)}
     .table-wrap tbody tr:nth-child(even) td{background:rgba(125,211,252,.14)}
 
-    /* ===== Resaltar filas con Liquidando (verde claro + letras negras) ===== */
-.table-wrap tbody tr.row-liquidando td{
-  background:#b7f7b7 !important;   /* verde claro */
-  color:#000 !important;           /* letras negras */
+/* ===== Resaltado por reglas de Liquidando / Peso Cola ===== */
+
+/* Caso 1: Liquidando = 1,2,3  -> celeste muy claro + letras azul oscuro */
+.table-wrap tbody tr.row-liq-1a3 td{
+  background:#dff3ff !important;   /* celeste muy claro */
+  color:#0b2a6f !important;        /* azul oscuro */
 }
-.table-wrap tbody tr.row-liquidando td .cell-in{
-  color:#000 !important;           /* texto dentro de inputs */
+.table-wrap tbody tr.row-liq-1a3 td .cell-in{
+  color:#0b2a6f !important;
+}
+.table-wrap tbody tr.row-liq-1a3 td .cell-in:focus{
+  outline:2px solid rgba(11,42,111,.20) !important;
+  background:rgba(255,255,255,.45) !important;
 }
 
-/* Si quieres que al enfocar no cambie el color a azul */
-.table-wrap tbody tr.row-liquidando td .cell-in:focus{
-  outline:2px solid rgba(0,0,0,.18) !important;
+/* Caso 2: Liquidando > 3 -> verde claro + letras verde oscuro */
+.table-wrap tbody tr.row-liq-gt3 td{
+  background:#b7f7b7 !important;   /* verde claro */
+  color:#0b4a1a !important;        /* verde oscuro */
+}
+.table-wrap tbody tr.row-liq-gt3 td .cell-in{
+  color:#0b4a1a !important;
+}
+.table-wrap tbody tr.row-liq-gt3 td .cell-in:focus{
+  outline:2px solid rgba(11,74,26,.18) !important;
   background:rgba(255,255,255,.35) !important;
 }
+
+/* Caso 3: Liquidando vacío, pero Peso Cola > 0 -> rosa palo + letras rojo oscuro */
+.table-wrap tbody tr.row-cola-sinliq td{
+  background:#f6d7de !important;   /* rosa palo claro */
+  color:#7a0f1b !important;        /* rojo oscuro */
+}
+.table-wrap tbody tr.row-cola-sinliq td .cell-in{
+  color:#7a0f1b !important;
+}
+.table-wrap tbody tr.row-cola-sinliq td .cell-in:focus{
+  outline:2px solid rgba(122,15,27,.18) !important;
+  background:rgba(255,255,255,.45) !important;
+}
+
 
 
     /* ===== Alineación numérica (consola web) ===== */
@@ -1026,13 +1053,31 @@
     rowsVisible = applyFilters(rowsAll).map(computeRow);
     updateSummary(rowsVisible);
 
-    tbody.innerHTML = "";
-    rowsVisible.forEach((r, rowIndex)=>{
-      const tr = document.createElement("tr");
-      tr.classList.toggle("row-editing", !!r._editing);
-      // ✅ Si "Liquidando" tiene valor (no vacío), resaltar fila
-      const liqVal = num(r.liquidando);
-      tr.classList.toggle("row-liquidando", liqVal != null);
+tbody.innerHTML = "";
+rowsVisible.forEach((r, rowIndex)=>{
+  const tr = document.createElement("tr");
+  tr.classList.toggle("row-editing", !!r._editing);
+
+  // ===== Reglas de color por fila =====
+  const liqVal = num(r.liquidando);     // puede ser null si está vacío
+  const colaVal = num(r.pesoCola);      // puede ser null si está vacío
+
+  // Limpia clases (por si re-renderiza)
+  tr.classList.remove("row-liq-1a3","row-liq-gt3","row-cola-sinliq");
+
+  if(liqVal != null){
+    if(liqVal >= 1 && liqVal <= 3){
+      tr.classList.add("row-liq-1a3");      // celeste
+    }else if(liqVal > 3){
+      tr.classList.add("row-liq-gt3");      // verde
+    }
+  }else{
+    // Liquidando vacío, pero Peso Cola > 0 => rosado
+    if((colaVal || 0) > 0){
+      tr.classList.add("row-cola-sinliq");
+    }
+  }
+
 
       COLS.forEach((c, colIndex)=>{
         const td = document.createElement("td");
