@@ -235,6 +235,22 @@
     .table-wrap tbody tr:nth-child(odd) td{background:rgba(29,78,216,.18)}
     .table-wrap tbody tr:nth-child(even) td{background:rgba(125,211,252,.14)}
 
+    /* ===== Resaltar filas con Liquidando (verde claro + letras negras) ===== */
+.table-wrap tbody tr.row-liquidando td{
+  background:#b7f7b7 !important;   /* verde claro */
+  color:#000 !important;           /* letras negras */
+}
+.table-wrap tbody tr.row-liquidando td .cell-in{
+  color:#000 !important;           /* texto dentro de inputs */
+}
+
+/* Si quieres que al enfocar no cambie el color a azul */
+.table-wrap tbody tr.row-liquidando td .cell-in:focus{
+  outline:2px solid rgba(0,0,0,.18) !important;
+  background:rgba(255,255,255,.35) !important;
+}
+
+
     /* ===== Alineación numérica (consola web) ===== */
     .cell-in.num-right{text-align:right;padding-right:8px}
     th.num-right .filter-ui{justify-content:space-between}
@@ -1014,6 +1030,9 @@
     rowsVisible.forEach((r, rowIndex)=>{
       const tr = document.createElement("tr");
       tr.classList.toggle("row-editing", !!r._editing);
+      // ✅ Si "Liquidando" tiene valor (no vacío), resaltar fila
+      const liqVal = num(r.liquidando);
+      tr.classList.toggle("row-liquidando", liqVal != null);
 
       COLS.forEach((c, colIndex)=>{
         const td = document.createElement("td");
