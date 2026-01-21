@@ -199,17 +199,20 @@
       border-spacing:0;
       table-layout:fixed;
     }
-    thead th{
-      position:relative;
-      background:linear-gradient(180deg, var(--hdr), var(--hdr2));
-      border-bottom:1px solid rgba(255,255,255,.10);
-      padding:6px 8px 6px 8px;
-      font-size:12px;
-      text-align:left;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+  thead th{
+    position:sticky;   /* ← CAMBIO CLAVE */
+    top:0;             /* ← CAMBIO CLAVE */
+    z-index:50;        /* ← CAMBIO CLAVE */
+    background:linear-gradient(180deg, var(--hdr), var(--hdr2));
+    border-bottom:1px solid rgba(255,255,255,.10);
+    padding:6px 8px 6px 8px;
+    font-size:12px;
+    text-align:left;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
     tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
       background:rgba(0,0,0,.10);
