@@ -8,23 +8,70 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Oceantreasure | Sistemas</title>
+
   <style>
-    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#e5e7eb}
-    header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2)}
+    :root{ --bg:#0f172a; --txt:#e5e7eb; }
+
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      color:var(--txt);
+      background:var(--bg);
+      min-height:100vh;
+      position:relative;
+    }
+
+    /* ✅ Fondo: bg.jpg en la raíz (junto a index.html) */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image:url("./bg.jpg?v=1");
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      z-index:-2;
+      transform:scale(1.02);
+    }
+
+    /* ✅ Capa oscura para que se lea perfecto */
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:rgba(8, 14, 28, 0.72);
+      z-index:-1;
+    }
+
+    header{
+      padding:22px 18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.25);
+      backdrop-filter: blur(6px);
+    }
     h1{margin:0;font-size:18px;font-weight:700}
     p{margin:6px 0 0;font-size:13px;opacity:.85}
     main{max-width:980px;margin:0 auto;padding:18px;display:grid;gap:12px}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:14px}
+    .card{
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:14px;
+      backdrop-filter: blur(6px);
+    }
     .card h2{margin:0 0 6px;font-size:15px}
-    .card small{opacity:.75}
-    .btn{display:inline-block;margin-top:10px;padding:9px 12px;border-radius:10px;
-         background:#2563eb;color:white;text-decoration:none;font-weight:700;font-size:13px}
+    .card small{opacity:.78}
+    .btn{
+      display:inline-block;margin-top:10px;padding:9px 12px;border-radius:10px;
+      background:#2563eb;color:white;text-decoration:none;font-weight:700;font-size:13px
+    }
     .btn:hover{filter:brightness(1.05)}
     .muted{opacity:.75;font-size:12px;margin-top:10px}
-    .line{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
+    .line{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
   </style>
 </head>
+
 <body>
   <header>
     <h1>OCEANTREASURE — Sistemas Web</h1>
@@ -42,7 +89,6 @@
         <div class="muted">Archivo: DX-Etiquetas-Importador-Firestore.html</div>
       </div>
 
-      
       <div class="card">
         <h2>Gestión de Compra</h2>
         <small>Login Firebase (solo Jefferson)</small>
@@ -75,7 +121,6 @@
         <div class="muted">Archivo: SPC-Programacion-Firestore-YanelaOnly.html</div>
       </div>
 
-      <!-- ✅ NUEVO: SAC -->
       <div class="card">
         <h2>SAC — Análisis de Materia Prima</h2>
         <small>Login Firebase (Analista/Jefferson editores — Gerencia vista)</small>
@@ -124,7 +169,6 @@
         <div class="muted">Archivo: SLA - RRHH-ListadoPorAreaOnly.html</div>
       </div>
 
-      <!-- ✅ NUEVO: CMO -->
       <div class="card">
         <h2>CMO — Costos Mano de Obra</h2>
         <small>Login Firebase (editores / vista) — nube</small>
