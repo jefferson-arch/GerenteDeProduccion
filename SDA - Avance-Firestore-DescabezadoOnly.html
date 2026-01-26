@@ -1,0 +1,1458 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SDA | Avance Descabezado</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" href="favicon.ico?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+
+  <style>
+    :root{
+      --blue:#1e88e5;
+      --navy:#0d2f4f;
+      --green:#2e7d32;
+      --graybtn:#d9d9d9;
+      --lightblue:#cfefff;
+      --border:#dcdcdc;
+      --softgreen:#dff1d8;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000}
+    .safe{padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+    .wrap{max-width:980px;margin:0 auto;padding:10px 12px 24px}
+    .topline{text-align:left;font-size:14px;padding:6px 0 8px;border-bottom:1px solid #ddd}
+    .topline .email{color:var(--blue);text-decoration:underline}
+    .navrow{display:flex;justify-content:space-between;align-items:flex-start;font-size:14px;padding:10px 0;min-height:26px}
+    .navrow .left a{display:block;color:var(--green);text-decoration:none;margin:0 0 4px;cursor:pointer}
+    .navrow .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .navrow .right .miniBtn{
+      border:1px dotted #666;background:#fff;padding:4px 8px;font-weight:700;cursor:pointer
+    }
+    .navrow .right .miniBtn.danger{
+      border-color:#b00020;
+      color:#b00020;
+    }
+    .center{text-align:center}
+    .title{margin:14px 0 10px;font-size:18px;color:var(--blue);letter-spacing:.5px}
+    .logo{width:86px;height:86px;margin:8px auto 6px;display:block;object-fit:contain}
+    .brand{font-weight:700;letter-spacing:.5px;margin:0;font-size:14px}
+    .tagline{margin:0 0 8px;font-size:10px;letter-spacing:1px}
+    .form{margin:14px auto 0;width:100%;max-width:430px}
+    .row{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:center;margin:10px 0}
+    .row label{font-size:16px}
+    input[type="text"],input[type="password"],select{
+      width:100%;padding:8px 10px;border:1px solid #ccc;background:#eee;outline:none;font-size:15px;min-height:38px
+    }
+    select{background:#fff}
+    .btn{
+      display:block;width:240px;margin:10px auto;padding:8px 10px;border:1px solid #555;background:var(--graybtn);
+      color:#000;font-weight:700;text-align:center;cursor:pointer;user-select:none
+    }
+    .btn.blue{background:var(--lightblue);border-color:#2a2a2a;color:#0b5aa5}
+    .btn.green{background:var(--softgreen);border-color:#2a2a2a;color:#1a5e1a}
+    .btn.black{background:#000;color:#fff;border-color:#000}
+    .btn:active{transform:scale(.99)}
+    .linkCenter{text-align:center;margin-top:16px;color:var(--blue);text-decoration:underline;cursor:pointer;font-size:14px}
+
+    .view{display:none}
+    .view.active{display:block}
+
+    /* Tabla */
+    .tableWrap{width:100%;overflow:auto;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:13px;min-width:820px}
+    thead th{background:var(--navy);color:#fff;padding:6px 8px;text-align:left;white-space:nowrap;vertical-align:bottom}
+    tbody td{border-bottom:1px solid #eee;padding:6px 8px;vertical-align:middle;white-space:nowrap}
+    tbody tr:hover{background:#fafafa}
+    .cellEdit{
+      border:1px dotted #666; padding:2px 6px; min-width:90px; display:inline-block; text-align:right;
+      background:#fff; cursor:pointer;
+    }
+    .cellEdit.locked{background:#f4f4f4}
+    .totalBox{
+      font-weight:700; font-size:16px; padding:4px 8px; border:1px dotted #666; background:#fff;
+      min-width:90px; text-align:right;
+    }
+    .thBtn{
+      display:inline-block;
+      margin-top:4px;
+      font-size:11px;
+      padding:3px 6px;
+      border:1px dotted rgba(255,255,255,.9);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    /* ✅ Tabla Libras: más compacta (solo APELLIDOS | NOMBRES | LIBRAS) */
+    #tblLibras{min-width:420px}
+    @media (max-width:520px){
+      #tblLibras{min-width:360px}
+    }
+
+    /* ✅ Filtro registro (DÍA / MES / AÑO / HISTÓRICO) */
+    .filterBar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-start;
+      margin:8px 0 12px;
+    }
+    .filterBar label{font-size:13px}
+    .filterBar select,.filterBar input[type="date"]{
+      padding:6px 8px; border:1px solid #ccc; background:#fff; font-size:13px; min-height:32px;
+    }
+    .filterBar .miniBtn{padding:6px 10px}
+
+    /* Modal */
+    .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px;z-index:999}
+    .modal{width:min(420px,100%);background:#fff;border:1px solid #999;padding:14px}
+    .modal h3{margin:0 0 6px;font-size:16px;text-align:center}
+    .modal .meta{font-size:13px;margin:0 0 10px}
+    .modal .meta b{font-weight:700}
+    .modal .modalName{display:block;font-size:20px;font-weight:800;margin:0 0 4px;}
+    .modal .modalSub{font-size:13px;margin:0 0 10px;}
+    .modal .optRow{display:flex;gap:14px;align-items:center;justify-content:center;margin:10px 0 6px;}
+    .modal .optRow label{display:flex;gap:6px;align-items:center;font-size:14px;cursor:pointer;user-select:none;}
+    .modal .optRow input[type="radio"]{transform:scale(1.15)}
+    .modal .netBox{margin:8px 0 0;border:1px solid #ddd;background:#fff;padding:10px;text-align:center;}
+    .modal .netBox .netLabel{font-size:12px;color:#333;margin-bottom:4px;}
+    .modal .netBox .netValue{font-size:26px;font-weight:900;color:#0a8f2a;line-height:1;}
+    .modal input{
+      width:100%;padding:10px;border:1px solid #ccc;font-size:16px
+    }
+    .modal .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+    .modal .actions .btn{margin:0;width:160px}
+
+    /* Mobile tweaks */
+    @media (max-width:520px){
+      .row{grid-template-columns:110px 1fr}
+      .btn{width:100%}
+      .wrap{padding:10px 10px 20px}
+      .navrow{padding:8px 0}
+      .navrow .right{gap:6px}
+      table{min-width:740px}
+    }
+  </style>
+</head>
+
+<body class="safe">
+  <div class="wrap">
+
+    <!-- LOGIN -->
+    <section id="vLogin" class="view active">
+      <div class="center">
+        <div class="title">INICIAR SESIÓN</div>
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="form">
+        <div class="row">
+          <label>Usuario:</label>
+          <input id="loginEmail" type="text" autocomplete="username" />
+        </div>
+        <div class="row">
+          <label>Contraseña:</label>
+          <input id="loginPass" type="password" autocomplete="current-password" />
+        </div>
+
+        <div class="btn" id="btnLogin">ACCEDER</div>
+        <div class="center" id="loginMsg" style="color:#b00020;font-size:13px;min-height:18px;"></div>
+        <div class="center" id="bootMsg" style="color:#555;font-size:12px;min-height:18px;"></div>
+      </div>
+    </section>
+
+    <!-- HEADER (solo logeado) -->
+    <div id="authHeader" style="display:none;">
+      <div class="topline">Usuario: <span class="email" id="userEmail"></span></div>
+    </div>
+
+    <!-- ASISTENCIA AVANCE -->
+    <section id="vAsistencia" class="view">
+      <div class="navrow">
+        <div class="left"></div>
+        <div class="right">
+          <div class="miniBtn" id="btnRegistroA">REGISTRO DE PESADAS</div>
+        </div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="form">
+        <div class="row" style="grid-template-columns:90px 1fr;">
+          <label>Cuadrilla</label>
+          <select id="selCuadrilla">
+            <option value=""></option>
+            <option>OCEANTREASURE</option>
+            <option>MAREPREX</option>
+            <option>FELESMAR</option>
+          </select>
+        </div>
+
+        <div class="btn blue" id="btnTomarAsistencia">TOMAR ASISTENCIA</div>
+        <div class="linkCenter" id="linkLogoutA">Cerrar sesión</div>
+      </div>
+    </section>
+
+    <!-- NOMINA PRESENTE -->
+    <section id="vNomina" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkBackAsistencia">Volver</a>
+          <a id="lnkLogoutN">Cerrar sesión</a>
+        </div>
+        <div class="right">
+          <div class="miniBtn" id="btnRegistroN">REGISTRO DE PESADAS</div>
+          <div class="miniBtn" id="btnPesar">PESAR CABEZAS</div>
+        </div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div class="center" style="font-size:13px;margin:6px 0 4px;">
+        Cuadrilla seleccionada: <b id="nominaCuadrilla"></b>
+      </div>
+      <div class="center" style="font-size:13px;margin:0 0 10px;">
+        Pesada actual: <b id="nominaPesadaLabel">—</b>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:140px;">ID</th>
+              <th>APELLIDOS</th>
+              <th>NOMBRES</th>
+              <th style="width:135px;">PRESENTE<br><span class="thBtn" id="btnSelectAll">SELECCIONAR TODOS</span></th>
+            </tr>
+          </thead>
+          <tbody id="nominaBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- LIBRAS CABEZAS PERSONAL -->
+    <section id="vLibras" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkBackNomina">Volver</a>
+          <a id="lnkLogoutL">Cerrar sesión</a>
+        </div>
+        <div class="right">
+          <div class="miniBtn" id="btnRegistro">REGISTRO DE PESADAS</div>
+          <div class="miniBtn" id="btnNuevaPesada">GUARDAR</div>
+          <div class="miniBtn" id="btnPdf">GENERAR PDF</div>
+        </div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div style="font-size:13px;margin:6px 0 2px;line-height:1.45;">
+        Pesada: <b id="pesadaNum">—</b><br>
+        Supervisor: <b id="pesadaSupervisor">—</b><br>
+        Fecha: <b id="pesadaFecha">—</b><br>
+        Hora: <b id="pesadaHora">—</b>
+        <span id="pesadaLabel" style="display:none;">—</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 10px;">
+        <div style="font-size:13px;">
+          Cuadrilla: <b id="librasCuadrilla"></b>
+        </div>
+        <div class="totalBox" id="totalLibras">0,00</div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="tblLibras">
+          <thead>
+            <tr>
+              <th>APELLIDOS</th>
+              <th>NOMBRES</th>
+              <th style="width:110px;">LIBRAS</th>
+            </tr>
+          </thead>
+          <tbody id="librasBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REGISTRO DE PESADAS -->
+    <section id="vRegistro" class="view">
+      <div class="navrow">
+        <div class="left">
+          <a id="lnkBackRegistro">Volver</a>
+          <a id="lnkLogoutR">Cerrar sesión</a>
+        </div>
+        <div class="right">
+          <div class="miniBtn" id="btnExcelR">DESCARGAR EXCEL</div>
+          <div class="miniBtn" id="btnPdfR">GENERAR PDF</div>
+          <div class="miniBtn danger" id="btnClearR" title="Borra el historial de ESTA CUADRILLA (solo Jefferson)">LIMPIAR HISTÓRICO</div>
+        </div>
+      </div>
+
+      <div class="center">
+        <img class="logo" src="logo.png" alt="Oceantreasure Logo" onerror="this.style.display='none'">
+        <p class="brand">OCEANTREASURE S.A.</p>
+        <p class="tagline">100% ECUADORIAN QUALITY</p>
+      </div>
+
+      <div style="font-size:13px;margin:6px 0 10px;">
+        Cuadrilla: <b id="regCuadrilla">—</b> &nbsp; | &nbsp; Rango: <b id="regFecha">HISTÓRICO</b>
+      </div>
+
+      <!-- ✅ FILTRO (por defecto hoy) -->
+      <div class="filterBar">
+        <label>Filtrar por:</label>
+        <select id="regFilterMode" aria-label="Modo de filtro">
+          <option value="DIA" selected>DÍA</option>
+          <option value="MES">MES</option>
+          <option value="ANIO">AÑO</option>
+          <option value="HISTORICO">HISTÓRICO</option>
+        </select>
+        <input id="regFilterDate" type="date" />
+        <div class="miniBtn" id="btnAplicarFiltro">APLICAR</div>
+        <div class="miniBtn" id="btnVerHistorico">VER HISTÓRICO</div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="tblRegistro">
+          <thead>
+            <tr>
+              <th>PESADA</th>
+              <th style="width:120px;">FECHA</th>
+              <th style="width:85px;">HORA</th>
+              <th>SUPERVISOR</th>
+              <th>APELLIDOS</th>
+              <th>NOMBRES</th>
+              <th>CUADRILLA</th>
+              <th style="width:110px;">LIBRAS</th>
+            </tr>
+          </thead>
+          <tbody id="regBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL LIBRAS -->
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <h3>CARGAR LIBRAS</h3>
+      <p class="meta" id="modalMeta"></p>
+      <input id="modalInput" type="text" inputmode="decimal" placeholder="0,00" />
+      <div class="optRow" aria-label="Gavetas">
+        <label><input type="radio" name="gavetas" id="gav1" value="1"> 1 gaveta</label>
+        <label><input type="radio" name="gavetas" id="gav2" value="2" checked> 2 gavetas</label>
+      </div>
+      <div class="netBox">
+        <div class="netLabel">LIBRAS FINALES (descontando gavetas)</div>
+        <div class="netValue" id="modalNet">0,00</div>
+      </div>
+
+      <div class="actions">
+        <div class="btn blue" id="modalOk">ACEPTAR</div>
+        <div class="btn" id="modalCancel">CANCELAR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Captura errores JS (si algo impide que cargue Firebase, lo verás) -->
+  <script>
+    (function(){
+      const show = (msg)=>{
+        const el = document.getElementById("bootMsg");
+        if(el) el.textContent = msg;
+      };
+      window.addEventListener("error", (e)=>{
+        try{ show("Error JS: " + (e?.message || "ver consola")); }catch(_){}
+      });
+      window.addEventListener("unhandledrejection", (e)=>{
+        try{ show("Error (promise): " + (e?.reason?.message || e?.reason || "ver consola")); }catch(_){}
+      });
+    })();
+  </script>
+
+  <!-- libs PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <!-- libs Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential }
+      from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, query, where, orderBy, getDocs, doc, setDoc, writeBatch, runTransaction }
+      from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // ✅ Mismo Firebase Project (Oceantreasure)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // SRH colección (Talento Humano)
+    const COL_SRH = "rrhh_talento";
+    // SDA colección (registros de pesadas)
+    const COL_SDA = "sda_avance_cabezas";
+    // Contadores globales por día (y cuadrilla)
+    const COL_COUNTERS = "sda_pesada_counters";
+
+    const ALLOWED = new Set([
+      
+      "aracellytomala@oceantreasure.local",
+      "keniacruz@oceantreasure.local",
+      "gingervaldiviezo@oceantreasure.local",
+      "pesadoradesalojo@oceantreasure.local",
+      "vanesapacheco@oceantreasure.local",
+      "jeffersonfigueroa@oceantreasure.local"
+    
+    ]);
+
+    
+    // Usuarios que pueden ver el histórico de TODOS los supervisores (sin elegir cuadrilla)
+    const ADMIN_VIEW_ALL = new Set([
+      "jeffersonfigueroa@oceantreasure.local",
+      "vanesapacheco@oceantreasure.local"
+    ]);
+
+    // Supervisores operativos (se muestran en el histórico completo)
+    const SUPERVISORS = [
+      "gingervaldiviezo@oceantreasure.local",
+      "aracellytomala@oceantreasure.local",
+      "pesadoradesalojo@oceantreasure.local"
+    ];
+const $ = (id) => document.getElementById(id);
+
+    const views = {
+      login: $("vLogin"),
+      asistencia: $("vAsistencia"),
+      nomina: $("vNomina"),
+      libras: $("vLibras"),
+      registro: $("vRegistro")
+    };
+
+    let currentViewName = "login";
+
+    function showView(name){
+      Object.values(views).forEach(v => v.classList.remove("active"));
+      views[name].classList.add("active");
+      currentViewName = name;
+    }
+    function setHeaderVisible(v){ $("authHeader").style.display = v ? "block" : "none"; }
+    function setUserEmail(email){ $("userEmail").textContent = email || ""; }
+    async function doLogout(){ await signOut(auth); }
+
+    // --- Estado ---
+    let currentUserEmail = "";
+    let currentCuadrilla = "";
+    let registroReturnView = "libras";
+    let nomina = [];           // [{id, apellidos, nombres, areaTrabajo, cuadrilla}]
+    let presentes = new Set(); // ids presentes
+    let sessionId = "";        // id de sesión para SDA (solo UI)
+    let librasMap = new Map(); // id -> number
+
+    // pesada
+    let pesadaN = 0;
+    let pesadaLabel = "—";     // texto visible
+    let pesadaKey = "";        // clave safe
+
+    // registro cache (✅ ahora: all + filtrado)
+    let registroRows = [];
+    let registroAllRows = [];
+    let registroFilterMode = "DIA";
+    let registroFilterDate = ""; // yyyy-mm-dd
+
+    function todayKey(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    function todayHuman(){
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2,"0");
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
+    function timeHM(){
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,"0");
+      const mi = String(d.getMinutes()).padStart(2,"0");
+      return `${hh}:${mi}`;
+    }
+    function timeHMS(){
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,"0");
+      const mi = String(d.getMinutes()).padStart(2,"0");
+      const ss = String(d.getSeconds()).padStart(2,"0");
+      return `${hh}:${mi}:${ss}`;
+    }
+
+    function makeSessionId(){
+      const d = new Date();
+      const stamp = d.toISOString().replaceAll(":","").replaceAll(".","").replaceAll("-","").replace("T","_").slice(0,15);
+      return `SDA_${todayKey()}_${currentCuadrilla}_${stamp}`;
+    }
+
+    function sessionStorageKey(){
+      return `SDA_SESSION_${todayKey()}_${currentCuadrilla}_${currentUserEmail}`;
+    }
+    function pesadaCounterKey(){
+      return `SDA_PESADA_COUNTER_${todayKey()}_${currentCuadrilla}_${currentUserEmail}`;
+    }
+    function pesadaCurrentKey(){
+      return `SDA_PESADA_CURRENT_${todayKey()}_${currentCuadrilla}_${currentUserEmail}`;
+    }
+
+    function userShort(){
+      const u = (currentUserEmail || "").split("@")[0] || "";
+      return u.replaceAll(".","").replaceAll(" ","");
+    }
+
+    async function allocateNextPesadaNumber(){
+      // contador global por día y cuadrilla: 2026-01-25_OCEANTREASURE
+      const counterId = `${todayKey()}_${currentCuadrilla}`.replaceAll(" ","_");
+      const ref = doc(db, COL_COUNTERS, counterId);
+      const next = await runTransaction(db, async (tx)=>{
+        const snap = await tx.get(ref);
+        let last = 0;
+        if(snap.exists()){
+          const v = Number((snap.data()||{}).last || 0);
+          last = (Number.isFinite(v) && v >= 0) ? v : 0;
+        }
+        const n = last + 1;
+        tx.set(ref, { last: n, fecha: todayKey(), cuadrilla: currentCuadrilla, updatedAt: new Date().toISOString() }, { merge:true });
+        return n;
+      });
+      return next;
+    }
+
+    async function nextPesada(){
+      // ✅ Número de pesada en BD (global por día y cuadrilla) — consistente en cualquier navegador/dispositivo
+      const n = await allocateNextPesadaNumber();
+
+      const label = `Pesada${n}_${userShort()}_${todayHuman()}_${timeHM()}`;
+      const key = label.replaceAll(":","-").replaceAll("/","-");
+      // Guardamos SOLO la pesada actual (para que persista en refrescos del mismo dispositivo)
+      localStorage.setItem(pesadaCurrentKey(), JSON.stringify({ pesadaN: n, label, key, createdAt: new Date().toISOString() }));
+      return { n, label, key };
+    }
+
+    async function ensurePesada(){
+      const raw = localStorage.getItem(pesadaCurrentKey());
+      if(raw){
+        try{
+          const obj = JSON.parse(raw);
+          if(obj && obj.label && obj.key && obj.pesadaN){
+            pesadaN = Number(obj.pesadaN);
+            pesadaLabel = obj.label;
+            pesadaKey = obj.key;
+            updatePesadaUI();
+            return;
+          }
+        }catch(_){}
+      }
+      const p = await await nextPesada();
+      pesadaN = p.n; pesadaLabel = p.label; pesadaKey = p.key;
+      updatePesadaUI();
+    }
+
+    function updatePesadaUI(){
+      // Mantener etiqueta completa (oculta en pantalla de libras) y visible en Nómina
+      if($("pesadaLabel")) $("pesadaLabel").textContent = pesadaLabel || "—";
+      if($("nominaPesadaLabel")) $("nominaPesadaLabel").textContent = pesadaLabel || "—";
+
+      // Separar: Pesada / Supervisor / Fecha / Hora a partir del formato: PesadaN_usuario_dd-mm-aaaa_hh:mm
+      const label = String(pesadaLabel || "").trim();
+      let p = "—", sup = "—", fecha = "—", hora = "—";
+      if(label && label !== "—"){
+        const parts = label.split("_");
+        p = parts[0] || "—";
+        sup = parts[1] || "—";
+        fecha = parts[2] || "—";
+        hora = parts[3] || "—";
+      }
+
+      if($("pesadaNum")) $("pesadaNum").textContent = p;
+      if($("pesadaSupervisor")) $("pesadaSupervisor").textContent = sup;
+      if($("pesadaFecha")) $("pesadaFecha").textContent = fecha;
+      if($("pesadaHora")) $("pesadaHora").textContent = hora;
+    }
+
+    // --- Login ---
+    $("btnLogin").onclick = async () => {
+      $("loginMsg").textContent = "";
+      const email = $("loginEmail").value.trim();
+      const pass  = $("loginPass").value;
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){
+        $("loginMsg").textContent = "Error: usuario o contraseña incorrectos.";
+        console.error("LOGIN ERROR", e);
+      }
+    };
+    ["loginEmail","loginPass"].forEach(id=>{
+      $(id).addEventListener("keydown", (e)=>{ if(e.key==="Enter") $("btnLogin").click(); });
+    });
+
+    // Logout links
+    $("linkLogoutA").onclick = doLogout;
+    $("lnkLogoutN").onclick = doLogout;
+    $("lnkLogoutL").onclick = doLogout;
+    $("lnkLogoutR").onclick = doLogout;
+
+    // Back links
+    $("lnkBackAsistencia").onclick = () => showView("asistencia");
+    $("lnkBackNomina").onclick = () => showView("nomina");
+    $("lnkBackRegistro").onclick = () => showView(registroReturnView || "libras");
+
+    // Auth state
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        currentUserEmail = user.email || "";
+        setHeaderVisible(true);
+        setUserEmail(currentUserEmail);
+
+        if(!ALLOWED.has(currentUserEmail)){
+          alert("Acceso no autorizado.");
+          await doLogout();
+          return;
+        }
+
+        resetAll();
+        showView("asistencia");
+      } else {
+        currentUserEmail = "";
+        setHeaderVisible(false);
+        setUserEmail("");
+        resetAll();
+        showView("login");
+      }
+    });
+
+    function resetAll(){
+      currentCuadrilla = "";
+      nomina = [];
+      presentes = new Set();
+      sessionId = "";
+      librasMap = new Map();
+      pesadaN = 0;
+      pesadaLabel = "—";
+      pesadaKey = "";
+      registroRows = [];
+      registroAllRows = [];
+      registroFilterMode = "DIA";
+      registroFilterDate = "";
+
+      $("selCuadrilla").value = "";
+      $("nominaBody").innerHTML = "";
+      $("librasBody").innerHTML = "";
+      $("regBody").innerHTML = "";
+      $("nominaCuadrilla").textContent = "";
+      $("librasCuadrilla").textContent = "";
+      $("regCuadrilla").textContent = "—";
+      $("regFecha").textContent = "—";
+      $("totalLibras").textContent = "0,00";
+      updatePesadaUI();
+      updateSelectAllBtn();
+    }
+
+    // --- Tomar Asistencia ---
+    $("btnTomarAsistencia").onclick = async () => {
+      const c = $("selCuadrilla").value || "";
+      if(!c){ alert("Seleccione la CUADRILLA."); return; }
+      currentCuadrilla = c;
+      $("nominaCuadrilla").textContent = c;
+      $("librasCuadrilla").textContent = c;
+
+      // Recuperar sesión guardada (por refresco)
+      const saved = localStorage.getItem(sessionStorageKey());
+      if(saved){
+        try{
+          const obj = JSON.parse(saved);
+          sessionId = obj.sessionId || "";
+          presentes = new Set(obj.presentes || []);
+          librasMap = new Map(Object.entries(obj.libras || {}).map(([k,v])=>[k, Number(v)]));
+        }catch(_){}
+      }
+
+      await ensurePesada();
+      await loadNomina();
+      showView("nomina");
+    };
+
+    // --- Seleccionar todos ---
+    function updateSelectAllBtn(){
+      const btn = $("btnSelectAll");
+      if(!btn) return;
+      if(nomina.length > 0 && presentes.size === nomina.length){
+        btn.textContent = "QUITAR TODOS";
+      }else{
+        btn.textContent = "SELECCIONAR TODOS";
+      }
+    }
+
+    $("btnSelectAll").onclick = ()=>{
+      if(nomina.length === 0) return;
+      const selectAll = !(presentes.size === nomina.length);
+      presentes = new Set(selectAll ? nomina.map(p=>p.id) : []);
+      $("nominaBody").querySelectorAll('input[type="checkbox"][data-id]').forEach(chk=>{
+        chk.checked = selectAll;
+      });
+      persistSession();
+      updateSelectAllBtn();
+    };
+
+    async function loadNomina(){
+      $("nominaBody").innerHTML = "";
+
+      // Consulta SRH: areaTrabajo = AVANCE DESCABEZADO y cuadrilla
+      const q = query(
+        collection(db, COL_SRH),
+        where("areaTrabajo","==","AVANCE DESCABEZADO"),
+        where("cuadrilla","==", currentCuadrilla),
+        orderBy("apellidos","asc"),
+        orderBy("nombres","asc")
+      );
+
+      let snap;
+      try{
+        snap = await getDocs(q);
+      }catch(err){
+        alert("Firestore pidió crear un ÍNDICE para esta consulta. En consola Firebase te saldrá un link 'Create index' y lo creas en 1 clic.");
+        throw err;
+      }
+
+      nomina = [];
+      snap.forEach(d=>{
+        const x = d.data() || {};
+        nomina.push({
+          id: x.id || d.id,
+          apellidos: x.apellidos || "",
+          nombres: x.nombres || "",
+          areaTrabajo: x.areaTrabajo || "",
+          cuadrilla: x.cuadrilla || ""
+        });
+      });
+
+      if(nomina.length === 0){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="4">No hay personal registrado para esta cuadrilla.</td>`;
+        $("nominaBody").appendChild(tr);
+        updateSelectAllBtn();
+        return;
+      }
+
+      for(const p of nomina){
+        const tr = document.createElement("tr");
+        const checked = presentes.has(p.id) ? "checked" : "";
+        tr.innerHTML = `
+          <td>${esc(p.id)}</td>
+          <td>${esc(p.apellidos)}</td>
+          <td>${esc(p.nombres)}</td>
+          <td style="text-align:center;">
+            <input type="checkbox" data-id="${esc(p.id)}" ${checked} />
+          </td>
+        `;
+        $("nominaBody").appendChild(tr);
+      }
+
+      // handlers
+      $("nominaBody").querySelectorAll('input[type="checkbox"][data-id]').forEach(chk=>{
+        chk.addEventListener("change", ()=>{
+          const id = chk.getAttribute("data-id");
+          if(chk.checked) presentes.add(id);
+          else presentes.delete(id);
+          persistSession();
+          updateSelectAllBtn();
+        });
+      });
+
+      updateSelectAllBtn();
+      persistSession();
+    }
+
+    // --- Pasar a Libras ---
+    $("btnPesar").onclick = async () => {
+      if(!currentCuadrilla){ alert("Seleccione la cuadrilla primero."); return; }
+      if(presentes.size === 0){
+        alert("Seleccione al menos 1 persona como PRESENTE.");
+        return;
+      }
+
+      if(!sessionId) sessionId = makeSessionId();
+      await ensurePesada();
+
+      renderLibras();
+      showView("libras");
+    };
+
+    function renderLibras(){
+      $("librasCuadrilla").textContent = currentCuadrilla;
+      $("librasBody").innerHTML = "";
+
+      const presentesArr = [...presentes]
+        .map(id => nomina.find(x=>x.id===id))
+        .filter(Boolean)
+        .sort((a,b)=> (a.apellidos||"").localeCompare(b.apellidos||"","es") || (a.nombres||"").localeCompare(b.nombres||"","es"));
+
+      for(const p of presentesArr){
+        const val = librasMap.has(p.id) ? librasMap.get(p.id) : null;
+        const showVal = (typeof val === "number" && !isNaN(val)) ? fmt(val) : "";
+        const locked = showVal ? "locked" : "";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${esc(p.apellidos)}</td>
+          <td>${esc(p.nombres)}</td>
+          <td style="text-align:right;">
+            <span class="cellEdit ${locked}" data-id="${esc(p.id)}" title="Click para ingresar. Doble click para corregir.">${esc(showVal)}</span>
+          </td>
+        `;
+        $("librasBody").appendChild(tr);
+      }
+
+      $("librasBody").querySelectorAll(".cellEdit[data-id]").forEach(cell=>{
+        const id = cell.getAttribute("data-id");
+        cell.addEventListener("click", ()=> openLibrasModal(id));
+        cell.addEventListener("dblclick", (e)=>{ e.preventDefault(); openLibrasModal(id); });
+      });
+
+      updateTotal();
+      persistSession();
+      updatePesadaUI();
+    }
+
+    // --- Modal de Libras ---
+    let modalPersonId = "";
+    function openModal(open){ $("modalBack").style.display = open ? "flex" : "none"; }
+    $("modalCancel").onclick = () => openModal(false);
+
+    function openLibrasModal(personId){
+      modalPersonId = personId;
+      const p = nomina.find(x=>x.id===personId);
+      const current = librasMap.has(personId) ? librasMap.get(personId) : null;
+
+      $("modalMeta").innerHTML = `
+        <b>${esc(p?.apellidos || "")} ${esc(p?.nombres || "")}</b><br>
+        ID: <b>${esc(personId)}</b>
+      `;
+
+      $("modalInput").value = (typeof current === "number" && !isNaN(current)) ? fmt(current) : "";
+      // Por defecto: 2 gavetas
+      if($("gav2")) $("gav2").checked = true;
+      if($("gav1")) $("gav1").checked = false;
+      updateModalNet();
+      openModal(true);
+      setTimeout(()=>{ $("modalInput").focus(); }, 30);
+    }
+
+    function parseNumberEs(s){
+      const raw = String(s||"").trim();
+      if(!raw) return NaN;
+      const norm = raw.replaceAll(".","").replaceAll(",",".");
+      return Number(norm);
+    }
+    function fmt(n){
+      try{
+        return n.toLocaleString("es-EC", { minimumFractionDigits:2, maximumFractionDigits:2 });
+      }catch(_){
+        return (Math.round(n*100)/100).toFixed(2).replace(".",",");
+      }
+    
+    function getSelectedGavetas(){
+      const r1 = $("gav1");
+      const r2 = $("gav2");
+      if(r1 && r1.checked) return 1;
+      if(r2 && r2.checked) return 2;
+      return 2; // default
+    }
+    const GAVETA_PESO = 5; // libras por gaveta (fijo)
+
+    function computeNetLbs(gross){
+      const g = getSelectedGavetas();
+      const net = gross - (g * GAVETA_PESO);
+      return net;
+    }
+
+    function updateModalNet(){
+      const gross = parseNumberEs($("modalInput")?.value);
+      const netEl = $("modalNet");
+      if(!netEl){
+        return;
+      }
+      if(isNaN(gross)){
+        netEl.textContent = "0,00";
+        return;
+      }
+      const net = computeNetLbs(gross);
+      netEl.textContent = fmt(Math.max(0, net));
+    }
+
+}
+
+    $("modalOk").onclick = async () => {
+      const gross = parseNumberEs($("modalInput").value);
+      if(isNaN(gross) || gross < 0){
+        alert("Ingrese un valor válido de libras.");
+        return;
+      }
+      const net = computeNetLbs(gross);
+      if(net < 0){
+        alert("El descuento por gavetas supera a las libras ingresadas.");
+        return;
+      }
+      librasMap.set(modalPersonId, net);
+      openModal(false);
+      renderLibras();
+};
+
+    $("modalInput").addEventListener("keydown", (e)=>{
+      if(e.key === "Enter") $("modalOk").click();
+      if(e.key === "Escape") $("modalCancel").click();
+    });
+
+    
+    $("modalInput").addEventListener("input", ()=> updateModalNet());
+    if($("gav1")) $("gav1").addEventListener("change", ()=> updateModalNet());
+    if($("gav2")) $("gav2").addEventListener("change", ()=> updateModalNet());
+
+function updateTotal(){
+      let total = 0;
+      for(const v of librasMap.values()){
+        if(typeof v === "number" && !isNaN(v)) total += v;
+      }
+      $("totalLibras").textContent = fmt(total);
+    }
+
+    function persistSession(){
+      if(!currentUserEmail || !currentCuadrilla) return;
+      const obj = {
+        sessionId: sessionId || "",
+        presentes: [...presentes],
+        libras: Object.fromEntries([...librasMap.entries()].map(([k,v])=>[k, v])),
+        updatedAt: new Date().toISOString()
+      };
+      try{ localStorage.setItem(sessionStorageKey(), JSON.stringify(obj)); }catch(_){}
+    }
+
+    function clearSession(){
+      try{ localStorage.removeItem(sessionStorageKey()); }catch(_){}
+    }
+    // --- NUEVA PESADA ---
+    async function savePesadaToFirestore(){
+      const fecha = todayKey();
+      const hora = timeHMS();
+      const nowIso = new Date().toISOString();
+
+      for(const id of presentes){
+        const p = nomina.find(x=>x.id===id);
+        if(!p) continue;
+
+        const lbs = librasMap.has(id) ? librasMap.get(id) : 0;
+        const payload = {
+          pesadaNumero: pesadaN,
+          numeroPesada: pesadaLabel,      // lo que se muestra
+          pesadaKey: pesadaKey,           // safe
+          fecha,
+          hora,
+          cuadrilla: currentCuadrilla,
+          usuario: currentUserEmail,
+
+          personId: id,
+          apellidos: p.apellidos || "",
+          nombres: p.nombres || "",
+          area: p.areaTrabajo || "",
+          libras: (typeof lbs === "number" && !isNaN(lbs)) ? lbs : 0,
+
+          updatedAt: nowIso
+        };
+
+        const docId = `${pesadaKey}_${id}`;
+        await setDoc(doc(db, COL_SDA, docId), payload, { merge:true });
+      }
+    }
+
+    async function resetForNextPesada(){
+      // limpiar TODOS: marcados y libras
+      presentes = new Set();
+      librasMap = new Map();
+      sessionId = "";
+      clearSession();
+
+      // nueva pesada
+      const p = await await nextPesada();
+      pesadaN = p.n;
+      pesadaLabel = p.label;
+      pesadaKey = p.key;
+      updatePesadaUI();
+
+      // volver a nómina para marcar de nuevo
+      loadNomina().then(()=>showView("nomina"));
+    }
+
+    // GUARDAR
+    $("btnNuevaPesada").onclick = async () => {
+      if(!currentCuadrilla){
+        alert("Seleccione la cuadrilla.");
+        return;
+      }
+      await ensurePesada();
+
+      // guarda valores actuales (si hay presentes)
+      try{
+        if(presentes.size > 0){
+          await savePesadaToFirestore();
+          alert(`Pesada guardada: ${pesadaLabel}`);
+        } else {
+          alert("No hay personal marcado como PRESENTE. Se iniciará una nueva pesada en blanco.");
+        }
+      }catch(err){
+        alert("Error guardando la pesada. Revisa conexión/reglas de Firestore.");
+        return;
+      }
+
+      // limpiar y crear nueva pesada
+      await resetForNextPesada();
+    };
+
+    // =======================
+    // ✅ REGISTRO + FILTRO
+    // =======================
+    function toggleClearBtnForAllMode(){
+      const b = $("btnClearR");
+      if(!b) return;
+      // Si cuadrilla está vacía => TODAS (modo admin). No permitir limpiar.
+      b.style.display = currentCuadrilla ? "" : "none";
+    }
+
+    function initRegistroFilterUI(){
+      if(!$("regFilterDate") || !$("regFilterMode")) return;
+      const today = todayKey();
+      $("regFilterDate").value = today;
+      $("regFilterMode").value = "DIA";
+      registroFilterMode = "DIA";
+      registroFilterDate = today;
+      updateRegFechaLabel();
+    }
+    function updateRegFechaLabel(){
+      const rf = $("regFecha");
+      if(!rf) return;
+      if(registroFilterMode === "HISTORICO"){ rf.textContent = "HISTÓRICO"; return; }
+      if(registroFilterMode === "ANIO"){ rf.textContent = (registroFilterDate||"").slice(0,4) || "—"; return; }
+      if(registroFilterMode === "MES"){ rf.textContent = (registroFilterDate||"").slice(0,7) || "—"; return; }
+      rf.textContent = registroFilterDate || "—";
+    }
+    function renderRegistroTable(){
+      $("regBody").innerHTML = "";
+      if(!registroRows || registroRows.length === 0){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="8">No hay registros guardados.</td>`;
+        $("regBody").appendChild(tr);
+        return;
+      }
+      for(const r of registroRows){
+        const tr = document.createElement("tr");
+        const pesadaTxt = r.pesadaNumero ? `PESADA ${r.pesadaNumero}` : "";
+        tr.innerHTML = `
+          <td>${esc(pesadaTxt)}</td>
+          <td>${esc(r.fecha || "")}</td>
+          <td>${esc(r.hora || "")}</td>
+          <td>${esc(r.usuario || "")}</td>
+          <td>${esc(r.apellidos || "")}</td>
+          <td>${esc(r.nombres || "")}</td>
+          <td>${esc(r.cuadrilla || "")}</td>
+          <td style="text-align:right;">${esc(fmt(r.libras || 0))}</td>
+        `;
+        $("regBody").appendChild(tr);
+      }
+    }
+    function applyRegistroFilter(){
+      const modeEl = $("regFilterMode");
+      const dateEl = $("regFilterDate");
+      registroFilterMode = (modeEl && modeEl.value) ? modeEl.value : (registroFilterMode || "DIA");
+      registroFilterDate = (dateEl && dateEl.value) ? dateEl.value : (registroFilterDate || todayKey());
+
+      let filtered = (registroAllRows || []).slice();
+      if(registroFilterMode === "DIA"){
+        filtered = filtered.filter(r => (r.fecha || "") === registroFilterDate);
+      }else if(registroFilterMode === "MES"){
+        const ym = (registroFilterDate || "").slice(0,7);
+        filtered = filtered.filter(r => (r.fecha || "").startsWith(ym));
+      }else if(registroANIO = (registroFilterMode === "ANIO")){
+        const y = (registroFilterDate || "").slice(0,4);
+        filtered = filtered.filter(r => (r.fecha || "").startsWith(y));
+      }else{
+        // HISTORICO
+      }
+      registroRows = filtered;
+      updateRegFechaLabel();
+      renderRegistroTable();
+    }
+
+    // Eventos filtro (exporta lo filtrado)
+    if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = ()=> applyRegistroFilter();
+    if($("btnVerHistorico")) $("btnVerHistorico").onclick = ()=>{
+      if($("regFilterMode")) $("regFilterMode").value = "HISTORICO";
+      registroFilterMode = "HISTORICO";
+      applyRegistroFilter();
+    };
+    if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=> applyRegistroFilter());
+    if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=> applyRegistroFilter());
+
+    async function openRegistro(fromAsistencia = false){
+      const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+      const selected = ($("selCuadrilla") ? ($("selCuadrilla").value || "") : "");
+
+      // Si aún no hay cuadrilla en estado, intenta leerla del selector
+      if(!currentCuadrilla && selected) currentCuadrilla = selected;
+
+      // Regla:
+      // - Usuarios normales: requieren cuadrilla.
+      // - Admin (Jefferson/Vanesa): pueden abrir registro desde ASISTENCIA sin elegir cuadrilla (ver TODAS).
+      if(!currentCuadrilla){
+        if(!(isAdmin && fromAsistencia)){
+          alert("Seleccione la CUADRILLA.");
+          return;
+        }
+        currentCuadrilla = ""; // TODAS
+      }
+
+      // recordar desde dónde abrimos
+      registroReturnView = currentViewName || "libras";
+
+      toggleClearBtnForAllMode();
+      initRegistroFilterUI();
+      await loadRegistro();
+      showView("registro");
+    }
+
+// Registro de Pesadas (desde cualquier pantalla)
+    if($("btnRegistro")) $("btnRegistro").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(false); };
+    if($("btnRegistroA")) $("btnRegistroA").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(true); };
+    if($("btnRegistroN")) $("btnRegistroN").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(false); };
+
+    async function loadRegistro(){
+      $("regBody").innerHTML = "";
+      registroRows = [];
+      registroAllRows = [];
+
+      const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+
+      if(!currentCuadrilla && !isAdmin){
+        alert("Seleccione la CUADRILLA.");
+        return;
+      }
+
+      $("regCuadrilla").textContent = currentCuadrilla || "TODAS";
+      $("regFecha").textContent = "HISTÓRICO";
+
+      const q = isAdmin
+        ? (currentCuadrilla
+            ? query(
+                collection(db, COL_SDA),
+                where("cuadrilla","==", currentCuadrilla),
+                where("usuario","in", SUPERVISORS)
+              )
+            : query(
+                collection(db, COL_SDA),
+                where("usuario","in", SUPERVISORS)
+              ))
+        : query(
+            collection(db, COL_SDA),
+            where("cuadrilla","==", currentCuadrilla),
+            where("usuario","==", currentUserEmail)
+          );
+
+let snap;
+      try{
+        snap = await getDocs(q);
+      }catch(err){
+        alert("No se pudo consultar el REGISTRO. Revisa conexión, permisos o índices.");
+        throw err;
+      }
+
+      snap.forEach(d=>{
+        const x = d.data() || {};
+        if(!x.numeroPesada) return;
+
+        registroRows.push({
+          pesadaNumero: typeof x.pesadaNumero === "number" ? x.pesadaNumero : 0,
+          fecha: x.fecha || "",
+          hora: x.hora || "",
+          usuario: x.usuario || "",
+          apellidos: x.apellidos || "",
+          nombres: x.nombres || "",
+          cuadrilla: x.cuadrilla || "",
+          libras: (typeof x.libras === "number") ? x.libras : 0
+        });
+      });
+
+      registroRows.sort((a,b)=>
+        (a.pesadaNumero - b.pesadaNumero) ||
+        (a.apellidos||"").localeCompare(b.apellidos||"","es") ||
+        (a.nombres||"").localeCompare(b.nombres||"","es")
+      );
+
+      // ✅ guardar todo y aplicar filtro
+      registroAllRows = registroRows.slice();
+      applyRegistroFilter();
+    }
+
+    // Export Excel (registro) -> exporta SOLO lo filtrado (registroRows)
+    $("btnExcelR").onclick = () => {
+      if(!registroRows || registroRows.length === 0){
+        alert("No hay datos para exportar.");
+        return;
+      }
+      if(!window.XLSX){
+        alert("No se pudo cargar la librería de Excel (XLSX). Verifica conexión a internet.");
+        return;
+      }
+
+      const headers = ["PESADA","FECHA","HORA","SUPERVISOR","APELLIDOS","NOMBRES","CUADRILLA","LIBRAS"];
+      const data = [headers];
+      for(const r of registroRows){
+        data.push([`PESADA ${r.pesadaNumero || ''}`.trim(), r.fecha || "", r.hora || "", r.usuario || "", r.apellidos, r.nombres, r.cuadrilla, r.libras]);
+      }
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws["!cols"] = [{wch:12},{wch:12},{wch:8},{wch:22},{wch:28},{wch:22},{wch:16},{wch:10}];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Registro");
+
+      const now = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      const fname = `SDA_RegistroPesadas_${currentCuadrilla}_${stamp}.xlsx`.replaceAll(" ","_");
+      XLSX.writeFile(wb, fname);
+    };
+
+    // PDF (registro) -> exporta SOLO lo filtrado (registroRows)
+    $("btnPdfR").onclick = () => {
+      const { jsPDF } = window.jspdf || {};
+      if(!jsPDF){
+        alert("No se pudo cargar la librería PDF.");
+        return;
+      }
+      if(!registroRows || registroRows.length === 0){
+        alert("No hay datos para generar PDF.");
+        return;
+      }
+
+      const body = registroRows.map(r=>[
+        (`PESADA ${r.pesadaNumero || ""}`).trim(),
+        r.fecha || "",
+        r.hora || "",
+        (r.usuario || ""),
+        r.apellidos,
+        r.nombres,
+        r.cuadrilla,
+        fmt(r.libras)
+      ]);
+
+      const now = new Date();
+      const dt = now.toISOString().slice(0,19).replace("T"," ");
+      const fileStamp = now.toISOString().slice(0,19).replaceAll(":","-").replace("T","_");
+
+      const titleLine = `SDA - Registro de Pesadas | ${currentUserEmail} | ${dt}`;
+
+      const docp = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+      docp.setFont("Times","Normal");
+      docp.setFontSize(12);
+      docp.text(titleLine, 40, 40);
+      docp.setFontSize(11);
+      const gen = new Date().toLocaleString("es-EC");
+      docp.text(`Cuadrilla: ${currentCuadrilla}    Filtro: ${$("regFecha")?$("regFecha").textContent:"HISTÓRICO"}    Generado: ${gen}`, 40, 60);
+
+      docp.autoTable({
+        startY: 80,
+        head: [["PESADA","FECHA","HORA","SUPERVISOR","APELLIDOS","NOMBRES","CUADRILLA","LIBRAS"]],
+        body,
+        styles: { font: "Times", fontSize: 9 },
+        headStyles: { fillColor: [13,47,79] },
+        margin: { left: 40, right: 40 }
+      });
+
+      const fname = `SDA_RegistroPesadas_${currentCuadrilla}_${fileStamp}.pdf`.replaceAll(" ","_");
+      docp.save(fname);
+    };
+
+    // ✅ LIMPIAR HISTÓRICO (registro) — solo JEFFERSON con reautenticación
+    const CLEAR_ADMIN = "jeffersonfigueroa@oceantreasure.local";
+
+    async function reauthForSensitiveAction(){
+      const user = auth.currentUser;
+      if(!user || !user.email) throw new Error("No hay sesión activa.");
+      const pass = prompt("Para confirmar, ingrese su contraseña de Firebase:");
+      if(!pass) throw new Error("Acción cancelada.");
+      const cred = EmailAuthProvider.credential(user.email, pass);
+      await reauthenticateWithCredential(user, cred);
+      return true;
+    }
+
+    if($("btnClearR")){
+      $("btnClearR").onclick = async () => {
+        if(!currentCuadrilla){
+          alert("Seleccione la CUADRILLA.");
+          return;
+        }
+
+        // ✅ Solo Jefferson puede limpiar
+        if((currentUserEmail || "").toLowerCase() !== CLEAR_ADMIN){
+          alert("Acceso denegado. Solo Jefferson puede LIMPIAR HISTÓRICO.");
+          return;
+        }
+
+        const ok = confirm("⚠️ Esta acción borrará TODO el registro histórico de ESTA CUADRILLA (todos los usuarios). ¿Desea continuar?");
+        if(!ok) return;
+
+        try{
+          await reauthForSensitiveAction();
+        }catch(err){
+          alert("No se pudo validar la contraseña. No se realizó la acción.");
+          console.error("REAUTH ERROR:", err);
+          return;
+        }
+
+        const q = query(
+          collection(db, COL_SDA),
+          where("cuadrilla","==", currentCuadrilla)
+        );
+
+        let snap;
+        try{
+          snap = await getDocs(q);
+        }catch(err){
+          alert("No se pudo consultar el REGISTRO para borrar. Revisa conexión o permisos.");
+          return;
+        }
+
+        if(!snap || snap.empty){
+          alert("No hay registros para borrar.");
+          return;
+        }
+
+        let deleted = 0;
+        try{
+          // Borrado en lotes
+          let batch = writeBatch(db);
+          let ops = 0;
+
+          for(const d of snap.docs){
+            batch.delete(doc(db, COL_SDA, d.id));
+            deleted++;
+            ops++;
+
+            if(ops >= 450){
+              await batch.commit();
+              batch = writeBatch(db);
+              ops = 0;
+            }
+          }
+          if(ops > 0) await batch.commit();
+        }catch(err){
+          alert("No se pudo borrar el historial. Revisa reglas/permisos de Firestore.");
+          console.error("DELETE ERROR:", err);
+          return;
+        }
+
+        alert(`Histórico eliminado: ${deleted} registro(s).`);
+        await loadRegistro();
+      };
+    }
+
+// --- PDF (pantalla libras) ---
+    $("btnPdf").onclick = () => {
+      const { jsPDF } = window.jspdf || {};
+      if(!jsPDF){
+        alert("No se pudo cargar la librería PDF.");
+        return;
+      }
+
+      const rows = [];
+      const presentesArr = [...presentes]
+        .map(id => nomina.find(x=>x.id===id))
+        .filter(Boolean)
+        .sort((a,b)=> (a.apellidos||"").localeCompare(b.apellidos||"","es") || (a.nombres||"").localeCompare(b.nombres||"","es"));
+
+      for(const p of presentesArr){
+        const n = librasMap.has(p.id) ? librasMap.get(p.id) : null;
+        rows.push([
+          p.apellidos || "",
+          p.nombres || "",
+          (typeof n === "number" && !isNaN(n)) ? fmt(n) : ""
+        ]);
+      }
+
+      let total = 0;
+      for(const v of librasMap.values()){
+        if(typeof v === "number" && !isNaN(v)) total += v;
+      }
+
+      const now = new Date();
+      const dt = now.toISOString().slice(0,19).replace("T"," ");
+      const fileStamp = now.toISOString().slice(0,19).replaceAll(":","-").replace("T","_");
+
+      const titleLine = `SDA - Avance Descabezado | ${currentUserEmail} | ${dt}`;
+
+      const docp = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+      docp.setFont("Times","Normal");
+      docp.setFontSize(12);
+      docp.text(titleLine, 40, 40);
+      docp.setFontSize(11);
+      docp.text(`Pesada: ${pesadaLabel}    Cuadrilla: ${currentCuadrilla}    Total Libras: ${fmt(total)}`, 40, 60);
+
+      docp.autoTable({
+        startY: 80,
+        head: [["APELLIDOS","NOMBRES","LIBRAS"]],
+        body: rows,
+        styles: { font: "Times", fontSize: 9 },
+        headStyles: { fillColor: [13,47,79] },
+        margin: { left: 40, right: 40 }
+      });
+
+      const fname = `SDA_${pesadaKey}_${currentCuadrilla}_${userShort()}_${fileStamp}.pdf`.replaceAll(" ","_");
+      docp.save(fname);
+    };
+
+    function esc(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+  </script>
+</body>
+</html>
