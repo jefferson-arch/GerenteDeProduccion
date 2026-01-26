@@ -10,12 +10,21 @@
   <title>Oceantreasure | Sistemas</title>
 
   <style>
-    :root{ --bg:#0f172a; --txt:#e5e7eb; }
+    :root{
+      --bg:#0f172a;
+      --panel:rgba(255,255,255,.07);
+      --border:rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:rgba(229,231,235,.80);
+      --line:rgba(255,255,255,.10);
+      --btn:#2563eb;
+    }
 
+    *{box-sizing:border-box}
     body{
       margin:0;
       font-family:Arial,Helvetica,sans-serif;
-      color:var(--txt);
+      color:var(--text);
       background:var(--bg);
       min-height:100vh;
       position:relative;
@@ -32,14 +41,15 @@
       background-repeat:no-repeat;
       z-index:-2;
       transform:scale(1.02);
+      filter:saturate(.95) contrast(1.05);
     }
 
-    /* ✅ Capa oscura para que se lea perfecto */
+    /* ✅ Capa oscura (imagen clara) */
     body::after{
       content:"";
       position:fixed;
       inset:0;
-      background:rgba(8, 14, 28, 0.72);
+      background:rgba(3, 7, 18, 0.78);
       z-index:-1;
     }
 
@@ -51,24 +61,83 @@
     }
     h1{margin:0;font-size:18px;font-weight:700}
     p{margin:6px 0 0;font-size:13px;opacity:.85}
+
     main{max-width:980px;margin:0 auto;padding:18px;display:grid;gap:12px}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+
     .card{
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.12);
+      background:var(--panel);
+      border:1px solid var(--border);
       border-radius:14px;
       padding:14px;
       backdrop-filter: blur(6px);
     }
     .card h2{margin:0 0 6px;font-size:15px}
     .card small{opacity:.78}
+    .line{height:1px;background:var(--line);margin:10px 0}
+
     .btn{
-      display:inline-block;margin-top:10px;padding:9px 12px;border-radius:10px;
-      background:#2563eb;color:white;text-decoration:none;font-weight:700;font-size:13px
+      display:inline-block;
+      margin-top:10px;
+      padding:9px 12px;
+      border-radius:10px;
+      background:var(--btn);
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+      font-size:13px
     }
     .btn:hover{filter:brightness(1.05)}
     .muted{opacity:.75;font-size:12px;margin-top:10px}
-    .line{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+
+    /* ====== Efecto presentación (PowerPoint) ====== */
+    @keyframes pptFadeUp{
+      from{opacity:0; transform: translateY(16px) scale(.985); filter: blur(2px);}
+      to  {opacity:1; transform: translateY(0)   scale(1);     filter: blur(0);}
+    }
+    @keyframes pptFade{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    /* Solo aplica animación si hay JS (para no dejar página invisible si JS falla) */
+    html.js body{ opacity:0; }
+    html.js body.ppt-loaded{ opacity:1; animation: pptFade .35s ease-out both; }
+
+    html.js header,
+    html.js .card{
+      opacity:0;
+      transform: translateY(16px) scale(.985);
+    }
+
+    html.js body.ppt-loaded header{
+      animation: pptFadeUp .55s ease-out both;
+    }
+
+    html.js body.ppt-loaded .card{
+      animation: pptFadeUp .55s ease-out both;
+      animation-delay: var(--d, 120ms);
+    }
+
+    /* Delays por tarjeta */
+    html.js body.ppt-loaded .card:nth-child(1)  { --d: 120ms; }
+    html.js body.ppt-loaded .card:nth-child(2)  { --d: 180ms; }
+    html.js body.ppt-loaded .card:nth-child(3)  { --d: 240ms; }
+    html.js body.ppt-loaded .card:nth-child(4)  { --d: 300ms; }
+    html.js body.ppt-loaded .card:nth-child(5)  { --d: 360ms; }
+    html.js body.ppt-loaded .card:nth-child(6)  { --d: 420ms; }
+    html.js body.ppt-loaded .card:nth-child(7)  { --d: 480ms; }
+    html.js body.ppt-loaded .card:nth-child(8)  { --d: 540ms; }
+    html.js body.ppt-loaded .card:nth-child(9)  { --d: 600ms; }
+    html.js body.ppt-loaded .card:nth-child(10) { --d: 660ms; }
+    html.js body.ppt-loaded .card:nth-child(11) { --d: 720ms; }
+    html.js body.ppt-loaded .card:nth-child(12) { --d: 780ms; }
+
+    @media (prefers-reduced-motion: reduce){
+      html.js body{opacity:1}
+      html.js header, html.js .card{opacity:1; transform:none}
+      html.js body.ppt-loaded header, html.js body.ppt-loaded .card{animation:none}
+    }
   </style>
 </head>
 
@@ -185,6 +254,12 @@
   </main>
 
   <script>
+    // Activa “modo JS” para animación (evita pantalla negra si JS falla)
+    document.documentElement.classList.add("js");
+    window.addEventListener("DOMContentLoaded", () => {
+      requestAnimationFrame(() => document.body.classList.add("ppt-loaded"));
+    });
+
     // Cache-buster al hacer clic: agrega/actualiza ?v=TIMESTAMP (y mantiene otros parámetros)
     function withNoCache(url) {
       const u = new URL(url, window.location.href);
