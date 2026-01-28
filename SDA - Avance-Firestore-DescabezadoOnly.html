@@ -660,6 +660,47 @@
       catch(_){ return `${todayHuman()} ${timeHMS()}`; }
     }
 
+    function playSuccessBeep(){
+  try{
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx) return;
+
+    const ctx = new AudioCtx();
+    if(ctx.state === "suspended"){
+      ctx.resume().catch(()=>{});
+    }
+
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+
+    o.type = "sine";
+    o.frequency.setValueAtTime(880, ctx.currentTime);
+    g.gain.setValueAtTime(0.001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+
+    o.connect(g);
+    g.connect(ctx.destination);
+
+    o.start();
+    o.stop(ctx.currentTime + 0.20);
+
+    setTimeout(()=>{ try{ ctx.close(); }catch(_){ } }, 300);
+  }catch(_){}
+}
+
+function hapticOk(){
+  try{
+    if(navigator.vibrate) navigator.vibrate([50, 30, 70]);
+  }catch(_){}
+}
+
+function feedbackOk(){
+  hapticOk();
+  playSuccessBeep();
+}
+
+    
     function makeSessionId(){
       const d = new Date();
       const stamp = d.toISOString().replaceAll(":","").replaceAll(".","").replaceAll("-","").replace("T","_").slice(0,15);
@@ -1342,7 +1383,12 @@
           // ✅ Guardar SOLO >0
           if(valids.length > 0){
             await savePesadaToFirestore(valids);
-            alert(`Pesada guardada: ${pesadaLabel}\n(Se guardaron ${valids.length} registro(s) con libras > 0)`);
+
+          // ✅ sonido + vibración (transacción exitosa)
+          feedbackOk();
+
+          alert(`Pesada guardada: ${pesadaLabel}\n(Se guardaron ${valids.length} registro(s) con libras > 0)`);
+
           }else{
             alert("No se guardó nada porque no hay registros con LIBRAS > 0.");
           }
@@ -1763,3 +1809,4 @@
   </script>
 </body>
 </html>
+
