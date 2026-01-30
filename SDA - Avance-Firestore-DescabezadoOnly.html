@@ -427,10 +427,22 @@
       <div class="filterBar">
         <label>Filtrar por:</label>
         <select id="regFilterMode" aria-label="Modo de filtro">
-          <option value="DIA" selected>DÍA</option>
-          <option value="MES">MES</option>
-          <option value="ANIO">AÑO</option>
-          <option value="HISTORICO">HISTÓRICO</option>
+  <option value="DIA" selected>DÍA</option>
+  <option value="MES">MES</option>
+  <option value="ANIO">AÑO</option>
+  <option value="RANGO">RANGO</option>
+  <option value="HISTORICO">HISTÓRICO</option>
+</select>
+
+<!-- Para DIA/MES/ANIO (1 calendario) -->
+<input id="regFilterDate" type="date" />
+
+<!-- ✅ Para RANGO (2 calendarios) -->
+<input id="regFilterFrom" type="date" style="display:none" />
+<input id="regFilterTo" type="date" style="display:none" />
+
+<div class="miniBtn" id="btnAplicarFiltro">APLICAR</div>
+<div class="miniBtn" id="btnVerHistorico">VER HISTÓRICO</div>
         </select>
         <input id="regFilterDate" type="date" />
         <div class="miniBtn" id="btnAplicarFiltro">APLICAR</div>
@@ -627,6 +639,8 @@
     let registroAllRows = [];
     let registroFilterMode = "DIA";
     let registroFilterDate = ""; // yyyy-mm-dd
+    let registroFilterFrom = ""; // yyyy-mm-dd
+    let registroFilterTo   = ""; // yyyy-mm-dd
     // ✅ Control de carga del registro (para no consumir cuota hasta APLICAR)
     let registroLoaded = false;
     let registroCacheKey = "";
@@ -1403,8 +1417,37 @@ function renderRegistroPlaceholder(msg){
       $("regFilterMode").value = "DIA";
       registroFilterMode = "DIA";
       registroFilterDate = today;
-      updateRegFechaLabel();
-    }
+      function updateRegFechaLabel(){
+  const rf = $("regFecha");
+  if(!rf) return;
+
+  if(registroFilterMode === "HISTORICO"){ rf.textContent = "HISTÓRICO"; return; }
+  if(registroFilterMode === "ANIO"){ rf.textContent = (registroFilterDate||"").slice(0,4) || "—"; return; }
+  if(registroFilterMode === "MES"){ rf.textContent = (registroFilterDate||"").slice(0,7) || "—"; return; }
+
+  if(registroFilterMode === "RANGO"){
+    const a = registroFilterFrom || "—";
+    const b = registroFilterTo || "—";
+    rf.textContent = `${a} a ${b}`;
+    return;
+  }
+
+  rf.textContent = registroFilterDate || "—";
+}
+
+    function updateRegistroInputsVisibility(){
+  const mode = ($("regFilterMode")?.value || registroFilterMode || "DIA");
+  const one = $("regFilterDate");
+  const from = $("regFilterFrom");
+  const to = $("regFilterTo");
+
+  const isRange = (mode === "RANGO");
+
+  if(one)  one.style.display  = isRange ? "none" : "";
+  if(from) from.style.display = isRange ? "" : "none";
+  if(to)   to.style.display   = isRange ? "" : "none";
+}
+    
     function updateRegFechaLabel(){
       const rf = $("regFecha");
       if(!rf) return;
@@ -1438,27 +1481,58 @@ function renderRegistroPlaceholder(msg){
       }
     }
     function applyRegistroFilter(){
-      const modeEl = $("regFilterMode");
-      const dateEl = $("regFilterDate");
-      registroFilterMode = (modeEl && modeEl.value) ? modeEl.value : (registroFilterMode || "DIA");
-      registroFilterDate = (dateEl && dateEl.value) ? dateEl.value : (registroFilterDate || todayKey());
+  const modeEl = $("regFilterMode");
+  const dateEl = $("regFilterDate");
+  const fromEl = $("regFilterFrom");
+  const toEl   = $("regFilterTo");
 
-      let filtered = (registroAllRows || []).slice();
-      if(registroFilterMode === "DIA"){
-        filtered = filtered.filter(r => (r.fecha || "") === registroFilterDate);
-      }else if(registroFilterMode === "MES"){
-        const ym = (registroFilterDate || "").slice(0,7);
-        filtered = filtered.filter(r => (r.fecha || "").startsWith(ym));
-      }else if(registroFilterMode === "ANIO"){
-        const y = (registroFilterDate || "").slice(0,4);
-        filtered = filtered.filter(r => (r.fecha || "").startsWith(y));
-      }else{
-        // HISTORICO => sin filtrar
-      }
-      registroRows = filtered;
-      updateRegFechaLabel();
-      renderRegistroTable();
-    }
+  registroFilterMode = (modeEl && modeEl.value) ? modeEl.value : (registroFilterMode || "DIA");
+
+  // Para DIA/MES/ANIO
+  if(dateEl && dateEl.value) registroFilterDate = dateEl.value;
+  if(!registroFilterDate) registroFilterDate = todayKey();
+
+  // Para RANGO
+  if(fromEl && fromEl.value) registroFilterFrom = fromEl.value;
+  if(toEl   && toEl.value)   registroFilterTo   = toEl.value;
+
+  if(!registroFilterFrom) registroFilterFrom = todayKey();
+  if(!registroFilterTo)   registroFilterTo   = todayKey();
+
+  let filtered = (registroAllRows || []).slice();
+
+  if(registroFilterMode === "DIA"){
+    filtered = filtered.filter(r => (r.fecha || "") === registroFilterDate);
+
+  }else if(registroFilterMode === "MES"){
+    const ym = (registroFilterDate || "").slice(0,7);
+    filtered = filtered.filter(r => (r.fecha || "").startsWith(ym));
+
+  }else if(registroFilterMode === "ANIO"){
+    const y = (registroFilterDate || "").slice(0,4);
+    filtered = filtered.filter(r => (r.fecha || "").startsWith(y));
+
+  }else if(registroFilterMode === "RANGO"){
+    // ✅ comparación string funciona porque fecha es YYYY-MM-DD
+    let a = registroFilterFrom;
+    let b = registroFilterTo;
+
+    // si el usuario pone desde > hasta, intercambiamos
+    if(a && b && a > b){ const tmp = a; a = b; b = tmp; }
+
+    filtered = filtered.filter(r => {
+      const f = (r.fecha || "");
+      return f && f >= a && f <= b;
+    });
+
+  }else{
+    // HISTORICO => sin filtrar
+  }
+
+  registroRows = filtered;
+  updateRegFechaLabel();
+  renderRegistroTable();
+}
 
     if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = async ()=> {
   // ✅ Cargar SOLO cuando el usuario presiona APLICAR
@@ -1493,10 +1567,10 @@ function renderRegistroPlaceholder(msg){
   applyRegistroFilter();
 };
     
-    if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=>{
+if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=>{
   registroFilterMode = $("regFilterMode").value || "DIA";
+  updateRegistroInputsVisibility();
   updateRegFechaLabel();
-  // ❌ ya no aplica filtro ni consulta
 });
 if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=>{
   registroFilterDate = $("regFilterDate").value || todayKey();
@@ -1504,6 +1578,15 @@ if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=>{
   // ❌ ya no aplica filtro ni consulta
 });
 
+if($("regFilterFrom")) $("regFilterFrom").addEventListener("change", ()=>{
+  registroFilterFrom = $("regFilterFrom").value || todayKey();
+  updateRegFechaLabel();
+});
+if($("regFilterTo")) $("regFilterTo").addEventListener("change", ()=>{
+  registroFilterTo = $("regFilterTo").value || todayKey();
+  updateRegFechaLabel();
+});
+      
 async function openRegistro(fromAsistencia = false){
   const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
   const selected = ($("selCuadrilla") ? ($("selCuadrilla").value || "") : "");
@@ -1521,7 +1604,23 @@ async function openRegistro(fromAsistencia = false){
   registroReturnView = currentViewName || "libras";
 
   toggleClearBtnForAllMode();
-  initRegistroFilterUI();
+  function initRegistroFilterUI(){
+  const today = todayKey();
+
+  if($("regFilterDate")) $("regFilterDate").value = today;
+  if($("regFilterFrom")) $("regFilterFrom").value = today;
+  if($("regFilterTo"))   $("regFilterTo").value   = today;
+
+  if($("regFilterMode")) $("regFilterMode").value = "DIA";
+
+  registroFilterMode = "DIA";
+  registroFilterDate = today;
+  registroFilterFrom = today;
+  registroFilterTo   = today;
+
+  updateRegistroInputsVisibility();
+  updateRegFechaLabel();
+}
 
   // ✅ NO cargar Firestore aquí
   registroLoaded = false;
