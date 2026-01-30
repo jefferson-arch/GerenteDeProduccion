@@ -564,15 +564,38 @@
     // Contadores globales por día (y cuadrilla)
     const COL_COUNTERS = "sda_pesada_counters";
 
-    const ALLOWED = new Set([
+    ADMIN_VIEW_ALL[
       "aracellytomala@oceantreasure.local",
       "keniacruz@oceantreasure.local",
+      "solangefelesmar@oceantreasure.local",
+      "angiemareprex@oceantreasure.local",
       "gingervaldiviezo@oceantreasure.local",
       "pesadoradesalojo@oceantreasure.local",
       "vanesapacheco@oceantreasure.local",
       "jeffersonfigueroa@oceantreasure.local"
     ]);
 
+    // =======================
+    // ✅ PERMISOS ESPECIALES (REGISTRO SOLO HOY)
+    // =======================
+      const REGISTRO_ONLY_TODAY = new Map([
+      ["solangefelesmar@oceantreasure.local", { cuadrilla: "FELESMAR" }],
+      ["angiemareprex@oceantreasure.local",  { cuadrilla: "MAREPREX"  }],
+]);
+
+let currentPolicy = {
+  mode: "NORMAL",          // NORMAL | REGISTRO_ONLY_TODAY
+  fixedCuadrilla: "",      // si aplica
+};
+
+function computePolicy(email){
+  const e = (email || "").toLowerCase();
+  if(REGISTRO_ONLY_TODAY.has(e)){
+    return { mode: "REGISTRO_ONLY_TODAY", fixedCuadrilla: REGISTRO_ONLY_TODAY.get(e).cuadrilla };
+  }
+  return { mode: "NORMAL", fixedCuadrilla: "" };
+}
+    
     // Usuarios que pueden ver el histórico de TODOS los supervisores (sin elegir cuadrilla)
     const ADMIN_VIEW_ALL = new Set([
       "jeffersonfigueroa@oceantreasure.local",
@@ -596,13 +619,26 @@
       registro: $("vRegistro")
     };
 
+      const ORIGINAL_CUADRILLA_OPTIONS = `
+      <option value=""></option>
+      <option>OCEANTREASURE</option>
+      <option>MAREPREX</option>
+      <option>FELESMAR</option>
+  `;
+    
     let currentViewName = "login";
 
     function showView(name){
-      Object.values(views).forEach(v => v.classList.remove("active"));
-      views[name].classList.add("active");
-      currentViewName = name;
-    }
+    // ✅ Si es REGISTRO_ONLY_TODAY, solo permitimos: login / asistencia / registro
+    if(currentPolicy?.mode === "REGISTRO_ONLY_TODAY"){
+    const allowedViews = new Set(["login","asistencia","registro"]);
+    if(!allowedViews.has(name)) name = "asistencia";
+  }
+
+  Object.values(views).forEach(v => v.classList.remove("active"));
+  views[name].classList.add("active");
+  currentViewName = name;
+}
     function setHeaderVisible(v){ $("authHeader").style.display = v ? "block" : "none"; }
     function setUserEmail(email){ $("userEmail").textContent = email || ""; }
     async function doLogout(){ await signOut(auth); }
@@ -816,13 +852,59 @@ function feedbackOk(){
         currentUserEmail = user.email || "";
         setHeaderVisible(true);
         setUserEmail(currentUserEmail);
+        
+        currentPolicy = computePolicy(currentUserEmail);
 
         if(!ALLOWED.has(currentUserEmail)){
           alert("Acceso no autorizado.");
           await doLogout();
           return;
         }
+        resetAll();
+  applyAsistenciaPolicy();
+  showView("asistencia");
+}
 
+        function applyAsistenciaPolicy(){
+  const sel = $("selCuadrilla");
+  const btnTomar = $("btnTomarAsistencia");
+  const btnRegistroA = $("btnRegistroA");
+
+  if(!sel) return;
+
+  // Restaurar por si cambia usuario
+  sel.innerHTML = ORIGINAL_CUADRILLA_OPTIONS;
+  sel.disabled = false;
+
+  // Mostrar por defecto
+  if(btnTomar) btnTomar.style.display = "";
+  if(btnRegistroA) btnRegistroA.style.display = "";
+
+  if(currentPolicy.mode === "REGISTRO_ONLY_TODAY"){
+    // ✅ Solo 1 opción, fija
+    sel.innerHTML = `<option>${currentPolicy.fixedCuadrilla}</option>`;
+    sel.value = currentPolicy.fixedCuadrilla;
+    sel.disabled = true;
+
+    // ✅ No pueden tomar asistencia
+    if(btnTomar) btnTomar.style.display = "none";
+
+    // ✅ Fijar cuadrilla en estado
+    currentCuadrilla = currentPolicy.fixedCuadrilla;
+  }
+}
+
+function applyRegistroPolicyUI(){
+  const bar = document.querySelector(".filterBar");
+  const btnClear = $("btnClearR");
+
+  // ✅ Nunca mostrar limpiar histórico en modo restringido
+  if(btnClear) btnClear.style.display = (currentPolicy.mode === "REGISTRO_ONLY_TODAY") ? "none" : "";
+
+  // ✅ Ocultar totalmente el filtro (día/mes/año/histórico + date + botones)
+  if(bar) bar.style.display = (currentPolicy.mode === "REGISTRO_ONLY_TODAY") ? "none" : "";
+}
+        
         resetAll();
         showView("asistencia");
       } else {
@@ -831,7 +913,10 @@ function feedbackOk(){
         setUserEmail("");
         resetAll();
         showView("login");
+        applyAsistenciaPolicy();
+        applyRegistroPolicyUI();
       }
+      
     });
 
     function resetAll(){
@@ -863,6 +948,10 @@ function feedbackOk(){
 
     // --- Tomar Asistencia ---
     $("btnTomarAsistencia").onclick = async () => {
+      if(currentPolicy.mode === "REGISTRO_ONLY_TODAY"){
+  alert("Acceso restringido: solo REGISTRO DE PESADAS.");
+  return;
+}
       const c = $("selCuadrilla").value || "";
       if(!c){ alert("Seleccione la CUADRILLA."); return; }
       currentCuadrilla = c;
@@ -1809,4 +1898,5 @@ function feedbackOk(){
   </script>
 </body>
 </html>
+
 
