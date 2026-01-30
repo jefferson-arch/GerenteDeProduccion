@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BUILD_HISTORIAL_ACTIVO v5 2026-01-27 20:30 UTC -->
+<!-- BUILD_HISTORIAL_ACTIVO v6-RANGO 2026-01-30 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -116,7 +116,7 @@
       #tblLibras{min-width:360px}
     }
 
-    /* ✅ Filtro registro (DÍA / MES / AÑO / HISTÓRICO) */
+    /* ✅ Filtro registro (DÍA / MES / AÑO / RANGO / HISTÓRICO) */
     .filterBar{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-start;
       margin:8px 0 12px;
@@ -420,31 +420,27 @@
       </div>
 
       <div style="font-size:13px;margin:6px 0 10px;">
-        Cuadrilla: <b id="regCuadrilla">—</b> &nbsp; | &nbsp; Rango: <b id="regFecha">HISTÓRICO</b>
+        Cuadrilla: <b id="regCuadrilla">—</b> &nbsp; | &nbsp; Rango: <b id="regFecha">—</b>
       </div>
 
-      <!-- ✅ FILTRO (por defecto hoy) -->
+      <!-- ✅ FILTRO -->
       <div class="filterBar">
         <label>Filtrar por:</label>
         <select id="regFilterMode" aria-label="Modo de filtro">
-  <option value="DIA" selected>DÍA</option>
-  <option value="MES">MES</option>
-  <option value="ANIO">AÑO</option>
-  <option value="RANGO">RANGO</option>
-  <option value="HISTORICO">HISTÓRICO</option>
-</select>
-
-<!-- Para DIA/MES/ANIO (1 calendario) -->
-<input id="regFilterDate" type="date" />
-
-<!-- ✅ Para RANGO (2 calendarios) -->
-<input id="regFilterFrom" type="date" style="display:none" />
-<input id="regFilterTo" type="date" style="display:none" />
-
-<div class="miniBtn" id="btnAplicarFiltro">APLICAR</div>
-<div class="miniBtn" id="btnVerHistorico">VER HISTÓRICO</div>
+          <option value="DIA" selected>DÍA</option>
+          <option value="MES">MES</option>
+          <option value="ANIO">AÑO</option>
+          <option value="RANGO">RANGO</option>
+          <option value="HISTORICO">HISTÓRICO</option>
         </select>
+
+        <!-- 1 calendario (DIA/MES/ANIO) -->
         <input id="regFilterDate" type="date" />
+
+        <!-- 2 calendarios (RANGO) -->
+        <input id="regFilterFrom" type="date" style="display:none" />
+        <input id="regFilterTo" type="date" style="display:none" />
+
         <div class="miniBtn" id="btnAplicarFiltro">APLICAR</div>
         <div class="miniBtn" id="btnVerHistorico">VER HISTÓRICO</div>
       </div>
@@ -474,10 +470,9 @@
   <div class="modalBack" id="modalBack">
     <div class="modal">
       <h3>CARGAR LIBRAS</h3>
-      <div class="buildTag">HISTORIAL ACTIVO · v5 · 2026-01-27 20:30 UTC</div>
+      <div class="buildTag">HISTORIAL ACTIVO · v6-RANGO · 2026-01-30</div>
       <p class="meta" id="modalMeta"></p>
 
-      <!-- ✅ Input más pequeño + botón + -->
       <div class="inputRow">
         <input id="modalInput" type="text" inputmode="decimal" placeholder="0,00" />
         <button id="modalAdd" class="plusBtn" type="button" title="Acumular (+)">+</button>
@@ -492,7 +487,6 @@
         <div class="netValue" id="modalNet">0,00</div>
       </div>
 
-      <!-- ✅ Historial (solo visual) -->
       <div class="histBox" id="histBox">
         <div class="histLabel">DETALLE</div>
         <div class="histLine" id="modalHistory">—</div>
@@ -509,7 +503,7 @@
   <div class="modalBack" id="zeroBack">
     <div class="modal">
       <h3>PERSONAL SIN LIBRAS</h3>
-      <div class="buildTag">VALIDACIÓN GUARDAR · v5 · 2026-01-27</div>
+      <div class="buildTag">VALIDACIÓN GUARDAR · v6-RANGO</div>
       <p class="meta" id="zeroMeta"></p>
       <div class="listBox" id="zeroList"></div>
 
@@ -554,7 +548,6 @@
     import { getFirestore, collection, query, where, orderBy, getDocs, doc, setDoc, writeBatch, runTransaction }
       from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    // ✅ Mismo Firebase Project (Oceantreasure)
     const firebaseConfig = {
       apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
       authDomain: "oceantreasure-app.firebaseapp.com",
@@ -569,11 +562,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // SRH colección (Talento Humano)
     const COL_SRH = "rrhh_talento";
-    // SDA colección (registros de pesadas)
     const COL_SDA = "sda_avance_cabezas";
-    // Contadores globales por día (y cuadrilla)
     const COL_COUNTERS = "sda_pesada_counters";
 
     const ALLOWED = new Set([
@@ -585,13 +575,11 @@
       "jeffersonfigueroa@oceantreasure.local"
     ]);
 
-    // Usuarios que pueden ver el histórico de TODOS los supervisores (sin elegir cuadrilla)
     const ADMIN_VIEW_ALL = new Set([
       "jeffersonfigueroa@oceantreasure.local",
       "vanesapacheco@oceantreasure.local"
     ]);
 
-    // Supervisores operativos (se muestran en el histórico completo)
     const SUPERVISORS = [
       "gingervaldiviezo@oceantreasure.local",
       "jeffersonfigueroa@oceantreasure.local",
@@ -624,42 +612,27 @@
     let currentUserEmail = "";
     let currentCuadrilla = "";
     let registroReturnView = "libras";
-    let nomina = [];           // [{id, apellidos, nombres, areaTrabajo, cuadrilla}]
-    let presentes = new Set(); // ids presentes
-    let sessionId = "";        // id de sesión para SDA (solo UI)
-    let librasMap = new Map(); // id -> number
+    let nomina = [];
+    let presentes = new Set();
+    let sessionId = "";
+    let librasMap = new Map();
 
     // pesada
     let pesadaN = 0;
-    let pesadaLabel = "—";     // texto visible
-    let pesadaKey = "";        // clave safe
+    let pesadaLabel = "—";
+    let pesadaKey = "";
 
-    // registro cache
+    // registro cache local
     let registroRows = [];
     let registroAllRows = [];
     let registroFilterMode = "DIA";
-    let registroFilterDate = ""; // yyyy-mm-dd
-    let registroFilterFrom = ""; // yyyy-mm-dd
-    let registroFilterTo   = ""; // yyyy-mm-dd
-    // ✅ Control de carga del registro (para no consumir cuota hasta APLICAR)
+    let registroFilterDate = "";
+    let registroFilterFrom = "";
+    let registroFilterTo = "";
+
+    // ✅ control para no consumir cuota hasta APLICAR/VER HISTÓRICO
     let registroLoaded = false;
     let registroCacheKey = "";
-
-  function getRegistroCacheKey(){
-    const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
-    const c = currentCuadrilla || "TODAS";
-    const u = (currentUserEmail || "").toLowerCase();
-    return `${isAdmin ? "ADMIN" : "USER"}|${u}|${c}`;
-}
-
-function renderRegistroPlaceholder(msg){
-  const body = $("regBody");
-  if(!body) return;
-  body.innerHTML = "";
-  const tr = document.createElement("tr");
-  tr.innerHTML = `<td colspan="8">${esc(msg || "Presione APLICAR para cargar el registro.")}</td>`;
-  body.appendChild(tr);
-}
 
     function todayKey(){
       const d = new Date();
@@ -689,7 +662,6 @@ function renderRegistroPlaceholder(msg){
       return `${hh}:${mi}:${ss}`;
     }
     function nowLocalString(){
-      // ✅ fecha/hora del dispositivo (local)
       try{ return new Date().toLocaleString("es-EC"); }
       catch(_){ return `${todayHuman()} ${timeHMS()}`; }
     }
@@ -806,7 +778,7 @@ function renderRegistroPlaceholder(msg){
     // Auth state
     onAuthStateChanged(auth, async (user)=>{
       if(user){
-        currentUserEmail = user.email || "";
+        currentUserEmail = (user.email || "").toLowerCase();
         setHeaderVisible(true);
         setUserEmail(currentUserEmail);
 
@@ -836,10 +808,16 @@ function renderRegistroPlaceholder(msg){
       pesadaN = 0;
       pesadaLabel = "—";
       pesadaKey = "";
+
       registroRows = [];
       registroAllRows = [];
       registroFilterMode = "DIA";
       registroFilterDate = "";
+      registroFilterFrom = "";
+      registroFilterTo = "";
+
+      registroLoaded = false;
+      registroCacheKey = "";
 
       $("selCuadrilla").value = "";
       $("nominaBody").innerHTML = "";
@@ -998,7 +976,7 @@ function renderRegistroPlaceholder(msg){
         const val = librasMap.has(p.id) ? librasMap.get(p.id) : null;
         const showVal = (typeof val === "number" && !isNaN(val) && val !== null) ? fmt(val) : "";
         const locked = showVal ? "locked" : "";
-        const isZeroOrEmpty = (!isValidPositive(Number(val))) ? "zero" : ""; // ✅ resalta 0 / vacío
+        const isZeroOrEmpty = (!isValidPositive(Number(val))) ? "zero" : "";
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${esc(p.apellidos)}</td>
@@ -1206,7 +1184,7 @@ function renderRegistroPlaceholder(msg){
     function updateTotal(){
       let total = 0;
       for(const v of librasMap.values()){
-        if(typeof v === "number" && !isNaN(v) && v > 0) total += v; // ✅ total solo >0
+        if(typeof v === "number" && !isNaN(v) && v > 0) total += v;
       }
       $("totalLibras").textContent = fmt(total);
     }
@@ -1299,8 +1277,8 @@ function renderRegistroPlaceholder(msg){
 
     // --- NUEVA PESADA ---
     async function savePesadaToFirestore(validIds){
-      const fecha = todayKey();     // ✅ dispositivo (local)
-      const hora  = timeHMS();      // ✅ dispositivo (local)
+      const fecha = todayKey();
+      const hora  = timeHMS();
       const nowIso = new Date().toISOString();
       const fechaHoraLocal = nowLocalString();
 
@@ -1309,7 +1287,7 @@ function renderRegistroPlaceholder(msg){
         if(!p) continue;
 
         const lbs = librasMap.has(id) ? Number(librasMap.get(id)) : 0;
-        if(!Number.isFinite(lbs) || lbs <= 0) continue; // ✅ doble seguro
+        if(!Number.isFinite(lbs) || lbs <= 0) continue;
 
         const payload = {
           pesadaNumero: pesadaN,
@@ -1317,7 +1295,7 @@ function renderRegistroPlaceholder(msg){
           pesadaKey: pesadaKey,
           fecha,
           hora,
-          fechaHoraLocal,            // ✅ local device string
+          fechaHoraLocal,
           cuadrilla: currentCuadrilla,
           usuario: currentUserEmail,
 
@@ -1360,27 +1338,22 @@ function renderRegistroPlaceholder(msg){
 
       try{
         if(presentes.size > 0){
-
-          // ✅ Detectar vacíos/0 antes de guardar
           const { zeros, valids } = getZeroOrEmptyList();
 
           if(zeros.length > 0){
             const accept = await openZeroModal(zeros);
             if(!accept){
-              // revisar => no guarda, resalta en tabla
               markZerosOnTable(zeros);
               return;
             }
           }
 
-          // ✅ Guardar SOLO >0
           if(valids.length > 0){
             await savePesadaToFirestore(valids);
             alert(`Pesada guardada: ${pesadaLabel}\n(Se guardaron ${valids.length} registro(s) con libras > 0)`);
           }else{
             alert("No se guardó nada porque no hay registros con LIBRAS > 0.");
           }
-
         } else {
           alert("No hay personal marcado como PRESENTE. Se iniciará una nueva pesada en blanco.");
         }
@@ -1396,14 +1369,42 @@ function renderRegistroPlaceholder(msg){
     // =======================
     // ✅ REGISTRO + FILTRO
     // =======================
-
     function setRegistroLoading(loading){
-  const b1 = document.getElementById("btnAplicarFiltro");
-  const b2 = document.getElementById("btnVerHistorico");
-  if(b1){ b1.style.pointerEvents = loading ? "none" : ""; b1.style.opacity = loading ? ".6" : ""; }
-  if(b2){ b2.style.pointerEvents = loading ? "none" : ""; b2.style.opacity = loading ? ".6" : ""; }
-}
-    
+      const b1 = document.getElementById("btnAplicarFiltro");
+      const b2 = document.getElementById("btnVerHistorico");
+      if(b1){ b1.style.pointerEvents = loading ? "none" : ""; b1.style.opacity = loading ? ".6" : ""; }
+      if(b2){ b2.style.pointerEvents = loading ? "none" : ""; b2.style.opacity = loading ? ".6" : ""; }
+    }
+
+    function getRegistroCacheKey(){
+      const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+      const c = currentCuadrilla || "TODAS";
+      const u = (currentUserEmail || "").toLowerCase();
+      return `${isAdmin ? "ADMIN" : "USER"}|${u}|${c}`;
+    }
+
+    function renderRegistroPlaceholder(msg){
+      const body = $("regBody");
+      if(!body) return;
+      body.innerHTML = "";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="8">${esc(msg || "Presione APLICAR para cargar el registro.")}</td>`;
+      body.appendChild(tr);
+    }
+
+    function updateRegistroInputsVisibility(){
+      const mode = ($("regFilterMode")?.value || registroFilterMode || "DIA");
+      const one = $("regFilterDate");
+      const from = $("regFilterFrom");
+      const to = $("regFilterTo");
+
+      const isRange = (mode === "RANGO");
+
+      if(one)  one.style.display  = isRange ? "none" : "";
+      if(from) from.style.display = isRange ? "" : "none";
+      if(to)   to.style.display   = isRange ? "" : "none";
+    }
+
     function toggleClearBtnForAllMode(){
       const b = $("btnClearR");
       if(!b) return;
@@ -1411,51 +1412,41 @@ function renderRegistroPlaceholder(msg){
     }
 
     function initRegistroFilterUI(){
-      if(!$("regFilterDate") || !$("regFilterMode")) return;
       const today = todayKey();
-      $("regFilterDate").value = today;
-      $("regFilterMode").value = "DIA";
+
+      if($("regFilterDate")) $("regFilterDate").value = today;
+      if($("regFilterFrom")) $("regFilterFrom").value = today;
+      if($("regFilterTo"))   $("regFilterTo").value   = today;
+
+      if($("regFilterMode")) $("regFilterMode").value = "DIA";
+
       registroFilterMode = "DIA";
       registroFilterDate = today;
-      function updateRegFechaLabel(){
-  const rf = $("regFecha");
-  if(!rf) return;
+      registroFilterFrom = today;
+      registroFilterTo   = today;
 
-  if(registroFilterMode === "HISTORICO"){ rf.textContent = "HISTÓRICO"; return; }
-  if(registroFilterMode === "ANIO"){ rf.textContent = (registroFilterDate||"").slice(0,4) || "—"; return; }
-  if(registroFilterMode === "MES"){ rf.textContent = (registroFilterDate||"").slice(0,7) || "—"; return; }
+      updateRegistroInputsVisibility();
+      updateRegFechaLabel();
+    }
 
-  if(registroFilterMode === "RANGO"){
-    const a = registroFilterFrom || "—";
-    const b = registroFilterTo || "—";
-    rf.textContent = `${a} a ${b}`;
-    return;
-  }
-
-  rf.textContent = registroFilterDate || "—";
-}
-
-    function updateRegistroInputsVisibility(){
-  const mode = ($("regFilterMode")?.value || registroFilterMode || "DIA");
-  const one = $("regFilterDate");
-  const from = $("regFilterFrom");
-  const to = $("regFilterTo");
-
-  const isRange = (mode === "RANGO");
-
-  if(one)  one.style.display  = isRange ? "none" : "";
-  if(from) from.style.display = isRange ? "" : "none";
-  if(to)   to.style.display   = isRange ? "" : "none";
-}
-    
     function updateRegFechaLabel(){
       const rf = $("regFecha");
       if(!rf) return;
+
       if(registroFilterMode === "HISTORICO"){ rf.textContent = "HISTÓRICO"; return; }
       if(registroFilterMode === "ANIO"){ rf.textContent = (registroFilterDate||"").slice(0,4) || "—"; return; }
       if(registroFilterMode === "MES"){ rf.textContent = (registroFilterDate||"").slice(0,7) || "—"; return; }
+
+      if(registroFilterMode === "RANGO"){
+        const a = registroFilterFrom || "—";
+        const b = registroFilterTo || "—";
+        rf.textContent = `${a} a ${b}`;
+        return;
+      }
+
       rf.textContent = registroFilterDate || "—";
     }
+
     function renderRegistroTable(){
       $("regBody").innerHTML = "";
       if(!registroRows || registroRows.length === 0){
@@ -1480,162 +1471,146 @@ function renderRegistroPlaceholder(msg){
         $("regBody").appendChild(tr);
       }
     }
+
     function applyRegistroFilter(){
-  const modeEl = $("regFilterMode");
-  const dateEl = $("regFilterDate");
-  const fromEl = $("regFilterFrom");
-  const toEl   = $("regFilterTo");
+      const modeEl = $("regFilterMode");
+      const dateEl = $("regFilterDate");
+      const fromEl = $("regFilterFrom");
+      const toEl   = $("regFilterTo");
 
-  registroFilterMode = (modeEl && modeEl.value) ? modeEl.value : (registroFilterMode || "DIA");
+      registroFilterMode = (modeEl && modeEl.value) ? modeEl.value : (registroFilterMode || "DIA");
 
-  // Para DIA/MES/ANIO
-  if(dateEl && dateEl.value) registroFilterDate = dateEl.value;
-  if(!registroFilterDate) registroFilterDate = todayKey();
+      if(dateEl && dateEl.value) registroFilterDate = dateEl.value;
+      if(!registroFilterDate) registroFilterDate = todayKey();
 
-  // Para RANGO
-  if(fromEl && fromEl.value) registroFilterFrom = fromEl.value;
-  if(toEl   && toEl.value)   registroFilterTo   = toEl.value;
+      if(fromEl && fromEl.value) registroFilterFrom = fromEl.value;
+      if(toEl   && toEl.value)   registroFilterTo   = toEl.value;
 
-  if(!registroFilterFrom) registroFilterFrom = todayKey();
-  if(!registroFilterTo)   registroFilterTo   = todayKey();
+      if(!registroFilterFrom) registroFilterFrom = todayKey();
+      if(!registroFilterTo)   registroFilterTo   = todayKey();
 
-  let filtered = (registroAllRows || []).slice();
+      let filtered = (registroAllRows || []).slice();
 
-  if(registroFilterMode === "DIA"){
-    filtered = filtered.filter(r => (r.fecha || "") === registroFilterDate);
+      if(registroFilterMode === "DIA"){
+        filtered = filtered.filter(r => (r.fecha || "") === registroFilterDate);
 
-  }else if(registroFilterMode === "MES"){
-    const ym = (registroFilterDate || "").slice(0,7);
-    filtered = filtered.filter(r => (r.fecha || "").startsWith(ym));
+      }else if(registroFilterMode === "MES"){
+        const ym = (registroFilterDate || "").slice(0,7);
+        filtered = filtered.filter(r => (r.fecha || "").startsWith(ym));
 
-  }else if(registroFilterMode === "ANIO"){
-    const y = (registroFilterDate || "").slice(0,4);
-    filtered = filtered.filter(r => (r.fecha || "").startsWith(y));
+      }else if(registroFilterMode === "ANIO"){
+        const y = (registroFilterDate || "").slice(0,4);
+        filtered = filtered.filter(r => (r.fecha || "").startsWith(y));
 
-  }else if(registroFilterMode === "RANGO"){
-    // ✅ comparación string funciona porque fecha es YYYY-MM-DD
-    let a = registroFilterFrom;
-    let b = registroFilterTo;
+      }else if(registroFilterMode === "RANGO"){
+        let a = registroFilterFrom;
+        let b = registroFilterTo;
+        if(a && b && a > b){ const tmp = a; a = b; b = tmp; }
 
-    // si el usuario pone desde > hasta, intercambiamos
-    if(a && b && a > b){ const tmp = a; a = b; b = tmp; }
+        filtered = filtered.filter(r => {
+          const f = (r.fecha || "");
+          return f && f >= a && f <= b;
+        });
 
-    filtered = filtered.filter(r => {
-      const f = (r.fecha || "");
-      return f && f >= a && f <= b;
-    });
+      }else{
+        // HISTORICO => sin filtrar
+      }
 
-  }else{
-    // HISTORICO => sin filtrar
-  }
-
-  registroRows = filtered;
-  updateRegFechaLabel();
-  renderRegistroTable();
-}
-
-    if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = async ()=> {
-  // ✅ Cargar SOLO cuando el usuario presiona APLICAR
-  const key = getRegistroCacheKey();
-  if(!registroLoaded || registroCacheKey !== key){
-    registroCacheKey = key;
-    renderRegistroPlaceholder("Cargando registro...");
-    setRegistroLoading(true);
-    await loadRegistro();
-    setRegistroLoading(false);
-    registroLoaded = true;
-  }
-  applyRegistroFilter();       // ✅ filtro local
-};
-
-  if($("btnVerHistorico")) $("btnVerHistorico").onclick = async ()=>{
-  if($("regFilterMode")) $("regFilterMode").value = "HISTORICO";
-  registroFilterMode = "HISTORICO";
-
-  const key = getRegistroCacheKey();
-  if(!registroLoaded || registroCacheKey !== key){
-    registroCacheKey = key;
-    renderRegistroPlaceholder("Cargando histórico...");
-    setRegistroLoading(true);
-    try{
-      await loadRegistro();      // ✅ aquí consume cuota solo cuando presionas VER HISTÓRICO
-      registroLoaded = true;
-    }finally{
-      setRegistroLoading(false);
+      registroRows = filtered;
+      updateRegFechaLabel();
+      renderRegistroTable();
     }
-  }
-  applyRegistroFilter();
-};
-    
-if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=>{
-  registroFilterMode = $("regFilterMode").value || "DIA";
-  updateRegistroInputsVisibility();
-  updateRegFechaLabel();
-});
-if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=>{
-  registroFilterDate = $("regFilterDate").value || todayKey();
-  updateRegFechaLabel();
-  // ❌ ya no aplica filtro ni consulta
-});
 
-if($("regFilterFrom")) $("regFilterFrom").addEventListener("change", ()=>{
-  registroFilterFrom = $("regFilterFrom").value || todayKey();
-  updateRegFechaLabel();
-});
-if($("regFilterTo")) $("regFilterTo").addEventListener("change", ()=>{
-  registroFilterTo = $("regFilterTo").value || todayKey();
-  updateRegFechaLabel();
-});
-      
-async function openRegistro(fromAsistencia = false){
-  const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
-  const selected = ($("selCuadrilla") ? ($("selCuadrilla").value || "") : "");
+    async function openRegistro(fromAsistencia = false){
+      const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+      const selected = ($("selCuadrilla") ? ($("selCuadrilla").value || "") : "");
 
-  if(!currentCuadrilla && selected) currentCuadrilla = selected;
+      if(!currentCuadrilla && selected) currentCuadrilla = selected;
 
-  if(!currentCuadrilla){
-    if(!(isAdmin && fromAsistencia)){
-      alert("Seleccione la CUADRILLA.");
-      return;
+      if(!currentCuadrilla){
+        if(!(isAdmin && fromAsistencia)){
+          alert("Seleccione la CUADRILLA.");
+          return;
+        }
+        currentCuadrilla = ""; // TODAS
+      }
+
+      registroReturnView = currentViewName || "libras";
+
+      toggleClearBtnForAllMode();
+      initRegistroFilterUI();
+
+      // ✅ no cargar hasta APLICAR
+      registroLoaded = false;
+      registroCacheKey = "";
+
+      $("regCuadrilla").textContent = currentCuadrilla || "TODAS";
+      $("regFecha").textContent = "—";
+      renderRegistroPlaceholder("Presione APLICAR para cargar el registro.");
+
+      showView("registro");
     }
-    currentCuadrilla = ""; // TODAS
-  }
-
-  registroReturnView = currentViewName || "libras";
-
-  toggleClearBtnForAllMode();
-  function initRegistroFilterUI(){
-  const today = todayKey();
-
-  if($("regFilterDate")) $("regFilterDate").value = today;
-  if($("regFilterFrom")) $("regFilterFrom").value = today;
-  if($("regFilterTo"))   $("regFilterTo").value   = today;
-
-  if($("regFilterMode")) $("regFilterMode").value = "DIA";
-
-  registroFilterMode = "DIA";
-  registroFilterDate = today;
-  registroFilterFrom = today;
-  registroFilterTo   = today;
-
-  updateRegistroInputsVisibility();
-  updateRegFechaLabel();
-}
-
-  // ✅ NO cargar Firestore aquí
-  registroLoaded = false;
-  registroCacheKey = ""; // fuerza recarga cuando presionen APLICAR
-
-  $("regCuadrilla").textContent = currentCuadrilla || "TODAS";
-  $("regFecha").textContent = "—";
-  renderRegistroPlaceholder("Presione APLICAR para cargar el registro.");
-
-  showView("registro");
-}
 
     if($("btnRegistro")) $("btnRegistro").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(false); };
     if($("btnRegistroA")) $("btnRegistroA").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(true); };
     if($("btnRegistroN")) $("btnRegistroN").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(false); };
+
+    if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = async ()=>{
+      const key = getRegistroCacheKey();
+
+      if(!registroLoaded || registroCacheKey !== key){
+        registroCacheKey = key;
+        renderRegistroPlaceholder("Cargando registro...");
+        setRegistroLoading(true);
+        try{
+          await loadRegistro();     // ✅ consume cuota SOLO aquí
+          registroLoaded = true;
+        }finally{
+          setRegistroLoading(false);
+        }
+      }
+      applyRegistroFilter();
+    };
+
+    if($("btnVerHistorico")) $("btnVerHistorico").onclick = async ()=>{
+      if($("regFilterMode")) $("regFilterMode").value = "HISTORICO";
+      registroFilterMode = "HISTORICO";
+      updateRegistroInputsVisibility();
+      updateRegFechaLabel();
+
+      const key = getRegistroCacheKey();
+      if(!registroLoaded || registroCacheKey !== key){
+        registroCacheKey = key;
+        renderRegistroPlaceholder("Cargando histórico...");
+        setRegistroLoading(true);
+        try{
+          await loadRegistro();      // ✅ consume cuota SOLO aquí
+          registroLoaded = true;
+        }finally{
+          setRegistroLoading(false);
+        }
+      }
+      applyRegistroFilter();
+    };
+
+    // cambios UI (no aplican filtro hasta APLICAR)
+    if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=>{
+      registroFilterMode = $("regFilterMode").value || "DIA";
+      updateRegistroInputsVisibility();
+      updateRegFechaLabel();
+    });
+    if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=>{
+      registroFilterDate = $("regFilterDate").value || todayKey();
+      updateRegFechaLabel();
+    });
+    if($("regFilterFrom")) $("regFilterFrom").addEventListener("change", ()=>{
+      registroFilterFrom = $("regFilterFrom").value || todayKey();
+      updateRegFechaLabel();
+    });
+    if($("regFilterTo")) $("regFilterTo").addEventListener("change", ()=>{
+      registroFilterTo = $("regFilterTo").value || todayKey();
+      updateRegFechaLabel();
+    });
 
     async function loadRegistro(){
       $("regBody").innerHTML = "";
@@ -1650,7 +1625,6 @@ async function openRegistro(fromAsistencia = false){
       }
 
       $("regCuadrilla").textContent = currentCuadrilla || "TODAS";
-      $("regFecha").textContent = "HISTÓRICO";
 
       const q = isAdmin
         ? (currentCuadrilla
@@ -1681,7 +1655,6 @@ async function openRegistro(fromAsistencia = false){
         const x = d.data() || {};
         if(!x.numeroPesada) return;
 
-        // ✅ Ocultar históricos con 0 o vacío (por si existían datos viejos)
         const lbs = (typeof x.libras === "number") ? x.libras : 0;
         if(!(Number.isFinite(lbs) && lbs > 0)) return;
 
@@ -1704,11 +1677,15 @@ async function openRegistro(fromAsistencia = false){
       );
 
       registroAllRows = registroRows.slice();
-// ✅ NO render aquí. Se renderiza SOLO cuando presionan APLICAR o VER HISTÓRICO.
+      // ✅ NO render aquí (se hace en APLICAR / VER HISTÓRICO)
     }
 
     // Export Excel (registro)
     $("btnExcelR").onclick = () => {
+      if(!registroLoaded){
+        alert("Primero presiona APLICAR para cargar el registro.");
+        return;
+      }
       if(!registroRows || registroRows.length === 0){
         alert("No hay datos para exportar.");
         return;
@@ -1739,6 +1716,10 @@ async function openRegistro(fromAsistencia = false){
 
     // PDF (registro)
     $("btnPdfR").onclick = () => {
+      if(!registroLoaded){
+        alert("Primero presiona APLICAR para cargar el registro.");
+        return;
+      }
       const { jsPDF } = window.jspdf || {};
       if(!jsPDF){
         alert("No se pudo cargar la librería PDF.");
@@ -1771,7 +1752,7 @@ async function openRegistro(fromAsistencia = false){
       docp.setFontSize(12);
       docp.text(titleLine, 40, 40);
       docp.setFontSize(11);
-      docp.text(`Cuadrilla: ${currentCuadrilla}    Filtro: ${$("regFecha")?$("regFecha").textContent:"HISTÓRICO"}    Generado: ${dtLocal}`, 40, 60);
+      docp.text(`Cuadrilla: ${currentCuadrilla}    Filtro: ${$("regFecha")?$("regFecha").textContent:"—"}    Generado: ${dtLocal}`, 40, 60);
 
       docp.autoTable({
         startY: 80,
@@ -1864,7 +1845,10 @@ async function openRegistro(fromAsistencia = false){
         }
 
         alert(`Histórico eliminado: ${deleted} registro(s).`);
-        await loadRegistro();
+        // ✅ recargar solo cuando vuelvan a presionar APLICAR
+        registroLoaded = false;
+        registroCacheKey = "";
+        renderRegistroPlaceholder("Histórico eliminado. Presione APLICAR para cargar el registro.");
       };
     }
 
