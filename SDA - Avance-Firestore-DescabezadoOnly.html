@@ -627,6 +627,25 @@
     let registroAllRows = [];
     let registroFilterMode = "DIA";
     let registroFilterDate = ""; // yyyy-mm-dd
+    // ✅ Control de carga del registro (para no consumir cuota hasta APLICAR)
+    let registroLoaded = false;
+    let registroCacheKey = "";
+
+  function getRegistroCacheKey(){
+    const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+    const c = currentCuadrilla || "TODAS";
+    const u = (currentUserEmail || "").toLowerCase();
+    return `${isAdmin ? "ADMIN" : "USER"}|${u}|${c}`;
+}
+
+function renderRegistroPlaceholder(msg){
+  const body = $("regBody");
+  if(!body) return;
+  body.innerHTML = "";
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td colspan="8">${esc(msg || "Presione APLICAR para cargar el registro.")}</td>`;
+  body.appendChild(tr);
+}
 
     function todayKey(){
       const d = new Date();
@@ -1433,36 +1452,70 @@
       renderRegistroTable();
     }
 
-    if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = ()=> applyRegistroFilter();
-    if($("btnVerHistorico")) $("btnVerHistorico").onclick = ()=>{
-      if($("regFilterMode")) $("regFilterMode").value = "HISTORICO";
-      registroFilterMode = "HISTORICO";
-      applyRegistroFilter();
-    };
-    if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=> applyRegistroFilter());
-    if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=> applyRegistroFilter());
+    if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = async ()=> {
+  // ✅ Cargar SOLO cuando el usuario presiona APLICAR
+  const key = getRegistroCacheKey();
+  if(!registroLoaded || registroCacheKey !== key){
+    registroCacheKey = key;
+    renderRegistroPlaceholder("Cargando registro...");
+    await loadRegistro();      // ✅ aquí recién consume cuota
+    registroLoaded = true;
+  }
+  applyRegistroFilter();       // ✅ filtro local
+};
+if($("btnVerHistorico")) $("btnVerHistorico").onclick = async ()=>{
+  if($("regFilterMode")) $("regFilterMode").value = "HISTORICO";
+  registroFilterMode = "HISTORICO";
 
-    async function openRegistro(fromAsistencia = false){
-      const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
-      const selected = ($("selCuadrilla") ? ($("selCuadrilla").value || "") : "");
+  const key = getRegistroCacheKey();
+  if(!registroLoaded || registroCacheKey !== key){
+    registroCacheKey = key;
+    renderRegistroPlaceholder("Cargando histórico...");
+    await loadRegistro();      // ✅ consume cuota solo aquí
+    registroLoaded = true;
+  }
+  applyRegistroFilter();
+};
+    if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=>{
+  registroFilterMode = $("regFilterMode").value || "DIA";
+  updateRegFechaLabel();
+  // ❌ ya no aplica filtro ni consulta
+});
+if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=>{
+  registroFilterDate = $("regFilterDate").value || todayKey();
+  updateRegFechaLabel();
+  // ❌ ya no aplica filtro ni consulta
+});
 
-      if(!currentCuadrilla && selected) currentCuadrilla = selected;
+async function openRegistro(fromAsistencia = false){
+  const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+  const selected = ($("selCuadrilla") ? ($("selCuadrilla").value || "") : "");
 
-      if(!currentCuadrilla){
-        if(!(isAdmin && fromAsistencia)){
-          alert("Seleccione la CUADRILLA.");
-          return;
-        }
-        currentCuadrilla = ""; // TODAS
-      }
+  if(!currentCuadrilla && selected) currentCuadrilla = selected;
 
-      registroReturnView = currentViewName || "libras";
-
-      toggleClearBtnForAllMode();
-      initRegistroFilterUI();
-      await loadRegistro();
-      showView("registro");
+  if(!currentCuadrilla){
+    if(!(isAdmin && fromAsistencia)){
+      alert("Seleccione la CUADRILLA.");
+      return;
     }
+    currentCuadrilla = ""; // TODAS
+  }
+
+  registroReturnView = currentViewName || "libras";
+
+  toggleClearBtnForAllMode();
+  initRegistroFilterUI();
+
+  // ✅ NO cargar Firestore aquí
+  registroLoaded = false;
+  registroCacheKey = ""; // fuerza recarga cuando presionen APLICAR
+
+  $("regCuadrilla").textContent = currentCuadrilla || "TODAS";
+  $("regFecha").textContent = "—";
+  renderRegistroPlaceholder("Presione APLICAR para cargar el registro.");
+
+  showView("registro");
+}
 
     if($("btnRegistro")) $("btnRegistro").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(false); };
     if($("btnRegistroA")) $("btnRegistroA").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(true); };
@@ -1535,7 +1588,7 @@
       );
 
       registroAllRows = registroRows.slice();
-      applyRegistroFilter();
+// ✅ NO render aquí. Se renderiza SOLO cuando presionan APLICAR o VER HISTÓRICO.
     }
 
     // Export Excel (registro)
