@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BUILD_HISTORIAL_ACTIVO v6 2026-01-30 -->
+<!-- BUILD_HISTORIAL_ACTIVO v5 2026-01-27 20:30 UTC -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -180,13 +180,14 @@
     .modal .actions .btn{margin:0;width:160px}
 
     /* Gavetas + Libras finales (Modal) */
+    .modal .modalName{display:block;font-size:20px;font-weight:800;margin:0 0 4px;}
+    .modal .modalSub{font-size:13px;margin:0 0 10px;}
     .modal .optRow{display:flex;gap:14px;align-items:center;justify-content:center;margin:10px 0 6px;}
     .modal .optRow label{display:flex;gap:6px;align-items:center;font-size:14px;cursor:pointer;user-select:none;}
     .modal .optRow input[type="radio"]{transform:scale(1.15)}
     .modal .netBox{margin:8px 0 0;border:1px solid #ddd;background:#fff;padding:10px;text-align:center;}
     .modal .netBox .netLabel{font-size:12px;color:#333;margin-bottom:4px;}
     .modal .netBox .netValue{font-size:26px;font-weight:900;color:#0a8f2a;line-height:1;}
-
     /* ✅ Historial de acumulación (Modal) */
     .modal .histBox{
       margin:8px 0 0;
@@ -422,6 +423,7 @@
         Cuadrilla: <b id="regCuadrilla">—</b> &nbsp; | &nbsp; Rango: <b id="regFecha">HISTÓRICO</b>
       </div>
 
+      <!-- ✅ FILTRO (por defecto hoy) -->
       <div class="filterBar">
         <label>Filtrar por:</label>
         <select id="regFilterMode" aria-label="Modo de filtro">
@@ -456,12 +458,14 @@
 
   </div>
 
+  <!-- MODAL LIBRAS -->
   <div class="modalBack" id="modalBack">
     <div class="modal">
       <h3>CARGAR LIBRAS</h3>
-      <div class="buildTag">HISTORIAL ACTIVO · v6 · 2026-01-30</div>
+      <div class="buildTag">HISTORIAL ACTIVO · v5 · 2026-01-27 20:30 UTC</div>
       <p class="meta" id="modalMeta"></p>
 
+      <!-- ✅ Input más pequeño + botón + -->
       <div class="inputRow">
         <input id="modalInput" type="text" inputmode="decimal" placeholder="0,00" />
         <button id="modalAdd" class="plusBtn" type="button" title="Acumular (+)">+</button>
@@ -476,6 +480,7 @@
         <div class="netValue" id="modalNet">0,00</div>
       </div>
 
+      <!-- ✅ Historial (solo visual) -->
       <div class="histBox" id="histBox">
         <div class="histLabel">DETALLE</div>
         <div class="histLine" id="modalHistory">—</div>
@@ -488,10 +493,11 @@
     </div>
   </div>
 
+  <!-- ✅ MODAL: Personas sin libras / 0 -->
   <div class="modalBack" id="zeroBack">
     <div class="modal">
       <h3>PERSONAL SIN LIBRAS</h3>
-      <div class="buildTag">VALIDACIÓN GUARDAR · v6 · 2026-01-30</div>
+      <div class="buildTag">VALIDACIÓN GUARDAR · v5 · 2026-01-27</div>
       <p class="meta" id="zeroMeta"></p>
       <div class="listBox" id="zeroList"></div>
 
@@ -507,6 +513,7 @@
     </div>
   </div>
 
+  <!-- Captura errores JS -->
   <script>
     (function(){
       const show = (msg)=>{
@@ -522,22 +529,20 @@
     })();
   </script>
 
+  <!-- libs PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <!-- libs Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script type="module">
-    // ⚠️ Este archivo es una versión lista para subir al repo con:
-    // - Validación de 0/vacíos antes de guardar (omitir)
-    // - Registro muestra solo >0
-    // - Feedback de éxito: beep + vibración
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential }
       from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { getFirestore, collection, query, where, orderBy, getDocs, doc, setDoc, writeBatch, runTransaction }
       from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+    // ✅ Mismo Firebase Project (Oceantreasure)
     const firebaseConfig = {
       apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
       authDomain: "oceantreasure-app.firebaseapp.com",
@@ -552,8 +557,11 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // SRH colección (Talento Humano)
     const COL_SRH = "rrhh_talento";
+    // SDA colección (registros de pesadas)
     const COL_SDA = "sda_avance_cabezas";
+    // Contadores globales por día (y cuadrilla)
     const COL_COUNTERS = "sda_pesada_counters";
 
     const ALLOWED = new Set([
@@ -565,11 +573,13 @@
       "jeffersonfigueroa@oceantreasure.local"
     ]);
 
+    // Usuarios que pueden ver el histórico de TODOS los supervisores (sin elegir cuadrilla)
     const ADMIN_VIEW_ALL = new Set([
       "jeffersonfigueroa@oceantreasure.local",
       "vanesapacheco@oceantreasure.local"
     ]);
 
+    // Supervisores operativos (se muestran en el histórico completo)
     const SUPERVISORS = [
       "gingervaldiviezo@oceantreasure.local",
       "aracellytomala@oceantreasure.local",
@@ -597,22 +607,25 @@
     function setUserEmail(email){ $("userEmail").textContent = email || ""; }
     async function doLogout(){ await signOut(auth); }
 
+    // --- Estado ---
     let currentUserEmail = "";
     let currentCuadrilla = "";
     let registroReturnView = "libras";
-    let nomina = [];
-    let presentes = new Set();
-    let sessionId = "";
-    let librasMap = new Map();
+    let nomina = [];           // [{id, apellidos, nombres, areaTrabajo, cuadrilla}]
+    let presentes = new Set(); // ids presentes
+    let sessionId = "";        // id de sesión para SDA (solo UI)
+    let librasMap = new Map(); // id -> number
 
+    // pesada
     let pesadaN = 0;
-    let pesadaLabel = "—";
-    let pesadaKey = "";
+    let pesadaLabel = "—";     // texto visible
+    let pesadaKey = "";        // clave safe
 
+    // registro cache
     let registroRows = [];
     let registroAllRows = [];
     let registroFilterMode = "DIA";
-    let registroFilterDate = "";
+    let registroFilterDate = ""; // yyyy-mm-dd
 
     function todayKey(){
       const d = new Date();
@@ -642,47 +655,9 @@
       return `${hh}:${mi}:${ss}`;
     }
     function nowLocalString(){
+      // ✅ fecha/hora del dispositivo (local)
       try{ return new Date().toLocaleString("es-EC"); }
       catch(_){ return `${todayHuman()} ${timeHMS()}`; }
-    }
-
-    // ✅ BEEP + VIBRACIÓN (transacción exitosa)
-    function playSuccessBeep(){
-      try{
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if(!AudioCtx) return;
-
-        const ctx = new AudioCtx();
-        if(ctx.state === "suspended"){
-          ctx.resume().catch(()=>{});
-        }
-
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-
-        o.type = "sine";
-        o.frequency.setValueAtTime(880, ctx.currentTime);
-        g.gain.setValueAtTime(0.001, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
-
-        o.connect(g);
-        g.connect(ctx.destination);
-
-        o.start();
-        o.stop(ctx.currentTime + 0.20);
-
-        setTimeout(()=>{ try{ ctx.close(); }catch(_){ } }, 300);
-      }catch(_){}
-    }
-    function hapticOk(){
-      try{
-        if(navigator.vibrate) navigator.vibrate([50, 30, 70]);
-      }catch(_){}
-    }
-    function feedbackOk(){
-      hapticOk();
-      playSuccessBeep();
     }
 
     function makeSessionId(){
@@ -690,12 +665,14 @@
       const stamp = d.toISOString().replaceAll(":","").replaceAll(".","").replaceAll("-","").replace("T","_").slice(0,15);
       return `SDA_${todayKey()}_${currentCuadrilla}_${stamp}`;
     }
+
     function sessionStorageKey(){
       return `SDA_SESSION_${todayKey()}_${currentCuadrilla}_${currentUserEmail}`;
     }
     function pesadaCurrentKey(){
       return `SDA_PESADA_CURRENT_${todayKey()}_${currentCuadrilla}_${currentUserEmail}`;
     }
+
     function userShort(){
       const u = (currentUserEmail || "").split("@")[0] || "";
       return u.replaceAll(".","").replaceAll(" ","");
@@ -765,7 +742,7 @@
       if($("pesadaHora")) $("pesadaHora").textContent = hora;
     }
 
-    // Login
+    // --- Login ---
     $("btnLogin").onclick = async () => {
       $("loginMsg").textContent = "";
       const email = $("loginEmail").value.trim();
@@ -781,15 +758,18 @@
       $(id).addEventListener("keydown", (e)=>{ if(e.key==="Enter") $("btnLogin").click(); });
     });
 
+    // Logout links
     $("linkLogoutA").onclick = doLogout;
     $("lnkLogoutN").onclick = doLogout;
     $("lnkLogoutL").onclick = doLogout;
     $("lnkLogoutR").onclick = doLogout;
 
+    // Back links
     $("lnkBackAsistencia").onclick = () => showView("asistencia");
     $("lnkBackNomina").onclick = () => showView("nomina");
     $("lnkBackRegistro").onclick = () => showView(registroReturnView || "libras");
 
+    // Auth state
     onAuthStateChanged(auth, async (user)=>{
       if(user){
         currentUserEmail = user.email || "";
@@ -984,7 +964,7 @@
         const val = librasMap.has(p.id) ? librasMap.get(p.id) : null;
         const showVal = (typeof val === "number" && !isNaN(val) && val !== null) ? fmt(val) : "";
         const locked = showVal ? "locked" : "";
-        const isZeroOrEmpty = (!isValidPositive(Number(val))) ? "zero" : "";
+        const isZeroOrEmpty = (!isValidPositive(Number(val))) ? "zero" : ""; // ✅ resalta 0 / vacío
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${esc(p.apellidos)}</td>
@@ -1192,7 +1172,7 @@
     function updateTotal(){
       let total = 0;
       for(const v of librasMap.values()){
-        if(typeof v === "number" && !isNaN(v) && v > 0) total += v;
+        if(typeof v === "number" && !isNaN(v) && v > 0) total += v; // ✅ total solo >0
       }
       $("totalLibras").textContent = fmt(total);
     }
@@ -1212,6 +1192,9 @@
       try{ localStorage.removeItem(sessionStorageKey()); }catch(_){}
     }
 
+    // ==========================
+    // ✅ Validación GUARDAR: zeros
+    // ==========================
     function getZeroOrEmptyList(){
       const zeros = [];
       const valids = [];
@@ -1280,9 +1263,10 @@
       }
     }
 
+    // --- NUEVA PESADA ---
     async function savePesadaToFirestore(validIds){
-      const fecha = todayKey();
-      const hora  = timeHMS();
+      const fecha = todayKey();     // ✅ dispositivo (local)
+      const hora  = timeHMS();      // ✅ dispositivo (local)
       const nowIso = new Date().toISOString();
       const fechaHoraLocal = nowLocalString();
 
@@ -1291,7 +1275,7 @@
         if(!p) continue;
 
         const lbs = librasMap.has(id) ? Number(librasMap.get(id)) : 0;
-        if(!Number.isFinite(lbs) || lbs <= 0) continue;
+        if(!Number.isFinite(lbs) || lbs <= 0) continue; // ✅ doble seguro
 
         const payload = {
           pesadaNumero: pesadaN,
@@ -1299,7 +1283,7 @@
           pesadaKey: pesadaKey,
           fecha,
           hora,
-          fechaHoraLocal,
+          fechaHoraLocal,            // ✅ local device string
           cuadrilla: currentCuadrilla,
           usuario: currentUserEmail,
 
@@ -1332,6 +1316,7 @@
       loadNomina().then(()=>showView("nomina"));
     }
 
+    // GUARDAR
     $("btnNuevaPesada").onclick = async () => {
       if(!currentCuadrilla){
         alert("Seleccione la cuadrilla.");
@@ -1342,22 +1327,21 @@
       try{
         if(presentes.size > 0){
 
+          // ✅ Detectar vacíos/0 antes de guardar
           const { zeros, valids } = getZeroOrEmptyList();
 
           if(zeros.length > 0){
             const accept = await openZeroModal(zeros);
             if(!accept){
+              // revisar => no guarda, resalta en tabla
               markZerosOnTable(zeros);
               return;
             }
           }
 
+          // ✅ Guardar SOLO >0
           if(valids.length > 0){
             await savePesadaToFirestore(valids);
-
-            // ✅ sonido + vibración SOLO cuando guardó
-            feedbackOk();
-
             alert(`Pesada guardada: ${pesadaLabel}\n(Se guardaron ${valids.length} registro(s) con libras > 0)`);
           }else{
             alert("No se guardó nada porque no hay registros con LIBRAS > 0.");
@@ -1375,9 +1359,398 @@
       await resetForNextPesada();
     };
 
-    // --- REGISTRO (resto igual que tu v5) ---
-    // Nota: Por brevedad, el resto del registro/export/limpiar/pdf está en el bloque superior del HTML.
-    // Tu repo ya lo tiene, pero este archivo incluye todo lo necesario para que funcione con beep/vibración.
+    // =======================
+    // ✅ REGISTRO + FILTRO
+    // =======================
+    function toggleClearBtnForAllMode(){
+      const b = $("btnClearR");
+      if(!b) return;
+      b.style.display = currentCuadrilla ? "" : "none";
+    }
+
+    function initRegistroFilterUI(){
+      if(!$("regFilterDate") || !$("regFilterMode")) return;
+      const today = todayKey();
+      $("regFilterDate").value = today;
+      $("regFilterMode").value = "DIA";
+      registroFilterMode = "DIA";
+      registroFilterDate = today;
+      updateRegFechaLabel();
+    }
+    function updateRegFechaLabel(){
+      const rf = $("regFecha");
+      if(!rf) return;
+      if(registroFilterMode === "HISTORICO"){ rf.textContent = "HISTÓRICO"; return; }
+      if(registroFilterMode === "ANIO"){ rf.textContent = (registroFilterDate||"").slice(0,4) || "—"; return; }
+      if(registroFilterMode === "MES"){ rf.textContent = (registroFilterDate||"").slice(0,7) || "—"; return; }
+      rf.textContent = registroFilterDate || "—";
+    }
+    function renderRegistroTable(){
+      $("regBody").innerHTML = "";
+      if(!registroRows || registroRows.length === 0){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="8">No hay registros guardados.</td>`;
+        $("regBody").appendChild(tr);
+        return;
+      }
+      for(const r of registroRows){
+        const tr = document.createElement("tr");
+        const pesadaTxt = r.pesadaNumero ? `PESADA ${r.pesadaNumero}` : "";
+        tr.innerHTML = `
+          <td>${esc(pesadaTxt)}</td>
+          <td>${esc(r.fecha || "")}</td>
+          <td>${esc(r.hora || "")}</td>
+          <td>${esc(r.usuario || "")}</td>
+          <td>${esc(r.apellidos || "")}</td>
+          <td>${esc(r.nombres || "")}</td>
+          <td>${esc(r.cuadrilla || "")}</td>
+          <td style="text-align:right;">${esc(fmt(r.libras || 0))}</td>
+        `;
+        $("regBody").appendChild(tr);
+      }
+    }
+    function applyRegistroFilter(){
+      const modeEl = $("regFilterMode");
+      const dateEl = $("regFilterDate");
+      registroFilterMode = (modeEl && modeEl.value) ? modeEl.value : (registroFilterMode || "DIA");
+      registroFilterDate = (dateEl && dateEl.value) ? dateEl.value : (registroFilterDate || todayKey());
+
+      let filtered = (registroAllRows || []).slice();
+      if(registroFilterMode === "DIA"){
+        filtered = filtered.filter(r => (r.fecha || "") === registroFilterDate);
+      }else if(registroFilterMode === "MES"){
+        const ym = (registroFilterDate || "").slice(0,7);
+        filtered = filtered.filter(r => (r.fecha || "").startsWith(ym));
+      }else if(registroFilterMode === "ANIO"){
+        const y = (registroFilterDate || "").slice(0,4);
+        filtered = filtered.filter(r => (r.fecha || "").startsWith(y));
+      }else{
+        // HISTORICO => sin filtrar
+      }
+      registroRows = filtered;
+      updateRegFechaLabel();
+      renderRegistroTable();
+    }
+
+    if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = ()=> applyRegistroFilter();
+    if($("btnVerHistorico")) $("btnVerHistorico").onclick = ()=>{
+      if($("regFilterMode")) $("regFilterMode").value = "HISTORICO";
+      registroFilterMode = "HISTORICO";
+      applyRegistroFilter();
+    };
+    if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=> applyRegistroFilter());
+    if($("regFilterDate")) $("regFilterDate").addEventListener("change", ()=> applyRegistroFilter());
+
+    async function openRegistro(fromAsistencia = false){
+      const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+      const selected = ($("selCuadrilla") ? ($("selCuadrilla").value || "") : "");
+
+      if(!currentCuadrilla && selected) currentCuadrilla = selected;
+
+      if(!currentCuadrilla){
+        if(!(isAdmin && fromAsistencia)){
+          alert("Seleccione la CUADRILLA.");
+          return;
+        }
+        currentCuadrilla = ""; // TODAS
+      }
+
+      registroReturnView = currentViewName || "libras";
+
+      toggleClearBtnForAllMode();
+      initRegistroFilterUI();
+      await loadRegistro();
+      showView("registro");
+    }
+
+    if($("btnRegistro")) $("btnRegistro").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(false); };
+    if($("btnRegistroA")) $("btnRegistroA").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(true); };
+    if($("btnRegistroN")) $("btnRegistroN").onclick = (e)=>{ e?.preventDefault?.(); e?.stopPropagation?.(); openRegistro(false); };
+
+    async function loadRegistro(){
+      $("regBody").innerHTML = "";
+      registroRows = [];
+      registroAllRows = [];
+
+      const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
+
+      if(!currentCuadrilla && !isAdmin){
+        alert("Seleccione la CUADRILLA.");
+        return;
+      }
+
+      $("regCuadrilla").textContent = currentCuadrilla || "TODAS";
+      $("regFecha").textContent = "HISTÓRICO";
+
+      const q = isAdmin
+        ? (currentCuadrilla
+            ? query(
+                collection(db, COL_SDA),
+                where("cuadrilla","==", currentCuadrilla),
+                where("usuario","in", SUPERVISORS)
+              )
+            : query(
+                collection(db, COL_SDA),
+                where("usuario","in", SUPERVISORS)
+              ))
+        : query(
+            collection(db, COL_SDA),
+            where("cuadrilla","==", currentCuadrilla),
+            where("usuario","==", currentUserEmail)
+          );
+
+      let snap;
+      try{
+        snap = await getDocs(q);
+      }catch(err){
+        alert("No se pudo consultar el REGISTRO. Revisa conexión, permisos o índices.");
+        throw err;
+      }
+
+      snap.forEach(d=>{
+        const x = d.data() || {};
+        if(!x.numeroPesada) return;
+
+        // ✅ Ocultar históricos con 0 o vacío (por si existían datos viejos)
+        const lbs = (typeof x.libras === "number") ? x.libras : 0;
+        if(!(Number.isFinite(lbs) && lbs > 0)) return;
+
+        registroRows.push({
+          pesadaNumero: typeof x.pesadaNumero === "number" ? x.pesadaNumero : 0,
+          fecha: x.fecha || "",
+          hora: x.hora || "",
+          usuario: x.usuario || "",
+          apellidos: x.apellidos || "",
+          nombres: x.nombres || "",
+          cuadrilla: x.cuadrilla || "",
+          libras: lbs
+        });
+      });
+
+      registroRows.sort((a,b)=>
+        (a.pesadaNumero - b.pesadaNumero) ||
+        (a.apellidos||"").localeCompare(b.apellidos||"","es") ||
+        (a.nombres||"").localeCompare(b.nombres||"","es")
+      );
+
+      registroAllRows = registroRows.slice();
+      applyRegistroFilter();
+    }
+
+    // Export Excel (registro)
+    $("btnExcelR").onclick = () => {
+      if(!registroRows || registroRows.length === 0){
+        alert("No hay datos para exportar.");
+        return;
+      }
+      if(!window.XLSX){
+        alert("No se pudo cargar la librería de Excel (XLSX). Verifica conexión a internet.");
+        return;
+      }
+
+      const headers = ["PESADA","FECHA","HORA","SUPERVISOR","APELLIDOS","NOMBRES","CUADRILLA","LIBRAS"];
+      const data = [headers];
+      for(const r of registroRows){
+        data.push([`PESADA ${r.pesadaNumero || ''}`.trim(), r.fecha || "", r.hora || "", r.usuario || "", r.apellidos, r.nombres, r.cuadrilla, r.libras]);
+      }
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws["!cols"] = [{wch:12},{wch:12},{wch:8},{wch:22},{wch:28},{wch:22},{wch:16},{wch:10}];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Registro");
+
+      const now = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      const fname = `SDA_RegistroPesadas_${currentCuadrilla}_${stamp}.xlsx`.replaceAll(" ","_");
+      XLSX.writeFile(wb, fname);
+    };
+
+    // PDF (registro)
+    $("btnPdfR").onclick = () => {
+      const { jsPDF } = window.jspdf || {};
+      if(!jsPDF){
+        alert("No se pudo cargar la librería PDF.");
+        return;
+      }
+      if(!registroRows || registroRows.length === 0){
+        alert("No hay datos para generar PDF.");
+        return;
+      }
+
+      const body = registroRows.map(r=>[
+        (`PESADA ${r.pesadaNumero || ""}`).trim(),
+        r.fecha || "",
+        r.hora || "",
+        (r.usuario || ""),
+        r.apellidos,
+        r.nombres,
+        r.cuadrilla,
+        fmt(r.libras)
+      ]);
+
+      const now = new Date();
+      const dtLocal = nowLocalString();
+      const fileStamp = now.toISOString().slice(0,19).replaceAll(":","-").replace("T","_");
+
+      const titleLine = `SDA - Registro de Pesadas | ${currentUserEmail} | ${dtLocal}`;
+
+      const docp = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+      docp.setFont("Times","Normal");
+      docp.setFontSize(12);
+      docp.text(titleLine, 40, 40);
+      docp.setFontSize(11);
+      docp.text(`Cuadrilla: ${currentCuadrilla}    Filtro: ${$("regFecha")?$("regFecha").textContent:"HISTÓRICO"}    Generado: ${dtLocal}`, 40, 60);
+
+      docp.autoTable({
+        startY: 80,
+        head: [["PESADA","FECHA","HORA","SUPERVISOR","APELLIDOS","NOMBRES","CUADRILLA","LIBRAS"]],
+        body,
+        styles: { font: "Times", fontSize: 9 },
+        headStyles: { fillColor: [13,47,79] },
+        margin: { left: 40, right: 40 }
+      });
+
+      const fname = `SDA_RegistroPesadas_${currentCuadrilla}_${fileStamp}.pdf`.replaceAll(" ","_");
+      docp.save(fname);
+    };
+
+    // ✅ LIMPIAR HISTÓRICO (registro)
+    const CLEAR_ADMIN = "jeffersonfigueroa@oceantreasure.local";
+
+    async function reauthForSensitiveAction(){
+      const user = auth.currentUser;
+      if(!user || !user.email) throw new Error("No hay sesión activa.");
+      const pass = prompt("Para confirmar, ingrese su contraseña de Firebase:");
+      if(!pass) throw new Error("Acción cancelada.");
+      const cred = EmailAuthProvider.credential(user.email, pass);
+      await reauthenticateWithCredential(user, cred);
+      return true;
+    }
+
+    if($("btnClearR")){
+      $("btnClearR").onclick = async () => {
+        if(!currentCuadrilla){
+          alert("Seleccione la CUADRILLA.");
+          return;
+        }
+
+        if((currentUserEmail || "").toLowerCase() !== CLEAR_ADMIN){
+          alert("Acceso denegado. Solo Jefferson puede LIMPIAR HISTÓRICO.");
+          return;
+        }
+
+        const ok = confirm("⚠️ Esta acción borrará TODO el registro histórico de ESTA CUADRILLA (todos los usuarios). ¿Desea continuar?");
+        if(!ok) return;
+
+        try{
+          await reauthForSensitiveAction();
+        }catch(err){
+          alert("No se pudo validar la contraseña. No se realizó la acción.");
+          console.error("REAUTH ERROR:", err);
+          return;
+        }
+
+        const q = query(
+          collection(db, COL_SDA),
+          where("cuadrilla","==", currentCuadrilla)
+        );
+
+        let snap;
+        try{
+          snap = await getDocs(q);
+        }catch(err){
+          alert("No se pudo consultar el REGISTRO para borrar. Revisa conexión o permisos.");
+          return;
+        }
+
+        if(!snap || snap.empty){
+          alert("No hay registros para borrar.");
+          return;
+        }
+
+        let deleted = 0;
+        try{
+          let batch = writeBatch(db);
+          let ops = 0;
+
+          for(const d of snap.docs){
+            batch.delete(doc(db, COL_SDA, d.id));
+            deleted++;
+            ops++;
+
+            if(ops >= 450){
+              await batch.commit();
+              batch = writeBatch(db);
+              ops = 0;
+            }
+          }
+          if(ops > 0) await batch.commit();
+        }catch(err){
+          alert("No se pudo borrar el historial. Revisa reglas/permisos de Firestore.");
+          console.error("DELETE ERROR:", err);
+          return;
+        }
+
+        alert(`Histórico eliminado: ${deleted} registro(s).`);
+        await loadRegistro();
+      };
+    }
+
+    // --- PDF (pantalla libras) ---
+    $("btnPdf").onclick = () => {
+      const { jsPDF } = window.jspdf || {};
+      if(!jsPDF){
+        alert("No se pudo cargar la librería PDF.");
+        return;
+      }
+
+      const rows = [];
+      const presentesArr = [...presentes]
+        .map(id => nomina.find(x=>x.id===id))
+        .filter(Boolean)
+        .sort((a,b)=> (a.apellidos||"").localeCompare(b.apellidos||"","es") || (a.nombres||"").localeCompare(b.nombres||"","es"));
+
+      for(const p of presentesArr){
+        const n = librasMap.has(p.id) ? librasMap.get(p.id) : null;
+        rows.push([
+          p.apellidos || "",
+          p.nombres || "",
+          (typeof n === "number" && !isNaN(n)) ? fmt(n) : ""
+        ]);
+      }
+
+      let total = 0;
+      for(const v of librasMap.values()){
+        if(typeof v === "number" && !isNaN(v) && v > 0) total += v;
+      }
+
+      const now = new Date();
+      const dtLocal = nowLocalString();
+      const fileStamp = now.toISOString().slice(0,19).replaceAll(":","-").replace("T","_");
+
+      const titleLine = `SDA - Avance Descabezado | ${currentUserEmail} | ${dtLocal}`;
+
+      const docp = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+      docp.setFont("Times","Normal");
+      docp.setFontSize(12);
+      docp.text(titleLine, 40, 40);
+      docp.setFontSize(11);
+      docp.text(`Pesada: ${pesadaLabel}    Cuadrilla: ${currentCuadrilla}    Total Libras: ${fmt(total)}`, 40, 60);
+
+      docp.autoTable({
+        startY: 80,
+        head: [["APELLIDOS","NOMBRES","LIBRAS"]],
+        body: rows,
+        styles: { font: "Times", fontSize: 9 },
+        headStyles: { fillColor: [13,47,79] },
+        margin: { left: 40, right: 40 }
+      });
+
+      const fname = `SDA_${pesadaKey}_${currentCuadrilla}_${userShort()}_${fileStamp}.pdf`.replaceAll(" ","_");
+      docp.save(fname);
+    };
 
     function esc(s){
       return String(s ?? "")
