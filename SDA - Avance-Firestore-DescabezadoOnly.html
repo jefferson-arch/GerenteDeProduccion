@@ -1382,6 +1382,14 @@ function renderRegistroPlaceholder(msg){
     // =======================
     // ✅ REGISTRO + FILTRO
     // =======================
+
+    function setRegistroLoading(loading){
+  const b1 = document.getElementById("btnAplicarFiltro");
+  const b2 = document.getElementById("btnVerHistorico");
+  if(b1){ b1.style.pointerEvents = loading ? "none" : ""; b1.style.opacity = loading ? ".6" : ""; }
+  if(b2){ b2.style.pointerEvents = loading ? "none" : ""; b2.style.opacity = loading ? ".6" : ""; }
+}
+    
     function toggleClearBtnForAllMode(){
       const b = $("btnClearR");
       if(!b) return;
@@ -1458,12 +1466,15 @@ function renderRegistroPlaceholder(msg){
   if(!registroLoaded || registroCacheKey !== key){
     registroCacheKey = key;
     renderRegistroPlaceholder("Cargando registro...");
-    await loadRegistro();      // ✅ aquí recién consume cuota
+    setRegistroLoading(true);
+    await loadRegistro();
+    setRegistroLoading(false);
     registroLoaded = true;
   }
   applyRegistroFilter();       // ✅ filtro local
 };
-if($("btnVerHistorico")) $("btnVerHistorico").onclick = async ()=>{
+
+  if($("btnVerHistorico")) $("btnVerHistorico").onclick = async ()=>{
   if($("regFilterMode")) $("regFilterMode").value = "HISTORICO";
   registroFilterMode = "HISTORICO";
 
@@ -1471,11 +1482,17 @@ if($("btnVerHistorico")) $("btnVerHistorico").onclick = async ()=>{
   if(!registroLoaded || registroCacheKey !== key){
     registroCacheKey = key;
     renderRegistroPlaceholder("Cargando histórico...");
-    await loadRegistro();      // ✅ consume cuota solo aquí
-    registroLoaded = true;
+    setRegistroLoading(true);
+    try{
+      await loadRegistro();      // ✅ aquí consume cuota solo cuando presionas VER HISTÓRICO
+      registroLoaded = true;
+    }finally{
+      setRegistroLoading(false);
+    }
   }
   applyRegistroFilter();
 };
+    
     if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=>{
   registroFilterMode = $("regFilterMode").value || "DIA";
   updateRegFechaLabel();
