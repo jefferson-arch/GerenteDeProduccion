@@ -24,6 +24,24 @@
       --warnbg:#fff4d6;
       --warnbd:#f59e0b;
     }
+
+    /* ✅ Banner conexión */
+#netBanner.offline{background:#ffe5e5;color:#8a0016;border-bottom-color:#ffb3b3}
+#netBanner.online{background:#e8fff0;color:#0b5a2a;border-bottom-color:#b8f0c9}
+#netBanner .dot{
+  display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;
+  vertical-align:middle;
+}
+#netBanner.offline .dot{background:#d4001a}
+#netBanner.online .dot{background:#00a63a}
+
+/* ✅ Botón desactivado (guardar) */
+.miniBtn.disabled, .btn.disabled{
+  opacity:.55;
+  pointer-events:none;
+  filter:grayscale(40%);
+}
+    
     *{box-sizing:border-box}
     body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000}
     .safe{padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
@@ -277,6 +295,13 @@
     <div id="authHeader" style="display:none;">
       <div class="topline">Usuario: <span class="email" id="userEmail"></span></div>
     </div>
+
+
+    <!-- ✅ ESTADO DE CONEXIÓN (ONLINE/OFFLINE) -->
+<div id="netBanner" style="display:none; position:sticky; top:0; z-index:9999;
+  padding:10px 12px; border-bottom:1px solid #ddd; font-weight:800; font-size:13px;">
+  <span id="netText">—</span>
+</div>
 
     <!-- ASISTENCIA AVANCE -->
     <section id="vAsistencia" class="view">
@@ -597,6 +622,91 @@
       registro: $("vRegistro")
     };
 
+    // ==============================
+// ✅ CONECTIVIDAD: detectar sin internet y bloquear GUARDAR
+// ==============================
+let hasInternet = true;           // estado real (no solo wifi conectado)
+let lastInternetState = null;     // para avisar solo cuando cambia
+
+function setBtnGuardarEnabled(enabled){
+  const b = $("btnNuevaPesada");
+  if(!b) return;
+  b.classList.toggle("disabled", !enabled);
+  b.setAttribute("aria-disabled", enabled ? "false" : "true");
+  // si tu botón fuera <button>, usarías disabled=true, pero aquí es un <div>
+}
+
+function showNetBanner(state, msg){
+  const banner = $("netBanner");
+  const text = $("netText");
+  if(!banner || !text) return;
+
+  banner.style.display = "block";
+  banner.classList.toggle("offline", state === "offline");
+  banner.classList.toggle("online", state === "online");
+
+  const dot = `<span class="dot"></span>`;
+  text.innerHTML = `${dot}${msg}`;
+}
+
+function hideNetBanner(){
+  const banner = $("netBanner");
+  if(!banner) return;
+  banner.style.display = "none";
+}
+
+async function pingInternet(){
+  // ✅ Ping liviano (evita falso "online" cuando hay wifi sin internet)
+  // Usamos un recurso público muy pequeño. cache-bypass con timestamp.
+  const url = `https://www.gstatic.com/generate_204?ts=${Date.now()}`;
+  try{
+    const controller = new AbortController();
+    const t = setTimeout(()=>controller.abort(), 3500);
+    const res = await fetch(url, { method:"GET", mode:"no-cors", signal: controller.signal });
+    clearTimeout(t);
+    // mode:no-cors no permite leer status; si no falla, asumimos OK.
+    return true;
+  }catch(_){
+    return false;
+  }
+}
+
+async function refreshInternetStatus(reason=""){
+  // navigator.onLine solo dice si hay red, no si hay internet real.
+  const netUp = navigator.onLine;
+  if(!netUp){
+    hasInternet = false;
+  }else{
+    hasInternet = await pingInternet();
+  }
+
+  if(lastInternetState === hasInternet) return; // no spam
+  lastInternetState = hasInternet;
+
+  if(!hasInternet){
+    showNetBanner(
+      "offline",
+      `SIN CONEXIÓN A INTERNET. No se puede GUARDAR. Conéctate a datos/Wi-Fi y espera…`
+    );
+    setBtnGuardarEnabled(false);
+  }else{
+    showNetBanner(
+      "online",
+      `CONEXIÓN RESTABLECIDA. Ya puedes GUARDAR la pesada.`
+    );
+    setBtnGuardarEnabled(true);
+    // Oculta el banner verde después de un momento
+    setTimeout(()=>{ hideNetBanner(); }, 2500);
+  }
+}
+
+// Eventos nativos
+window.addEventListener("offline", ()=> refreshInternetStatus("offline-event"));
+window.addEventListener("online",  ()=> refreshInternetStatus("online-event"));
+
+// Re-chequeo periódico (por si hay wifi pero sin internet que va y viene)
+setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
+    
     let currentViewName = "login";
 
     function showView(name){
@@ -782,6 +892,8 @@
         setHeaderVisible(true);
         setUserEmail(currentUserEmail);
 
+        setTimeout(()=>{ refreshInternetStatus("post-login"); }, 300);
+        
         if(!ALLOWED.has(currentUserEmail)){
           alert("Acceso no autorizado.");
           await doLogout();
@@ -957,6 +1069,7 @@
 
       renderLibras();
       showView("libras");
+      refreshInternetStatus("enter-libras");
     };
 
     function isValidPositive(n){
@@ -1330,9 +1443,11 @@
 
     // GUARDAR
     $("btnNuevaPesada").onclick = async () => {
-      if(!currentCuadrilla){
-        alert("Seleccione la cuadrilla.");
-        return;
+await refreshInternetStatus("before-save");
+if(!hasInternet){
+  alert("⚠️ Sin internet: no se puede GUARDAR.\nConéctate a datos/Wi-Fi y vuelve a intentar.");
+  return;
+}
       }
       await ensurePesada();
 
