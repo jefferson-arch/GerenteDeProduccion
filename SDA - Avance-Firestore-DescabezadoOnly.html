@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BUILD_HISTORIAL_ACTIVO v6-RANGO 2026-01-30 -->
+<!-- BUILD_HISTORIAL_ACTIVO v7-RANGO-NET 2026-01-30 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -24,24 +24,6 @@
       --warnbg:#fff4d6;
       --warnbd:#f59e0b;
     }
-
-    /* ✅ Banner conexión */
-#netBanner.offline{background:#ffe5e5;color:#8a0016;border-bottom-color:#ffb3b3}
-#netBanner.online{background:#e8fff0;color:#0b5a2a;border-bottom-color:#b8f0c9}
-#netBanner .dot{
-  display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;
-  vertical-align:middle;
-}
-#netBanner.offline .dot{background:#d4001a}
-#netBanner.online .dot{background:#00a63a}
-
-/* ✅ Botón desactivado (guardar) */
-.miniBtn.disabled, .btn.disabled{
-  opacity:.55;
-  pointer-events:none;
-  filter:grayscale(40%);
-}
-    
     *{box-sizing:border-box}
     body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#000}
     .safe{padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
@@ -128,13 +110,13 @@
       font-weight:700;
     }
 
-    /* ✅ Tabla Libras: más compacta (solo APELLIDOS | NOMBRES | LIBRAS) */
+    /* ✅ Tabla Libras: más compacta */
     #tblLibras{min-width:420px}
     @media (max-width:520px){
       #tblLibras{min-width:360px}
     }
 
-    /* ✅ Filtro registro (DÍA / MES / AÑO / RANGO / HISTÓRICO) */
+    /* ✅ Filtro registro */
     .filterBar{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-start;
       margin:8px 0 12px;
@@ -159,15 +141,12 @@
     .modal .meta{font-size:13px;margin:0 0 10px}
     .modal .meta b{font-weight:700}
 
-    /* ✅ Solo el input de libras (ya no afecta radios) */
     .modal #modalInput{
       width:100%;
       padding:10px;
       border:1px solid #ccc;
       font-size:16px;
     }
-
-    /* ✅ Input + botón (+) en la misma línea */
     .modal .inputRow{
       display:flex;
       gap:8px;
@@ -177,8 +156,6 @@
       flex:1;
       min-width:0;
     }
-
-    /* ✅ Botón + */
     .modal .plusBtn{
       width:44px;
       min-width:44px;
@@ -197,7 +174,6 @@
     .modal .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
     .modal .actions .btn{margin:0;width:160px}
 
-    /* Gavetas + Libras finales (Modal) */
     .modal .modalName{display:block;font-size:20px;font-weight:800;margin:0 0 4px;}
     .modal .modalSub{font-size:13px;margin:0 0 10px;}
     .modal .optRow{display:flex;gap:14px;align-items:center;justify-content:center;margin:10px 0 6px;}
@@ -206,7 +182,7 @@
     .modal .netBox{margin:8px 0 0;border:1px solid #ddd;background:#fff;padding:10px;text-align:center;}
     .modal .netBox .netLabel{font-size:12px;color:#333;margin-bottom:4px;}
     .modal .netBox .netValue{font-size:26px;font-weight:900;color:#0a8f2a;line-height:1;}
-    /* ✅ Historial de acumulación (Modal) */
+
     .modal .histBox{
       margin:8px 0 0;
       border:2px solid #9bbbd6;
@@ -249,6 +225,23 @@
       border:1px solid rgba(245,158,11,.45);
       padding:8px 10px;
       margin-top:10px;
+    }
+
+    /* ✅ Banner conexión */
+    #netBanner.offline{background:#ffe5e5;color:#8a0016;border-bottom:1px solid #ffb3b3}
+    #netBanner.online{background:#e8fff0;color:#0b5a2a;border-bottom:1px solid #b8f0c9}
+    #netBanner .dot{
+      display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;
+      vertical-align:middle;
+    }
+    #netBanner.offline .dot{background:#d4001a}
+    #netBanner.online .dot{background:#00a63a}
+
+    /* ✅ Botón desactivado */
+    .miniBtn.disabled, .btn.disabled{
+      opacity:.55;
+      pointer-events:none;
+      filter:grayscale(40%);
     }
 
     /* Mobile tweaks */
@@ -296,12 +289,11 @@
       <div class="topline">Usuario: <span class="email" id="userEmail"></span></div>
     </div>
 
-
     <!-- ✅ ESTADO DE CONEXIÓN (ONLINE/OFFLINE) -->
-<div id="netBanner" style="display:none; position:sticky; top:0; z-index:9999;
-  padding:10px 12px; border-bottom:1px solid #ddd; font-weight:800; font-size:13px;">
-  <span id="netText">—</span>
-</div>
+    <div id="netBanner" style="display:none; position:sticky; top:0; z-index:9999;
+      padding:10px 12px; font-weight:800; font-size:13px;">
+      <span id="netText">—</span>
+    </div>
 
     <!-- ASISTENCIA AVANCE -->
     <section id="vAsistencia" class="view">
@@ -495,7 +487,7 @@
   <div class="modalBack" id="modalBack">
     <div class="modal">
       <h3>CARGAR LIBRAS</h3>
-      <div class="buildTag">HISTORIAL ACTIVO · v6-RANGO · 2026-01-30</div>
+      <div class="buildTag">HISTORIAL ACTIVO · v7-RANGO-NET</div>
       <p class="meta" id="modalMeta"></p>
 
       <div class="inputRow">
@@ -528,7 +520,7 @@
   <div class="modalBack" id="zeroBack">
     <div class="modal">
       <h3>PERSONAL SIN LIBRAS</h3>
-      <div class="buildTag">VALIDACIÓN GUARDAR · v6-RANGO</div>
+      <div class="buildTag">VALIDACIÓN GUARDAR · v7-RANGO-NET</div>
       <p class="meta" id="zeroMeta"></p>
       <div class="listBox" id="zeroList"></div>
 
@@ -622,97 +614,16 @@
       registro: $("vRegistro")
     };
 
-    // ==============================
-// ✅ CONECTIVIDAD: detectar sin internet y bloquear GUARDAR
-// ==============================
-let hasInternet = true;           // estado real (no solo wifi conectado)
-let lastInternetState = null;     // para avisar solo cuando cambia
-
-function setBtnGuardarEnabled(enabled){
-  const b = $("btnNuevaPesada");
-  if(!b) return;
-  b.classList.toggle("disabled", !enabled);
-  b.setAttribute("aria-disabled", enabled ? "false" : "true");
-  // si tu botón fuera <button>, usarías disabled=true, pero aquí es un <div>
-}
-
-function showNetBanner(state, msg){
-  const banner = $("netBanner");
-  const text = $("netText");
-  if(!banner || !text) return;
-
-  banner.style.display = "block";
-  banner.classList.toggle("offline", state === "offline");
-  banner.classList.toggle("online", state === "online");
-
-  const dot = `<span class="dot"></span>`;
-  text.innerHTML = `${dot}${msg}`;
-}
-
-function hideNetBanner(){
-  const banner = $("netBanner");
-  if(!banner) return;
-  banner.style.display = "none";
-}
-
-async function pingInternet(){
-  // ✅ Ping liviano (evita falso "online" cuando hay wifi sin internet)
-  // Usamos un recurso público muy pequeño. cache-bypass con timestamp.
-  const url = `https://www.gstatic.com/generate_204?ts=${Date.now()}`;
-  try{
-    const controller = new AbortController();
-    const t = setTimeout(()=>controller.abort(), 3500);
-    const res = await fetch(url, { method:"GET", mode:"no-cors", signal: controller.signal });
-    clearTimeout(t);
-    // mode:no-cors no permite leer status; si no falla, asumimos OK.
-    return true;
-  }catch(_){
-    return false;
-  }
-}
-
-async function refreshInternetStatus(reason=""){
-  // navigator.onLine solo dice si hay red, no si hay internet real.
-  const netUp = navigator.onLine;
-  if(!netUp){
-    hasInternet = false;
-  }else{
-    hasInternet = await pingInternet();
-  }
-
-  if(lastInternetState === hasInternet) return; // no spam
-  lastInternetState = hasInternet;
-
-  if(!hasInternet){
-    showNetBanner(
-      "offline",
-      `SIN CONEXIÓN A INTERNET. No se puede GUARDAR. Conéctate a datos/Wi-Fi y espera…`
-    );
-    setBtnGuardarEnabled(false);
-  }else{
-    showNetBanner(
-      "online",
-      `CONEXIÓN RESTABLECIDA. Ya puedes GUARDAR la pesada.`
-    );
-    setBtnGuardarEnabled(true);
-    // Oculta el banner verde después de un momento
-    setTimeout(()=>{ hideNetBanner(); }, 2500);
-  }
-}
-
-// Eventos nativos
-window.addEventListener("offline", ()=> refreshInternetStatus("offline-event"));
-window.addEventListener("online",  ()=> refreshInternetStatus("online-event"));
-
-// Re-chequeo periódico (por si hay wifi pero sin internet que va y viene)
-setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
-    
     let currentViewName = "login";
-
     function showView(name){
       Object.values(views).forEach(v => v.classList.remove("active"));
       views[name].classList.add("active");
       currentViewName = name;
+
+      // ✅ chequeo rápido al entrar a vistas clave
+      if(name === "libras" || name === "nomina"){
+        refreshInternetStatus("enter-view");
+      }
     }
     function setHeaderVisible(v){ $("authHeader").style.display = v ? "block" : "none"; }
     function setUserEmail(email){ $("userEmail").textContent = email || ""; }
@@ -743,6 +654,10 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
     // ✅ control para no consumir cuota hasta APLICAR/VER HISTÓRICO
     let registroLoaded = false;
     let registroCacheKey = "";
+
+    // ✅ conectividad
+    let hasInternet = true;
+    let lastInternetState = null;
 
     function todayKey(){
       const d = new Date();
@@ -858,6 +773,74 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
       if($("pesadaHora")) $("pesadaHora").textContent = hora;
     }
 
+    // ==============================
+    // ✅ CONECTIVIDAD: detectar sin internet y bloquear GUARDAR
+    // ==============================
+    function setBtnGuardarEnabled(enabled){
+      const b = $("btnNuevaPesada");
+      if(!b) return;
+      b.classList.toggle("disabled", !enabled);
+      b.setAttribute("aria-disabled", enabled ? "false" : "true");
+    }
+
+    function showNetBanner(state, msg){
+      const banner = $("netBanner");
+      const text = $("netText");
+      if(!banner || !text) return;
+
+      banner.style.display = "block";
+      banner.classList.toggle("offline", state === "offline");
+      banner.classList.toggle("online", state === "online");
+
+      const dot = `<span class="dot"></span>`;
+      text.innerHTML = `${dot}${msg}`;
+    }
+
+    function hideNetBanner(){
+      const banner = $("netBanner");
+      if(!banner) return;
+      banner.style.display = "none";
+    }
+
+    async function pingInternet(){
+      const url = `https://www.gstatic.com/generate_204?ts=${Date.now()}`;
+      try{
+        const controller = new AbortController();
+        const t = setTimeout(()=>controller.abort(), 3500);
+        await fetch(url, { method:"GET", mode:"no-cors", signal: controller.signal });
+        clearTimeout(t);
+        return true;
+      }catch(_){
+        return false;
+      }
+    }
+
+    async function refreshInternetStatus(reason=""){
+      const netUp = navigator.onLine;
+      if(!netUp){
+        hasInternet = false;
+      }else{
+        hasInternet = await pingInternet();
+      }
+
+      // evita spam
+      if(lastInternetState === hasInternet) return;
+      lastInternetState = hasInternet;
+
+      if(!hasInternet){
+        showNetBanner("offline","SIN CONEXIÓN A INTERNET. No se puede GUARDAR. Conéctate a datos/Wi-Fi y espera…");
+        setBtnGuardarEnabled(false);
+      }else{
+        showNetBanner("online","CONEXIÓN RESTABLECIDA. Ya puedes GUARDAR la pesada.");
+        setBtnGuardarEnabled(true);
+        setTimeout(()=>{ hideNetBanner(); }, 2500);
+      }
+    }
+
+    window.addEventListener("offline", ()=> refreshInternetStatus("offline-event"));
+    window.addEventListener("online",  ()=> refreshInternetStatus("online-event"));
+    setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
+
     // --- Login ---
     $("btnLogin").onclick = async () => {
       $("loginMsg").textContent = "";
@@ -892,8 +875,6 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
         setHeaderVisible(true);
         setUserEmail(currentUserEmail);
 
-        setTimeout(()=>{ refreshInternetStatus("post-login"); }, 300);
-        
         if(!ALLOWED.has(currentUserEmail)){
           alert("Acceso no autorizado.");
           await doLogout();
@@ -902,12 +883,17 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
 
         resetAll();
         showView("asistencia");
+
+        // ✅ chequeo al entrar
+        setTimeout(()=>{ refreshInternetStatus("post-login"); }, 300);
+
       } else {
         currentUserEmail = "";
         setHeaderVisible(false);
         setUserEmail("");
         resetAll();
         showView("login");
+        hideNetBanner();
       }
     });
 
@@ -942,6 +928,9 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
       $("totalLibras").textContent = "0,00";
       updatePesadaUI();
       updateSelectAllBtn();
+
+      // por seguridad
+      setBtnGuardarEnabled(true);
     }
 
     // --- Tomar Asistencia ---
@@ -1069,11 +1058,25 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
 
       renderLibras();
       showView("libras");
-      refreshInternetStatus("enter-libras");
     };
 
     function isValidPositive(n){
       return (typeof n === "number" && Number.isFinite(n) && n > 0);
+    }
+
+    function parseNumberEs(s){
+      const raw = String(s||"").trim();
+      if(!raw) return NaN;
+      const norm = raw.replaceAll(".","").replaceAll(","," .").replace(" .",".").replaceAll(" ","");
+      return Number(norm);
+    }
+
+    function fmt(n){
+      try{
+        return n.toLocaleString("es-EC", { minimumFractionDigits:2, maximumFractionDigits:2 });
+      }catch(_){
+        return (Math.round(n*100)/100).toFixed(2).replace(".",",");
+      }
     }
 
     function renderLibras(){
@@ -1112,56 +1115,14 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
       updatePesadaUI();
     }
 
-    // --- Modal de Libras ---
+    // --- Modal Libras ---
     let modalPersonId = "";
     let modalAccumNet = 0;
     let modalTouched = false;
-    let modalExistingNet = null;
     let modalParts = [];
 
     function openModal(open){ $("modalBack").style.display = open ? "flex" : "none"; }
     $("modalCancel").onclick = () => openModal(false);
-
-    function openLibrasModal(personId){
-      modalPersonId = personId;
-
-      const p = nomina.find(x=>x.id===personId);
-      const current = librasMap.has(personId) ? librasMap.get(personId) : null;
-
-      modalExistingNet = (typeof current === "number" && !isNaN(current)) ? current : null;
-      modalAccumNet = 0;
-      modalTouched = false;
-
-      $("modalMeta").innerHTML = `
-        <b>${esc(p?.apellidos || "")} ${esc(p?.nombres || "")}</b><br>
-        ID: <b>${esc(personId)}</b>
-        ${modalExistingNet !== null ? `<br>Actual en tabla: <b>${esc(fmt(modalExistingNet))}</b>` : ``}
-      `;
-
-      $("modalInput").value = "";
-
-      if($("gav2")) $("gav2").checked = true;
-      if($("gav1")) $("gav1").checked = false;
-
-      if($("modalHistory")) $("modalHistory").textContent = "—";
-      updateModalNet();
-      openModal(true);
-      setTimeout(()=>{ $("modalInput").focus(); }, 30);
-    }
-
-    function parseNumberEs(s){
-      const raw = String(s||"").trim();
-      if(!raw) return NaN;
-      const norm = raw.replaceAll(".","").replaceAll(","," .").replace(" .",".").replaceAll(" ","");
-      return Number(norm);
-    }
-    function fmt(n){
-      try{
-        return n.toLocaleString("es-EC", { minimumFractionDigits:2, maximumFractionDigits:2 });
-      }catch(_){
-        return (Math.round(n*100)/100).toFixed(2).replace(".",",");
-      }
-    }
 
     function getSelectedGavetas(){
       const r1 = $("gav1");
@@ -1211,32 +1172,44 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
 
       const segNet = getCurrentSegmentNet();
       let total = modalAccumNet + (typeof segNet === "number" ? segNet : 0);
-
       if(total < 0) total = 0;
       netEl.textContent = fmt(total);
-
       renderModalHistory(segNet);
+    }
+
+    function openLibrasModal(personId){
+      modalPersonId = personId;
+      modalAccumNet = 0;
+      modalTouched = false;
+      modalParts = [];
+
+      const p = nomina.find(x=>x.id===personId);
+      $("modalMeta").innerHTML = `<b>${esc(p?.apellidos || "")} ${esc(p?.nombres || "")}</b><br>ID: <b>${esc(personId)}</b>`;
+
+      $("modalInput").value = "";
+      if($("gav2")) $("gav2").checked = true;
+      if($("gav1")) $("gav1").checked = false;
+
+      if($("modalHistory")) $("modalHistory").textContent = "—";
+      updateModalNet();
+      openModal(true);
+      setTimeout(()=>{ $("modalInput").focus(); }, 30);
     }
 
     $("modalAdd").onclick = () => {
       const gross = parseNumberEs($("modalInput").value);
-
       if(isNaN(gross) || gross < 0){
         alert("Ingrese un valor válido de libras.");
         return;
       }
-
       const net = computeNetLbs(gross);
-
       if(net < 0){
         alert("El descuento por gavetas supera a las libras ingresadas.");
         return;
       }
-
       modalParts.push(net);
       modalAccumNet += net;
       modalTouched = true;
-
       $("modalInput").value = "";
       updateModalNet();
       $("modalInput").focus();
@@ -1269,12 +1242,6 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
       const totalFinal = modalAccumNet + addNet;
       librasMap.set(modalPersonId, totalFinal);
 
-      modalParts = [];
-      modalAccumNet = 0;
-      modalTouched = false;
-      $("modalInput").value = "";
-      if($("modalHistory")) $("modalHistory").textContent = "—";
-
       openModal(false);
       renderLibras();
     };
@@ -1286,7 +1253,6 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
       }
       if(e.key === "Escape") $("modalCancel").click();
     });
-
     $("modalInput").addEventListener("input", ()=>{
       modalTouched = true;
       updateModalNet();
@@ -1312,7 +1278,6 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
       };
       try{ localStorage.setItem(sessionStorageKey(), JSON.stringify(obj)); }catch(_){}
     }
-
     function clearSession(){
       try{ localStorage.removeItem(sessionStorageKey()); }catch(_){}
     }
@@ -1376,19 +1341,8 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
         const id = String(c.getAttribute("data-id")||"");
         c.classList.toggle("zero", ids.has(id));
       });
-
-      if(zeroList.length){
-        const firstId = String(zeroList[0].id);
-        const first = Array.from(cells).find(c=>String(c.getAttribute("data-id")||"")===firstId);
-        if(first){
-          first.scrollIntoView({behavior:"smooth", block:"center"});
-          first.classList.add("pulse");
-          setTimeout(()=>first.classList.remove("pulse"), 900);
-        }
-      }
     }
 
-    // --- NUEVA PESADA ---
     async function savePesadaToFirestore(validIds){
       const fecha = todayKey();
       const hora  = timeHMS();
@@ -1441,13 +1395,17 @@ setInterval(()=>{ refreshInternetStatus("interval"); }, 8000);
       loadNomina().then(()=>showView("nomina"));
     }
 
-    // GUARDAR
+    // ✅ GUARDAR
     $("btnNuevaPesada").onclick = async () => {
-await refreshInternetStatus("before-save");
-if(!hasInternet){
-  alert("⚠️ Sin internet: no se puede GUARDAR.\nConéctate a datos/Wi-Fi y vuelve a intentar.");
-  return;
-}
+      await refreshInternetStatus("before-save");
+      if(!hasInternet){
+        alert("⚠️ Sin internet: no se puede GUARDAR.\nConéctate a datos/Wi-Fi y vuelve a intentar.");
+        return;
+      }
+
+      if(!currentCuadrilla){
+        alert("Seleccione la cuadrilla.");
+        return;
       }
       await ensurePesada();
 
@@ -1469,6 +1427,7 @@ if(!hasInternet){
           }else{
             alert("No se guardó nada porque no hay registros con LIBRAS > 0.");
           }
+
         } else {
           alert("No hay personal marcado como PRESENTE. Se iniciará una nueva pesada en blanco.");
         }
@@ -1482,11 +1441,11 @@ if(!hasInternet){
     };
 
     // =======================
-    // ✅ REGISTRO + FILTRO
+    // ✅ REGISTRO + FILTRO (carga SOLO en APLICAR)
     // =======================
     function setRegistroLoading(loading){
-      const b1 = document.getElementById("btnAplicarFiltro");
-      const b2 = document.getElementById("btnVerHistorico");
+      const b1 = $("btnAplicarFiltro");
+      const b2 = $("btnVerHistorico");
       if(b1){ b1.style.pointerEvents = loading ? "none" : ""; b1.style.opacity = loading ? ".6" : ""; }
       if(b2){ b2.style.pointerEvents = loading ? "none" : ""; b2.style.opacity = loading ? ".6" : ""; }
     }
@@ -1514,7 +1473,6 @@ if(!hasInternet){
       const to = $("regFilterTo");
 
       const isRange = (mode === "RANGO");
-
       if(one)  one.style.display  = isRange ? "none" : "";
       if(from) from.style.display = isRange ? "" : "none";
       if(to)   to.style.display   = isRange ? "" : "none";
@@ -1528,7 +1486,6 @@ if(!hasInternet){
 
     function initRegistroFilterUI(){
       const today = todayKey();
-
       if($("regFilterDate")) $("regFilterDate").value = today;
       if($("regFilterFrom")) $("regFilterFrom").value = today;
       if($("regFilterTo"))   $("regFilterTo").value   = today;
@@ -1621,7 +1578,6 @@ if(!hasInternet){
         let a = registroFilterFrom;
         let b = registroFilterTo;
         if(a && b && a > b){ const tmp = a; a = b; b = tmp; }
-
         filtered = filtered.filter(r => {
           const f = (r.fecha || "");
           return f && f >= a && f <= b;
@@ -1655,7 +1611,6 @@ if(!hasInternet){
       toggleClearBtnForAllMode();
       initRegistroFilterUI();
 
-      // ✅ no cargar hasta APLICAR
       registroLoaded = false;
       registroCacheKey = "";
 
@@ -1672,13 +1627,12 @@ if(!hasInternet){
 
     if($("btnAplicarFiltro")) $("btnAplicarFiltro").onclick = async ()=>{
       const key = getRegistroCacheKey();
-
       if(!registroLoaded || registroCacheKey !== key){
         registroCacheKey = key;
         renderRegistroPlaceholder("Cargando registro...");
         setRegistroLoading(true);
         try{
-          await loadRegistro();     // ✅ consume cuota SOLO aquí
+          await loadRegistro();
           registroLoaded = true;
         }finally{
           setRegistroLoading(false);
@@ -1699,7 +1653,7 @@ if(!hasInternet){
         renderRegistroPlaceholder("Cargando histórico...");
         setRegistroLoading(true);
         try{
-          await loadRegistro();      // ✅ consume cuota SOLO aquí
+          await loadRegistro();
           registroLoaded = true;
         }finally{
           setRegistroLoading(false);
@@ -1708,7 +1662,6 @@ if(!hasInternet){
       applyRegistroFilter();
     };
 
-    // cambios UI (no aplican filtro hasta APLICAR)
     if($("regFilterMode")) $("regFilterMode").addEventListener("change", ()=>{
       registroFilterMode = $("regFilterMode").value || "DIA";
       updateRegistroInputsVisibility();
@@ -1733,7 +1686,6 @@ if(!hasInternet){
       registroAllRows = [];
 
       const isAdmin = ADMIN_VIEW_ALL.has((currentUserEmail || "").toLowerCase());
-
       if(!currentCuadrilla && !isAdmin){
         alert("Seleccione la CUADRILLA.");
         return;
@@ -1743,20 +1695,9 @@ if(!hasInternet){
 
       const q = isAdmin
         ? (currentCuadrilla
-            ? query(
-                collection(db, COL_SDA),
-                where("cuadrilla","==", currentCuadrilla),
-                where("usuario","in", SUPERVISORS)
-              )
-            : query(
-                collection(db, COL_SDA),
-                where("usuario","in", SUPERVISORS)
-              ))
-        : query(
-            collection(db, COL_SDA),
-            where("cuadrilla","==", currentCuadrilla),
-            where("usuario","==", currentUserEmail)
-          );
+            ? query(collection(db, COL_SDA), where("cuadrilla","==", currentCuadrilla), where("usuario","in", SUPERVISORS))
+            : query(collection(db, COL_SDA), where("usuario","in", SUPERVISORS)))
+        : query(collection(db, COL_SDA), where("cuadrilla","==", currentCuadrilla), where("usuario","==", currentUserEmail));
 
       let snap;
       try{
@@ -1792,7 +1733,6 @@ if(!hasInternet){
       );
 
       registroAllRows = registroRows.slice();
-      // ✅ NO render aquí (se hace en APLICAR / VER HISTÓRICO)
     }
 
     // Export Excel (registro)
@@ -1918,11 +1858,7 @@ if(!hasInternet){
           return;
         }
 
-        const q = query(
-          collection(db, COL_SDA),
-          where("cuadrilla","==", currentCuadrilla)
-        );
-
+        const q = query(collection(db, COL_SDA), where("cuadrilla","==", currentCuadrilla));
         let snap;
         try{
           snap = await getDocs(q);
@@ -1960,7 +1896,6 @@ if(!hasInternet){
         }
 
         alert(`Histórico eliminado: ${deleted} registro(s).`);
-        // ✅ recargar solo cuando vuelvan a presionar APLICAR
         registroLoaded = false;
         registroCacheKey = "";
         renderRegistroPlaceholder("Histórico eliminado. Presione APLICAR para cargar el registro.");
@@ -1983,11 +1918,7 @@ if(!hasInternet){
 
       for(const p of presentesArr){
         const n = librasMap.has(p.id) ? librasMap.get(p.id) : null;
-        rows.push([
-          p.apellidos || "",
-          p.nombres || "",
-          (typeof n === "number" && !isNaN(n)) ? fmt(n) : ""
-        ]);
+        rows.push([p.apellidos || "", p.nombres || "", (typeof n === "number" && !isNaN(n)) ? fmt(n) : ""]);
       }
 
       let total = 0;
