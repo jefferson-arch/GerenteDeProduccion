@@ -132,6 +132,7 @@
     html.js body.ppt-loaded .card:nth-child(10) { --d: 660ms; }
     html.js body.ppt-loaded .card:nth-child(11) { --d: 720ms; }
     html.js body.ppt-loaded .card:nth-child(12) { --d: 780ms; }
+    html.js body.ppt-loaded .card:nth-child(13) { --d: 840ms; } /* ✅ nuevo */
 
     @media (prefers-reduced-motion: reduce){
       html.js body{opacity:1}
@@ -230,6 +231,15 @@
         <div class="muted">Archivo: SDA - Avance-Firestore-DescabezadoOnly.html</div>
       </div>
 
+      <!-- ✅ NUEVO: SID -->
+      <div class="card">
+        <h2>SID — Informe Descabezado</h2>
+        <small>Login Firebase (Informe Descabezado) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SID%20-%20Informe-Firestore-DescabezadoOnly.html">Abrir</a>
+        <div class="muted">Archivo: SID - Informe-Firestore-DescabezadoOnly.html</div>
+      </div>
+
       <div class="card">
         <h2>SLA — Listado por Área (RRHH)</h2>
         <small>Consulta Firestore (RRHH) — nube</small>
@@ -254,13 +264,11 @@
   </main>
 
   <script>
-    // Activa “modo JS” para animación (evita pantalla negra si JS falla)
     document.documentElement.classList.add("js");
     window.addEventListener("DOMContentLoaded", () => {
       requestAnimationFrame(() => document.body.classList.add("ppt-loaded"));
     });
 
-    // Cache-buster al hacer clic: agrega/actualiza ?v=TIMESTAMP (y mantiene otros parámetros)
     function withNoCache(url) {
       const u = new URL(url, window.location.href);
       u.searchParams.set("v", Date.now().toString());
@@ -271,7 +279,6 @@
       const a = e.target.closest("a[data-nocache]");
       if (!a) return;
 
-      // Respeta Ctrl/Shift/Middle click (abrir en otra pestaña)
       if (e.ctrlKey || e.shiftKey || e.metaKey || e.button === 1) {
         a.href = withNoCache(a.getAttribute("href"));
         return;
