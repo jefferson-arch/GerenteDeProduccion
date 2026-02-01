@@ -89,7 +89,8 @@
 
     /* ------------ APP PRINCIPAL ------------ */
     .app {
-  max-width: 1400px;           /* antes 1200px */
+  max-width: 1400px;          /* antes 1200 */
+  width: calc(100% - 24px);   /* para que siempre aproveche el ancho */
   margin: 16px auto;
   background: #fff;
   border-radius: 12px;
@@ -376,31 +377,21 @@
       header .user-info { text-align: left; }
     }
 
-    /* ================================
-   REPORTE AGRUPADO - más ancho y sin apretar columnas
+/* ================================
+   REPORTE AGRUPADO: automático y bien distribuido
    ================================ */
 #tab-reporte .table-wrapper{
-  overflow-x: auto;      /* fuerza scroll horizontal si hace falta */
+  overflow-x: auto;  /* si no cabe, scroll horizontal (sin aplastar) */
   overflow-y: auto;
 }
 
 #tab-reporte table{
-  table-layout: auto;    /* deja que el navegador asigne ancho natural */
-  min-width: 1120px;     /* evita que las columnas se compriman */
+  table-layout: auto; /* CLAVE: ancho automático según contenido */
+  width: 100%;
+  min-width: 1050px;  /* evita compresión fea; en pantallas pequeñas hace scroll */
 }
 
-/* Ajuste de anchos por columna en REPORTE (9 columnas) */
-#tab-reporte th:nth-child(1), #tab-reporte td:nth-child(1){ width: 14%; } /* Fecha */
-#tab-reporte th:nth-child(2), #tab-reporte td:nth-child(2){ width: 14%; } /* Comprador */
-#tab-reporte th:nth-child(3), #tab-reporte td:nth-child(3){ width: 20%; } /* Proveedor */
-#tab-reporte th:nth-child(4), #tab-reporte td:nth-child(4){ width: 14%; } /* Sector */
-#tab-reporte th:nth-child(5), #tab-reporte td:nth-child(5){ width: 10%; } /* Libras */
-#tab-reporte th:nth-child(6), #tab-reporte td:nth-child(6){ width: 8%;  } /* Gramaje */
-#tab-reporte th:nth-child(7), #tab-reporte td:nth-child(7){ width: 7%;  } /* Entero */
-#tab-reporte th:nth-child(8), #tab-reporte td:nth-child(8){ width: 7%;  } /* Cola */
-#tab-reporte th:nth-child(9), #tab-reporte td:nth-child(9){ width: 10%; } /* Cola aprox */
-
-/* Mantener compactos los campos numéricos y tallas */
+/* Columnas numéricas y tallas: compactas para liberar espacio */
 #tab-reporte th.numeric,
 #tab-reporte td.numeric,
 #tab-reporte th.size-cell,
@@ -408,15 +399,23 @@
   white-space: nowrap;
 }
 
-/* En pantallas pequeñas: ocupa todo el ancho y reduce un pelín el padding */
+/* Proveedor y Sector: que aprovechen el ancho */
+#tab-reporte th:nth-child(3), #tab-reporte td:nth-child(3),
+#tab-reporte th:nth-child(4), #tab-reporte td:nth-child(4){
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Un look un poquito más limpio */
+#tab-reporte th, #tab-reporte td{
+  padding: 3px 6px;
+}
+
 @media (max-width: 900px){
   .app{ margin: 0; border-radius: 0; }
-  #tab-reporte .tab { padding: 12px; }
-  #tab-reporte table{ min-width: 1040px; } /* sigue evitando compresión */
+  #tab-reporte table{ min-width: 980px; }
   #tab-reporte th, #tab-reporte td{ padding: 2px 6px; }
 }
-    
-  </style>
 </head>
 <body>
 
