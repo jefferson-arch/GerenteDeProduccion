@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- SID - Informe-Firestore-DescabezadoOnly.html -->
-<!-- BUILD_SID_INFORME_DESCABEZADO v1.6.0 HISTORIAL_INFORMES 2026-02-01 -->
+<!-- BUILD_SID_INFORME_DESCABEZADO v1.6.1 HISTORIAL_PROVIDER_NO_INDEX 2026-02-01 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -1093,55 +1093,33 @@
 
     // ====== HISTORIAL (RANGO) ======
     async function fetchHistorial(desde, hasta){
+      // ✅ FIX: evitar índices compuestos en proveedores
+      // Consultamos SOLO por rango de fecha (same que usuario normal) y filtramos localmente.
       const items = [];
-      const seen = new Set();
-
-      if(providerMode){
-        // A) por campo cuadrilla
-        const qA = query(
-          collection(db, COL_SID),
-          where("fecha", ">=", desde),
-          where("fecha", "<=", hasta),
-          where("cuadrilla", "==", providerCuadrilla)
-        );
-        const sA = await getDocs(qA);
-        sA.forEach(d=>{
-          if(seen.has(d.id)) return;
-          seen.add(d.id);
-          items.push({ id:d.id, ...d.data() });
-        });
-
-        // B) por array cuadrillas
-        const qB = query(
-          collection(db, COL_SID),
-          where("fecha", ">=", desde),
-          where("fecha", "<=", hasta),
-          where("cuadrillas", "array-contains", providerCuadrilla)
-        );
-        const sB = await getDocs(qB);
-        sB.forEach(d=>{
-          if(seen.has(d.id)) return;
-          seen.add(d.id);
-          items.push({ id:d.id, ...d.data() });
-        });
-
-        // Filtro extra por seguridad (por si vino algo raro)
-        return items.filter(x=>{
-          const c = String(x.cuadrilla||"").trim().toUpperCase();
-          const arr = Array.isArray(x.cuadrillas) ? x.cuadrillas.map(a=>String(a||"").trim().toUpperCase()) : [];
-          return c === providerCuadrilla || arr.includes(providerCuadrilla);
-        });
-      }
 
       const qAll = query(
         collection(db, COL_SID),
         where("fecha", ">=", desde),
         where("fecha", "<=", hasta)
       );
+
       const snap = await getDocs(qAll);
       snap.forEach(d=>{
-        items.push({ id:d.id, ...d.data() });
+        const data = d.data() || {};
+
+        if(providerMode){
+          const c = String(data.cuadrilla||"").trim().toUpperCase();
+          const arr = Array.isArray(data.cuadrillas)
+            ? data.cuadrillas.map(a=>String(a||"").trim().toUpperCase())
+            : [];
+          if(!(c === providerCuadrilla || arr.includes(providerCuadrilla))){
+            return; // no corresponde a su cuadrilla
+          }
+        }
+
+        items.push({ id:d.id, ...data });
       });
+
       return items;
     }
 
@@ -1165,7 +1143,6 @@
       const tb = $("tbodyHist");
       tb.innerHTML = "";
 
-      // Orden: fecha desc, reportNumber desc
       items.sort((a,b)=>
         String(b.fecha||"").localeCompare(String(a.fecha||"")) ||
         (Number(b.reportNumber||0) - Number(a.reportNumber||0))
@@ -1185,7 +1162,7 @@
 
         const tr = document.createElement("tr");
 
-        const canDelete = isAdmin(); // SOLO ADMIN
+        const canDelete = isAdmin();
         const delCell = canDelete
           ? `<td class="hDel" style="text-align:center;">
                <span class="btn danger" data-del="${esc(x.id)}" style="padding:6px 10px;">ELIMINAR</span>
@@ -1209,7 +1186,6 @@
         tb.appendChild(tr);
       }
 
-      // Delegación eventos (abrir / eliminar)
       tb.querySelectorAll("[data-open]").forEach(btn=>{
         btn.addEventListener("click", async ()=>{
           const id = btn.getAttribute("data-open");
@@ -1255,7 +1231,6 @@
 
           try{
             await deleteDoc(doc(db, COL_SID, id));
-            // quitar fila
             btn.closest("tr")?.remove();
             $("histStatus").textContent = "Informe eliminado.";
           }catch(err){
@@ -1273,7 +1248,6 @@
         return;
       }
 
-      // defaults: últimos 14 días
       const t = todayKey();
       if(!$("histHasta").value) $("histHasta").value = t;
       if(!$("histDesde").value) $("histDesde").value = dateAddDays(t, -14);
@@ -1299,13 +1273,12 @@
       }catch(err){
         console.error(err);
         $("histStatus").textContent = "Error cargando historial.";
-        alert("No se pudo cargar el historial. Puede requerir índice en Firestore.");
+        alert("No se pudo cargar el historial.");
       }
     }
 
     $("btnHistorial").onclick = openHistorial;
     $("btnHistFiltrar").onclick = loadHistorial;
-
     $("btnHistBack").onclick = ()=>{ showView("pick"); };
 
     // ====== AUTH STATE ======
@@ -1318,7 +1291,6 @@
           return;
         }
 
-        // provider mode setup
         providerCuadrilla = (PROVIDERS.get(currentUserEmail) || "").trim().toUpperCase();
         providerMode = !!providerCuadrilla;
 
@@ -1331,11 +1303,9 @@
         $("selFecha").value = todayKey();
         $("findFecha").value = todayKey();
 
-        // defaults historial
         $("histHasta").value = todayKey();
         $("histDesde").value = dateAddDays(todayKey(), -14);
 
-        // Aplicar UI según rol
         applyProviderUI();
 
         showView("pick");
@@ -1385,7 +1355,6 @@
       $("infoCircuito").textContent = `Circuito ${currentCircuito}`;
       $("infoResponsable").textContent = currentUserName || currentUserEmail;
 
-      // reset
       reportSaved = false;
       reportSigned = false;
       reportNumber = "";
@@ -1593,7 +1562,7 @@
 
     // ====== RECALC (normal create) ======
     function recalcAll(){
-      if(providerMode) return; // providers no crean informe
+      if(providerMode) return;
       const inpVal = parseEsNumber($("pesoCola").value);
       pesoCola = Number.isFinite(inpVal) ? inpVal : 0;
 
@@ -1625,7 +1594,7 @@
       recalcAll();
     });
 
-    // ====== SAVE NUMBER (normal users) ======
+    // ====== SAVE NUMBER ======
     async function allocateNextReportNumber(){
       const yyyy = String(new Date().getFullYear());
       const ref = doc(db, COL_SID_COUNTER, yyyy);
@@ -1643,7 +1612,7 @@
       return String(n).padStart(7,"0");
     }
 
-    // ====== GUARDAR (blocked for providers) ======
+    // ====== GUARDAR ======
     $("btnGuardar").onclick = async ()=>{
       if(providerMode) return;
 
@@ -1716,7 +1685,7 @@
       }
     };
 
-    // ====== FIRMAR (blocked for providers) ======
+    // ====== FIRMAR ======
     async function reauthForSensitiveAction(){
       const user = auth.currentUser;
       if(!user || !user.email) throw new Error("No hay sesión activa.");
@@ -1774,7 +1743,7 @@
       }
     };
 
-    // ====== PDF (only if signed) ======
+    // ====== PDF ======
     $("btnPdf").onclick = async ()=>{
       if(!reportSigned){
         alert("Este informe aún NO está firmado. PDF se habilita después de la firma.");
@@ -1833,7 +1802,7 @@
       pdf.save(fname);
     };
 
-    // ====== EXCEL (only if signed) ======
+    // ====== EXCEL ======
     $("btnXls").onclick = ()=>{
       if(!reportSigned){
         alert("Este informe aún NO está firmado. Excel se habilita después de la firma.");
@@ -1919,7 +1888,6 @@
         return;
       }
 
-      // Provider: buscar por fecha + su cuadrilla (sin prompts)
       if(providerMode){
         const f = (currentFecha || $("metaFecha").textContent || $("findFecha").value || todayKey()).trim();
         const found = await findLatestReportByDateAndCuadrilla(f, providerCuadrilla);
@@ -1928,7 +1896,6 @@
         return;
       }
 
-      // Normal: con prompts
       const n = prompt("Ingrese N° de Informe (7 dígitos).\n\nDeje vacío para buscar por FECHA + Circuito.");
       try{
         let foundDoc = null;
@@ -1980,7 +1947,6 @@
       }
 
       try{
-        // Provider: solo fecha + su cuadrilla
         if(providerMode){
           const f = ($("findFecha").value || $("selFecha").value || todayKey()).trim();
           currentFecha = f;
@@ -1991,7 +1957,6 @@
           return;
         }
 
-        // Normal: por número o fecha+circuito
         const nRaw = ($("findNumero").value || "").trim();
         let foundDoc = null;
 
@@ -2066,7 +2031,6 @@
       currentFecha = docData.fecha || "";
       currentCircuito = String(docData.circuito || "1");
 
-      // Provider: metaCuadrilla fijo a su cuadrilla
       const cuadrillaLabel = providerMode ? providerCuadrilla : ((currentCuadrillas.length>1)? currentCuadrillas.join(" + "): (currentCuadrillas[0]||""));
 
       $("metaCuadrilla").textContent = cuadrillaLabel || "—";
@@ -2075,13 +2039,11 @@
       $("infoResponsable").textContent = docData.responsableNombre || docData.responsableEmail || "—";
       $("infoNumero").textContent = reportNumber || "—";
 
-      // Variables globales (para descuento real)
       descuentoIndividual = Number(docData.descuentoIndividual||0);
 
       pesadasCols = docData.pesadasCols || [];
       rows = docData.rows || [];
 
-      // fallback para informes viejos
       const fallbackCuad = (Array.isArray(docData.cuadrillas) && docData.cuadrillas.length)
         ? String(docData.cuadrillas[0]||"").trim().toUpperCase()
         : String(docData.cuadrilla || "").trim().toUpperCase();
@@ -2091,13 +2053,9 @@
         cuadrilla: String(r.cuadrilla || fallbackCuad || "").trim().toUpperCase()
       }));
 
-      // UI firma/meta
       applySignatureUI();
-
-      // Provider: oculta panel/firma y deja solo tabla + pdf/xls si firmado
       applyProviderUI();
 
-      // Status
       if(reportSigned){
         $("reportStatus").textContent = "Firmado. PDF/EXCEL habilitados.";
       }else{
