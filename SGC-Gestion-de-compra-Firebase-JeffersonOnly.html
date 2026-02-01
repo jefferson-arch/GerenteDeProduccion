@@ -280,6 +280,10 @@
       text-overflow: clip;
     }
     th.numeric, td.numeric { text-align: right; }
+
+    /* NUEVO: Entero/Cola centrado */
+    th.size-cell, td.size-cell { text-align: center; font-weight: 800; }
+
     tr:nth-child(even) td { background: #fafafa; }
     tr.group-header td { background: #dde3f5; font-weight: 600; }
     tr.subtotal-row td { background: #f4f4f9; font-weight: 700; border-top: 1px solid #ccc; }
@@ -309,13 +313,11 @@
       vertical-align: middle;
       white-space: nowrap;
     }
-    /* rojo + fondo rosa palo */
     .cupo-full{
       color:#b00020;
       background:#f6c9d2;
       border-color:#f0a9b7;
     }
-    /* azul + fondo verde claro */
     .cupo-ok{
       color:#0b57d0;
       background:#c9f3d3;
@@ -327,10 +329,7 @@
       border-color:#d7d7db;
       font-weight:700;
     }
-    /* Para que "valor + badge" no se parta en 2 líneas */
-    .subtotal-kilos-cell{
-      white-space: nowrap;
-    }
+    .subtotal-kilos-cell{ white-space: nowrap; }
 
     .catalog-section {
       margin-bottom: 20px;
@@ -466,7 +465,7 @@
         </div>
       </div>
 
-      <!-- ===== NUEVO: CUPO MÁXIMO DIARIO ===== -->
+      <!-- ===== CUPO MÁXIMO DIARIO ===== -->
       <div class="form-row">
         <div>
           <label for="cupo-max">Cupo máximo diario (lb)</label>
@@ -534,6 +533,8 @@
             <th>Sector</th>
             <th class="numeric">Libras</th>
             <th class="numeric">Gramaje</th>
+            <th class="size-cell">Entero</th>
+            <th class="size-cell">Cola</th>
             <th class="numeric">Cola aprox</th>
           </tr>
           </thead>
@@ -543,6 +544,8 @@
       <div class="totals-footer">
         <span><strong>Volumen de compra con cabeza:</strong> <span id="footer-total-kilos">0,00</span></span>
         <span><strong>Gramaje promedio:</strong> <span id="footer-gramaje-promedio">0,00</span></span>
+        <span><strong>Entero prom:</strong> <span id="footer-entero-promedio">-</span></span>
+        <span><strong>Cola prom:</strong> <span id="footer-cola-promedio">-</span></span>
         <span><strong>Total Cola aprox:</strong> <span id="footer-total-monto">0,00</span></span>
         <span><strong>Cupo máximo diario:</strong> <span id="footer-cupo-max">-</span></span>
       </div>
@@ -587,6 +590,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
+/* =========================================================
+   FIREBASE CONFIG
+   ========================================================= */
 const firebaseConfig = {
   apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
   authDomain: "oceantreasure-app.firebaseapp.com",
@@ -602,11 +608,13 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const FieldValue = firebase.firestore.FieldValue;
 
+// === Colecciones/Documentos ===
 const REGISTROS_COL = "sgc_compra_registros";
 const META_COL = "sgc_compra_meta";
 const CATALOGOS_DOC = "catalogos";
 const CONFIG_DOC = "config";
 
+// === Control de acceso por EMAIL (a nivel de página) ===
 const ADMIN_EMAIL  = "jeffersonfigueroa@oceantreasure.local";
 const VIEW_EMAIL   = "gerenciageneral@oceantreasure.local";
 const ALLOWED_EMAILS = [ADMIN_EMAIL, VIEW_EMAIL];
@@ -618,6 +626,7 @@ const getRoleByEmail = (email) => {
   return "denied";
 };
 
+// === Estado en memoria ===
 let loggedInUser = null;
 let loggedInEmail = null;
 let loggedInRole = null;
@@ -627,10 +636,12 @@ let proveedores = [];
 let sectores = [];
 let cupoMaxDiario = 0;
 
+// Unsubscribe listeners
 let unsubRegistros = null;
 let unsubCatalogos = null;
 let unsubConfig = null;
 
+// === Helpers ===
 const usernameToEmail = (username) => {
   const u = String(username || "").trim();
   return u.includes("@") ? u : `${u}@oceantreasure.local`;
@@ -651,6 +662,51 @@ const formatoFechaCorta = (iso) => {
 const formatNumber = (value, decimals) => {
   const num = Number(value) || 0;
   return num.toLocaleString("es-EC", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+};
+
+// ===== NUEVO: Clasificación de tallas =====
+const tallaEnteroDesdeGramaje = (gramaje) => {
+  const g = Number(gramaje);
+  if (!Number.isFinite(g) || g <= 0) return "";
+
+  const conteoKg = 1000 / g; // entero
+  // Entero: 10-20, 20-30, ..., 100-120, >120 => JUVENIL
+  if (conteoKg < 20) return "10-20";
+  if (conteoKg < 30) return "20-30";
+  if (conteoKg < 40) return "30-40";
+  if (conteoKg < 50) return "40-50";
+  if (conteoKg < 60) return "50-60";
+  if (conteoKg < 70) return "60-70";
+  if (conteoKg < 80) return "70-80";
+  if (conteoKg < 100) return "80-100";
+  if (conteoKg <= 120) return "100-120";
+  return "JUVENIL";
+};
+
+const tallaColaDesdeGramaje = (gramaje) => {
+  const g = Number(gramaje);
+  if (!Number.isFinite(g) || g <= 0) return "";
+
+  const colaGram = g * 0.66;     // gramos cola aprox
+  if (colaGram <= 0) return "";
+
+  const conteoLb = 454 / colaGram; // cola por libra
+  // Cola: U10, U12, U15, 16-20, ..., 91-110, >110 => JUVENIL
+  if (conteoLb < 10) return "U10";
+  if (conteoLb < 12) return "U12";
+  if (conteoLb < 16) return "U15"; // cubre 12-15.99
+
+  if (conteoLb < 21) return "16-20";
+  if (conteoLb < 26) return "21-25";
+  if (conteoLb < 31) return "26-30";
+  if (conteoLb < 36) return "31-35";
+  if (conteoLb < 41) return "36-40";
+  if (conteoLb < 51) return "41-50";
+  if (conteoLb < 61) return "51-60";
+  if (conteoLb < 71) return "61-70";
+  if (conteoLb < 91) return "71-90";
+  if (conteoLb <= 110) return "91-110";
+  return "JUVENIL";
 };
 
 const stopListeners = () => {
@@ -726,6 +782,7 @@ const refreshCupoFooter = () => {
   el.textContent = cupoMaxDiario > 0 ? formatNumber(cupoMaxDiario, 0) : "-";
 };
 
+// ----------------- RENDER TAB 1 -----------------
 const renderEntrada = () => {
   const tbody = document.getElementById("entrada-tbody");
   if (!tbody) return;
@@ -767,18 +824,24 @@ const renderEntrada = () => {
       btnDel.className = "secondary";
       btnDel.onclick = async () => {
         if (!reg.id) return;
-        try { await db.collection(REGISTROS_COL).doc(reg.id).delete(); }
-        catch (e) { console.error(e); alert("No se pudo borrar (permisos o conexión)."); }
+        try {
+          await db.collection(REGISTROS_COL).doc(reg.id).delete();
+        } catch (e) {
+          console.error(e);
+          alert("No se pudo borrar (permisos o conexión).");
+        }
       };
       tdAcc.appendChild(btnDel);
-    } else tdAcc.textContent = "-";
+    } else {
+      tdAcc.textContent = "-";
+    }
 
     tr.appendChild(tdAcc);
     tbody.appendChild(tr);
   });
 };
 
-/* ====== REPORTE AGRUPADO (badge junto a TOTAL LIBRAS) ====== */
+// ----------------- RENDER TAB 2 (con Entero/Cola) -----------------
 const renderReporte = () => {
   const tbody = document.getElementById("reporte-tbody");
   if (!tbody) return;
@@ -813,10 +876,9 @@ const renderReporte = () => {
     td1.textContent = "Subtotal:";
     tr.appendChild(td1);
 
-    // Col 5 (Libras) => AQUÍ VA EL BADGE JUNTO AL TOTAL
+    // Col 5 (Libras) + badge cupo
     const td2 = document.createElement("td");
     td2.className = "numeric subtotal-kilos-cell";
-
     const spanVal = document.createElement("span");
     spanVal.textContent = formatNumber(sLib, 2);
 
@@ -830,12 +892,25 @@ const renderReporte = () => {
     tr.appendChild(td2);
 
     // Col 6 (Gramaje promedio)
+    const gProm = (sGrC > 0) ? (sGrS / sGrC) : 0;
     const td3 = document.createElement("td");
     td3.className = "numeric";
-    td3.textContent = formatNumber(sGrS / sGrC, 2);
+    td3.textContent = formatNumber(gProm, 2);
     tr.appendChild(td3);
 
-    // Col 7 (Cola)
+    // Col 7 (Entero del promedio)
+    const tdE = document.createElement("td");
+    tdE.className = "size-cell";
+    tdE.textContent = tallaEnteroDesdeGramaje(gProm);
+    tr.appendChild(tdE);
+
+    // Col 8 (Cola del promedio)
+    const tdC = document.createElement("td");
+    tdC.className = "size-cell";
+    tdC.textContent = tallaColaDesdeGramaje(gProm);
+    tr.appendChild(tdC);
+
+    // Col 9 (Cola aprox total)
     const td4 = document.createElement("td");
     td4.className = "numeric";
     td4.textContent = formatNumber(sCol, 2);
@@ -850,28 +925,53 @@ const renderReporte = () => {
       fAct = reg.fecha; sLib = 0; sGrS = 0; sGrC = 0; sCol = 0;
 
       const trG = document.createElement("tr"); trG.className = "group-header";
-      const tdG = document.createElement("td"); tdG.colSpan = 7; tdG.textContent = formatoFechaLargo(reg.fecha);
+      const tdG = document.createElement("td"); tdG.colSpan = 9; tdG.textContent = formatoFechaLargo(reg.fecha);
       trG.appendChild(tdG); tbody.appendChild(trG);
     }
 
-    sLib += Number(reg.kilos) || 0; sGrS += Number(reg.gramaje) || 0; sGrC++; sCol += Number(reg.monto) || 0;
-    tLib += Number(reg.kilos) || 0; tGrS += Number(reg.gramaje) || 0; tGrC++; tCol += Number(reg.monto) || 0;
+    const kilos = Number(reg.kilos) || 0;
+    const gramaje = Number(reg.gramaje) || 0;
+    const monto = Number(reg.monto) || 0;
+
+    sLib += kilos; sGrS += gramaje; sGrC++; sCol += monto;
+    tLib += kilos; tGrS += gramaje; tGrC++; tCol += monto;
 
     const tr = document.createElement("tr");
-    [formatoFechaCorta(reg.fecha), reg.comprador || "", reg.proveedor || "", reg.sector || "",
-     formatNumber(reg.kilos, 2), formatNumber(reg.gramaje, 2), formatNumber(reg.monto, 2)]
-      .forEach((v,i)=>{
-        const td = document.createElement("td");
-        if(i>=4) td.className="numeric";
-        td.textContent=v;
-        tr.appendChild(td);
-      });
+
+    const entero = tallaEnteroDesdeGramaje(gramaje);
+    const cola = tallaColaDesdeGramaje(gramaje);
+
+    const cols = [
+      { v: formatoFechaCorta(reg.fecha), cls: "" },
+      { v: reg.comprador || "", cls: "" },
+      { v: reg.proveedor || "", cls: "" },
+      { v: reg.sector || "", cls: "" },
+      { v: formatNumber(kilos, 2), cls: "numeric" },
+      { v: formatNumber(gramaje, 2), cls: "numeric" },
+      { v: entero, cls: "size-cell" },
+      { v: cola, cls: "size-cell" },
+      { v: formatNumber(monto, 2), cls: "numeric" }
+    ];
+
+    cols.forEach(c => {
+      const td = document.createElement("td");
+      if (c.cls) td.className = c.cls;
+      td.textContent = c.v;
+      tr.appendChild(td);
+    });
+
     tbody.appendChild(tr);
   });
 
   insSub();
+
+  // Totales footer
+  const gPromTotal = (tGrC > 0) ? (tGrS / tGrC) : 0;
+
   document.getElementById("footer-total-kilos").textContent = formatNumber(tLib, 2);
-  document.getElementById("footer-gramaje-promedio").textContent = formatNumber(tGrC > 0 ? tGrS / tGrC : 0, 2);
+  document.getElementById("footer-gramaje-promedio").textContent = formatNumber(gPromTotal, 2);
+  document.getElementById("footer-entero-promedio").textContent = tallaEnteroDesdeGramaje(gPromTotal) || "-";
+  document.getElementById("footer-cola-promedio").textContent = tallaColaDesdeGramaje(gPromTotal) || "-";
   document.getElementById("footer-total-monto").textContent = formatNumber(tCol, 2);
   refreshCupoFooter();
 };
@@ -917,10 +1017,12 @@ const actualizarTodo = () => {
   if (loggedInRole === "admin") renderCatalogos();
 };
 
+// Cálculo "Cola aprox" en vivo
 document.getElementById("kilos").addEventListener("input", e => {
   document.getElementById("monto").value = (Number(e.target.value) * 0.66).toFixed(2);
 });
 
+// Guardar cupo máximo diario (solo admin)
 const cupoInput = document.getElementById("cupo-max");
 if (cupoInput) {
   const saveCupo = async () => {
@@ -938,6 +1040,7 @@ if (cupoInput) {
   cupoInput.addEventListener("blur", saveCupo);
 }
 
+// Agregar fila (Firestore) - SOLO ADMIN
 document.getElementById("entrada-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!assertAdmin()) return;
@@ -964,6 +1067,7 @@ document.getElementById("entrada-form").addEventListener("submit", async (e) => 
   }
 });
 
+// Limpiar TODO (Firestore) - SOLO ADMIN
 document.getElementById("btn-limpiar").onclick = async () => {
   if (!assertAdmin()) return;
   if (!confirm("¿Borrar TODO en la nube?")) return;
@@ -986,6 +1090,7 @@ document.getElementById("btn-limpiar").onclick = async () => {
   }
 };
 
+// Tabs (solo admin)
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.onclick = () => {
     if (loggedInRole === "viewer") return;
@@ -995,6 +1100,7 @@ document.querySelectorAll(".tabs button").forEach(btn => {
   };
 });
 
+// LOGIN
 const loginForm = document.getElementById("login-form");
 loginForm.onsubmit = async (e) => {
   e.preventDefault();
@@ -1012,8 +1118,12 @@ loginForm.onsubmit = async (e) => {
   }
 };
 
-document.getElementById("btn-logout").onclick = async () => { await auth.signOut(); };
+// LOGOUT
+document.getElementById("btn-logout").onclick = async () => {
+  await auth.signOut();
+};
 
+// Backup JSON (EXPORT) - SOLO ADMIN
 function exportarJSON() {
   if (!assertAdmin()) return;
   const payload = { registros, compradores, proveedores, sectores, config: { cupoMaxDiario } };
@@ -1025,6 +1135,7 @@ function exportarJSON() {
 }
 window.exportarJSON = exportarJSON;
 
+// Import JSON (IMPORT) - SOLO ADMIN
 document.getElementById("file-import-json").onchange = async (e) => {
   if (!assertAdmin()) return;
 
@@ -1089,6 +1200,7 @@ document.getElementById("file-import-json").onchange = async (e) => {
   reader.readAsText(file);
 };
 
+// Agregar catálogos (Firestore) - SOLO ADMIN
 async function agregarCatalogo(tipo) {
   if (!assertAdmin()) return;
 
@@ -1109,6 +1221,7 @@ async function agregarCatalogo(tipo) {
 }
 window.agregarCatalogo = agregarCatalogo;
 
+// PDF
 async function exportarPDF() {
   const info = document.getElementById("pdf-header-info");
   const now = new Date();
@@ -1174,6 +1287,7 @@ async function exportarPDF() {
 }
 window.exportarPDF = exportarPDF;
 
+// ==== Sync Firestore -> UI ====
 const ensureCatalogosDoc = async () => {
   const ref = db.collection(META_COL).doc(CATALOGOS_DOC);
   const snap = await ref.get();
@@ -1230,6 +1344,7 @@ const startRealtimeSyncViewer = async () => {
   });
 };
 
+// Auth state
 auth.onAuthStateChanged(async (user) => {
   if (user) {
     const emailLower = String(user.email || "").toLowerCase();
@@ -1264,6 +1379,7 @@ auth.onAuthStateChanged(async (user) => {
       console.error(e);
       alert("Error al cargar datos (permisos o conexión).");
     }
+
   } else {
     stopListeners();
     loggedInUser = null;
@@ -1285,6 +1401,7 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
 
+// Por defecto fecha de hoy (admin lo usa)
 document.getElementById("fecha").value = new Date().toISOString().slice(0,10);
 </script>
 
