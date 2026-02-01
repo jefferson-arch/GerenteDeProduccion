@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- SID - Informe-Firestore-DescabezadoOnly.html -->
-<!-- BUILD_SID_INFORME_DESCABEZADO v1.4.2 DEVICE_PARSER + DISCOUNT_FIX_ON_LOAD 2026-02-01 -->
+<!-- BUILD_SID_INFORME_DESCABEZADO v1.5.0 PROVIDER_LIMIT_BY_CUADRILLA 2026-02-01 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -246,7 +246,7 @@
         </div>
 
         <!-- Cuadrilla + -->
-        <div class="row" style="grid-template-columns:120px 1fr 44px;">
+        <div class="row" id="rowCuadrillaPick" style="grid-template-columns:120px 1fr 44px;">
           <label>Cuadrilla</label>
           <select id="selCuadrilla">
             <option value=""></option>
@@ -265,12 +265,12 @@
           <br>Tip: Haz clic en una etiqueta para quitarla.
         </div>
 
-        <div class="row" style="grid-template-columns:120px 1fr;">
+        <div class="row" id="rowFechaPick" style="grid-template-columns:120px 1fr;">
           <label>Fecha</label>
           <input id="selFecha" type="date" />
         </div>
 
-        <div class="row" style="grid-template-columns:120px 1fr;">
+        <div class="row" id="rowCircuitoPick" style="grid-template-columns:120px 1fr;">
           <label>Circuito</label>
           <select id="selCircuito">
             <option value="1" selected>Circuito 1</option>
@@ -279,22 +279,22 @@
         </div>
 
         <!-- BUSCAR INFORME (pantalla Pick) -->
-        <div style="margin-top:12px;border-top:1px dashed #cfcfcf;padding-top:10px;">
+        <div id="pickBuscarBox" style="margin-top:12px;border-top:1px dashed #cfcfcf;padding-top:10px;">
           <div style="font-family:Arial,Helvetica,sans-serif;font-weight:900;color:#333;margin-bottom:8px;">
             BUSCAR INFORME
           </div>
 
-          <div class="row" style="grid-template-columns:120px 1fr;">
+          <div class="row" id="rowFindNumero" style="grid-template-columns:120px 1fr;">
             <label>N° Informe</label>
             <input id="findNumero" type="text" inputmode="numeric" />
           </div>
 
-          <div class="row" style="grid-template-columns:120px 1fr;">
+          <div class="row" id="rowFindFecha" style="grid-template-columns:120px 1fr;">
             <label>Fecha</label>
             <input id="findFecha" type="date" />
           </div>
 
-          <div class="row" style="grid-template-columns:120px 1fr;">
+          <div class="row" id="rowFindCircuito" style="grid-template-columns:120px 1fr;">
             <label>Circuito</label>
             <select id="findCircuito">
               <option value="1" selected>Circuito 1</option>
@@ -304,7 +304,7 @@
 
           <div class="btn" id="btnBuscarPick">BUSCAR</div>
 
-          <div class="muted" style="margin-top:8px;line-height:1.35;">
+          <div class="muted" id="pickBuscarHint" style="margin-top:8px;line-height:1.35;">
             Tip: Si llenas <b>N° Informe</b>, se busca por número. Si lo dejas vacío, se busca por <b>Fecha + Circuito</b>.
           </div>
         </div>
@@ -333,14 +333,14 @@
         <div class="topGrid">
 
           <!-- Logo -->
-          <div class="logoBox">
+          <div class="logoBox" id="logoBox">
             <img class="logoSmall" src="logo.png" alt="Oceantreasure" onerror="this.style.display='none'">
             <p class="txt1">OCEANTREASURE S.A.</p>
             <p class="txt2">100% ECUADORIAN QUALITY</p>
           </div>
 
           <!-- Firma -->
-          <div class="firmaBox">
+          <div class="firmaBox" id="firmaBox">
             <div id="firmaPlaceholder" class="firmaPlaceholder">
               FIRMA ELECTRÓNICA<br>
               (Presione <b>FIRMAR</b>)
@@ -349,7 +349,7 @@
           </div>
 
           <!-- Botones -->
-          <div class="btnCol">
+          <div class="btnCol" id="btnCol">
             <div class="btn" id="btnFirmar">FIRMAR</div>
             <div class="btn" id="btnGuardar">GUARDAR</div>
             <div class="btn" id="btnPdf">PDF</div>
@@ -358,7 +358,7 @@
           </div>
 
           <!-- Panel derecho -->
-          <div class="panel">
+          <div class="panel" id="panelRight">
             <table>
               <tr>
                 <td class="k">Peso Cola:</td>
@@ -376,7 +376,7 @@
               <tr><td class="k small">Informe:</td><td class="vBlue" id="infoCircuito">Circuito 1</td></tr>
               <tr><td class="k small">Responsable:</td><td class="vBlue" id="infoResponsable">—</td></tr>
 
-              <!-- ✅ Firma meta -->
+              <!-- Firma meta -->
               <tr><td class="k small">Firmado por:</td><td class="vBlue" id="infoFirmadoPor">—</td></tr>
               <tr><td class="k small">Firmado el:</td><td class="vBlue" id="infoFirmadoCuando">—</td></tr>
               <tr>
@@ -460,33 +460,35 @@
     const COL_SID = "sid_informe_descabezado";
     const COL_SID_COUNTER = "sid_informe_counters";
 
+    // ✅ Permisos base (incluye proveedores)
     const ALLOWED = new Set([
       "aracellytomala@oceantreasure.local",
       "keniacruz@oceantreasure.local",
       "gingervaldiviezo@oceantreasure.local",
       "pesadoradesalojo@oceantreasure.local",
       "vanesapacheco@oceantreasure.local",
-      "jeffersonfigueroa@oceantreasure.local"
+      "jeffersonfigueroa@oceantreasure.local",
+      "angiemareprex@oceantreasure.local",
+      "solangefelesmar@oceantreasure.local"
     ]);
 
-    // Supervisores (regla de botones)
+    // Supervisores
     const SUPERVISORS = new Set([
       "gingervaldiviezo@oceantreasure.local",
       "aracellytomala@oceantreasure.local"
     ]);
 
-    const PESO_COLA_ALLOWED = new Set([
-      "gingervaldiviezo@oceantreasure.local",
-      "aracellytomala@oceantreasure.local",
-      "jeffersonfigueroa@oceantreasure.local"
-    ]);
-
     const SIGN_ADMIN = "jeffersonfigueroa@oceantreasure.local";
+
+    // ✅ Proveedores → cuadrilla fija y vista limitada
+    const PROVIDERS = new Map([
+      ["angiemareprex@oceantreasure.local", "MAREPREX"],
+      ["solangefelesmar@oceantreasure.local", "FELESMAR"]
+    ]);
 
     /**
      * FIRMA:
      * Coloca "firma.png" en la misma carpeta del HTML (en tu repo).
-     * (Si tienes QR/firma específica, reemplaza este archivo.)
      */
     const SIGNATURE_DATA_URI = "";
     const SIGNATURE_FALLBACK_URL = "firma.png";
@@ -527,7 +529,6 @@
         .replaceAll("'","&#039;");
     }
 
-    // ✅ Dispositivo bonito: "Windows 11 | Edge"
     function shortDevice(){
       const ua = navigator.userAgent || "";
       const platform = navigator.platform || "";
@@ -549,7 +550,6 @@
 
       return `${os} | ${browser}`;
     }
-
     function prettyWhen(iso){
       if(!iso) return "—";
       const d = new Date(iso);
@@ -569,7 +569,11 @@
     let currentUserEmail = "";
     let currentUserName = "";
 
-    // MULTI CUADRILLAS
+    // ✅ Provider mode
+    let providerMode = false;
+    let providerCuadrilla = "";
+
+    // MULTI CUADRILLAS (normal users)
     let selectedCuadrillas = [];
     let currentCuadrillas = [];
 
@@ -582,7 +586,7 @@
     let reportNumber = "";
     let reportDocId = "";
 
-    // ✅ Firma meta
+    // Firma meta
     let signedBy = "";
     let signedByName = "";
     let signedAt = "";
@@ -591,7 +595,7 @@
 
     // Datos reporte
     let pesadasCols = [];
-    let rows = [];
+    let rows = []; // rows del doc (todas las cuadrillas)
     let subtotalPorPesada = new Map();
     let subtotal2Total = 0;
 
@@ -619,6 +623,30 @@
       el.classList.toggle("disabled", !enabled);
     }
 
+    function getDisplayRows(){
+      if(providerMode){
+        return (rows||[]).filter(r => String(r.cuadrilla||"").trim().toUpperCase() === providerCuadrilla);
+      }
+      return rows || [];
+    }
+
+    function computeDisplaySubtotals(dispRows){
+      const subMap = new Map();
+      let sub2 = 0;
+      for(const c of (pesadasCols||[])){
+        subMap.set(Number(c.pesadaNumero||0), 0);
+      }
+      for(const r of dispRows){
+        sub2 += Number(r.subtotal2||0);
+        for(const c of (pesadasCols||[])){
+          const n = Number(c.pesadaNumero||0);
+          const v = Number((r.byPesada||{})[n] || 0);
+          subMap.set(n, (subMap.get(n)||0) + v);
+        }
+      }
+      return { subMap, sub2 };
+    }
+
     function setSignMetaUI(){
       const por = safe("infoFirmadoPor");
       const cuando = safe("infoFirmadoCuando");
@@ -630,27 +658,40 @@
     }
 
     function updateButtons(){
-      // BUSCAR siempre activo
+      // Provider: solo BUSCAR + PDF/EXCEL si firmado
+      if(providerMode){
+        setBtnEnabled("btnBuscar", true);
+        setBtnEnabled("btnGuardar", false);
+        setBtnEnabled("btnFirmar", false);
+        setBtnEnabled("btnPdf", reportSigned);
+        setBtnEnabled("btnXls", reportSigned);
+        return;
+      }
+
+      // Normal:
       setBtnEnabled("btnBuscar", true);
-
-      // GUARDAR: solo si no guardado y hay internet
       setBtnEnabled("btnGuardar", !reportSaved && hasInternet);
-
-      // FIRMAR: solo admin, solo si guardado y no firmado y con internet
       setBtnEnabled("btnFirmar", reportSaved && !reportSigned && isAdmin() && hasInternet);
-
-      // PDF/EXCEL: solo si firmado (para todos)
       setBtnEnabled("btnPdf", reportSigned);
       setBtnEnabled("btnXls", reportSigned);
     }
 
     function applyPesoColaPermission(){
-      const can = PESO_COLA_ALLOWED.has(currentUserEmail);
-      const inp = $("pesoCola");
-      // editable solo antes de guardar y si tiene permiso
+      const inp = safe("pesoCola");
+      if(!inp) return;
+
+      // Provider: oculto panel completo, así que no aplica
+      if(providerMode){
+        inp.readOnly = true;
+        inp.style.background = "#f3f3f3";
+        return;
+      }
+
+      // Normal: editable solo antes de guardar
+      const can = isSupervisor() || isAdmin() || (currentUserEmail==="keniacruz@oceantreasure.local") || (currentUserEmail==="pesadoradesalojo@oceantreasure.local") || (currentUserEmail==="vanesapacheco@oceantreasure.local");
       inp.readOnly = !can || reportSaved || reportSigned;
       inp.style.background = (inp.readOnly ? "#f3f3f3" : "#fff");
-      inp.title = inp.readOnly ? "Bloqueado (solo antes de guardar y con permiso)" : "Ingrese Peso Cola";
+      inp.title = inp.readOnly ? "Bloqueado" : "Ingrese Peso Cola";
     }
 
     function setSignatureImg(){
@@ -681,34 +722,58 @@
       setSignMetaUI();
     }
 
-    function watchReportDoc(docId){
-      if(!docId) return;
-      if(unsubReport){ try{unsubReport();}catch(_){}
-        unsubReport = null;
+    function applyProviderUI(){
+      // Pantalla Pick
+      if(providerMode){
+        // Selector cuadrilla: solo 1 opción
+        const sel = $("selCuadrilla");
+        sel.innerHTML = `<option>${providerCuadrilla}</option>`;
+        sel.value = providerCuadrilla;
+        sel.disabled = true;
+
+        // ocultar +, chips, hint, circuito, crear
+        safe("btnAddCuadrilla") && (safe("btnAddCuadrilla").style.display = "none");
+        safe("cuadrillaChips") && (safe("cuadrillaChips").style.display = "none");
+        safe("cuadrillaHint") && (safe("cuadrillaHint").style.display = "none");
+        safe("rowCircuitoPick") && (safe("rowCircuitoPick").style.display = "none");
+        safe("btnCrear") && (safe("btnCrear").style.display = "none");
+
+        // Buscar box: solo Fecha + Botón buscar
+        safe("rowFindNumero") && (safe("rowFindNumero").style.display = "none");
+        safe("rowFindCircuito") && (safe("rowFindCircuito").style.display = "none");
+        const hint = safe("pickBuscarHint");
+        if(hint) hint.textContent = "Tip: Selecciona la FECHA y presiona BUSCAR para ver el informe de tu cuadrilla.";
+
+        // Fecha default
+        $("findFecha").value = $("selFecha").value || todayKey();
+      }else{
+        // Restaurar normal (si cambia usuario en misma sesión)
+        safe("btnAddCuadrilla") && (safe("btnAddCuadrilla").style.display = "");
+        safe("cuadrillaChips") && (safe("cuadrillaChips").style.display = "");
+        safe("cuadrillaHint") && (safe("cuadrillaHint").style.display = "");
+        safe("rowCircuitoPick") && (safe("rowCircuitoPick").style.display = "");
+        safe("btnCrear") && (safe("btnCrear").style.display = "");
+        safe("rowFindNumero") && (safe("rowFindNumero").style.display = "");
+        safe("rowFindCircuito") && (safe("rowFindCircuito").style.display = "");
+        const hint = safe("pickBuscarHint");
+        if(hint) hint.textContent = "Tip: Si llenas N° Informe, se busca por número. Si lo dejas vacío, se busca por Fecha + Circuito.";
       }
-      const ref = doc(db, COL_SID, docId);
-      unsubReport = onSnapshot(ref, (snap)=>{
-        if(!snap.exists()) return;
-        const data = snap.data() || {};
 
-        reportSigned = !!data.signed;
-        signedBy = data.signedBy || "";
-        signedByName = data.signedByName || "";
-        signedAt = data.signedAt || "";
-        signedDevice = data.signedDevice || "";
-        signedUA = data.signedUA || "";
+      // Pantalla Report
+      if(providerMode){
+        // Ocultar firma/panel para no ver totales globales
+        safe("firmaBox") && (safe("firmaBox").style.display = "none");
+        safe("panelRight") && (safe("panelRight").style.display = "none");
 
-        applySignatureUI();
-
-        if(reportSaved && !reportSigned){
-          $("reportStatus").textContent = "Guardado. Pendiente de firma (Jefferson).";
-        }
-        if(reportSigned){
-          $("reportStatus").textContent = "Firmado. PDF/EXCEL habilitados.";
-        }
-
-        updateButtons();
-      });
+        // Ocultar botones de firmar/guardar
+        safe("btnFirmar") && (safe("btnFirmar").style.display = "none");
+        safe("btnGuardar") && (safe("btnGuardar").style.display = "none");
+      }else{
+        safe("firmaBox") && (safe("firmaBox").style.display = "");
+        safe("panelRight") && (safe("panelRight").style.display = "");
+        safe("btnFirmar") && (safe("btnFirmar").style.display = "");
+        safe("btnGuardar") && (safe("btnGuardar").style.display = "");
+      }
     }
 
     function showNetBanner(state, msg){
@@ -745,7 +810,7 @@
       lastInternetState = hasInternet;
 
       if(!hasInternet){
-        showNetBanner("offline","SIN CONEXIÓN A INTERNET. No se puede GUARDAR/FIRMAR. Conéctate a datos/Wi-Fi y espera…");
+        showNetBanner("offline","SIN CONEXIÓN A INTERNET.");
       }else{
         showNetBanner("online","CONEXIÓN RESTABLECIDA.");
         setTimeout(()=>hideNetBanner(), 1800);
@@ -756,7 +821,7 @@
     window.addEventListener("online",  ()=>refreshInternetStatus());
     setInterval(()=>refreshInternetStatus(), 8000);
 
-    // Render chips
+    // Chips (normal)
     function renderCuadrillaChips(){
       const wrap = $("cuadrillaChips");
       if(!wrap) return;
@@ -774,8 +839,8 @@
       });
     }
 
-    // Botón +
     $("btnAddCuadrilla").onclick = ()=>{
+      if(providerMode) return;
       const val = ($("selCuadrilla").value || "").trim();
       if(!val){ alert("Seleccione una CUADRILLA para agregar."); return; }
       if(selectedCuadrillas.length >= 10){
@@ -822,7 +887,6 @@
       if(unsubReport){ try{unsubReport();}catch(_){}
         unsubReport = null;
       }
-
       selectedCuadrillas = [];
       currentCuadrillas = [];
       renderCuadrillaChips();
@@ -846,23 +910,80 @@
       subtotalPorPesada = new Map();
       subtotal2Total = 0;
 
-      pesoCola = 0;
-      elevadoEntero = 0;
-      cabezaPosible = 0;
-      pesadaCabezas = 0;
-      descuentoTotal = 0;
-      numPersonas = 0;
       descuentoIndividual = 0;
 
       $("reportStatus").textContent = "—";
       $("infoNumero").textContent = "—";
-      $("pesoCola").value = "";
 
       applySignatureUI();
-      applyPesoColaPermission();
       updateButtons();
     }
 
+    function watchReportDoc(docId){
+      if(!docId) return;
+      if(unsubReport){ try{unsubReport();}catch(_){}
+        unsubReport = null;
+      }
+      const ref = doc(db, COL_SID, docId);
+      unsubReport = onSnapshot(ref, (snap)=>{
+        if(!snap.exists()) return;
+        const data = snap.data() || {};
+
+        reportSigned = !!data.signed;
+        signedBy = data.signedBy || "";
+        signedByName = data.signedByName || "";
+        signedAt = data.signedAt || "";
+        signedDevice = data.signedDevice || "";
+        signedUA = data.signedUA || "";
+
+        applySignatureUI();
+
+        if(reportSigned){
+          $("reportStatus").textContent = "Firmado. PDF/EXCEL habilitados.";
+        }else{
+          $("reportStatus").textContent = "Pendiente de firma.";
+        }
+        updateButtons();
+      });
+    }
+
+    // ====== FIRESTORE SEARCH HELPERS FOR PROVIDERS ======
+    async function findLatestReportByDateAndCuadrilla(fechaKey, cuad){
+      // Intento #1: docs con array "cuadrillas" (multi)
+      let candidates = [];
+
+      const q1 = query(
+        collection(db, COL_SID),
+        where("fecha","==", fechaKey),
+        where("cuadrillas","array-contains", cuad)
+      );
+
+      const s1 = await getDocs(q1);
+      s1.forEach(d=>{
+        const data = d.data()||{};
+        candidates.push({ id:d.id, data, rn:Number(data.reportNumber||0) });
+      });
+
+      // Intento #2: docs single (campo cuadrilla)
+      const q2 = query(
+        collection(db, COL_SID),
+        where("fecha","==", fechaKey),
+        where("cuadrilla","==", cuad)
+      );
+      const s2 = await getDocs(q2);
+      s2.forEach(d=>{
+        const data = d.data()||{};
+        candidates.push({ id:d.id, data, rn:Number(data.reportNumber||0) });
+      });
+
+      if(!candidates.length) return null;
+
+      candidates.sort((a,b)=> (b.rn||0)-(a.rn||0));
+      const best = candidates[0];
+      return { id: best.id, ...best.data };
+    }
+
+    // ====== AUTH STATE ======
     onAuthStateChanged(auth, async (user)=>{
       if(user){
         currentUserEmail = (user.email||"").toLowerCase();
@@ -871,6 +992,10 @@
           await doLogout();
           return;
         }
+
+        // provider mode setup
+        providerCuadrilla = (PROVIDERS.get(currentUserEmail) || "").trim().toUpperCase();
+        providerMode = !!providerCuadrilla;
 
         $("authHeader").style.display = "block";
         $("userEmail").textContent = currentUserEmail;
@@ -881,10 +1006,8 @@
         $("selFecha").value = todayKey();
         $("findFecha").value = todayKey();
 
-        if(!reportDocId){
-          selectedCuadrillas = [];
-          renderCuadrillaChips();
-        }
+        // Aplicar UI según rol
+        applyProviderUI();
 
         showView("pick");
         await refreshInternetStatus();
@@ -893,6 +1016,8 @@
         if(boot) boot.textContent = "";
       }else{
         currentUserEmail = "";
+        providerMode = false;
+        providerCuadrilla = "";
         $("authHeader").style.display = "none";
         hideNetBanner();
         resetAll();
@@ -901,7 +1026,13 @@
       }
     });
 
+    // ====== CREAR (solo normal users) ======
     $("btnCrear").onclick = async ()=>{
+      if(providerMode){
+        alert("Acceso limitado: use BUSCAR por fecha.");
+        return;
+      }
+
       const cSingle = ($("selCuadrilla").value || "").trim();
       const effective = (selectedCuadrillas.length > 0)
         ? [...selectedCuadrillas]
@@ -925,24 +1056,12 @@
       $("infoCircuito").textContent = `Circuito ${currentCircuito}`;
       $("infoResponsable").textContent = currentUserName || currentUserEmail;
 
-      // Nuevo informe
+      // reset
       reportSaved = false;
       reportSigned = false;
       reportNumber = "";
       reportDocId = "";
       $("infoNumero").textContent = "—";
-
-      signedBy = "";
-      signedByName = "";
-      signedAt = "";
-      signedDevice = "";
-      signedUA = "";
-
-      applySignatureUI();
-
-      if(unsubReport){ try{unsubReport();}catch(_){}
-        unsubReport = null;
-      }
 
       showView("report");
       $("reportStatus").textContent = "Cargando pesadas del día…";
@@ -952,16 +1071,18 @@
         $("reportStatus").textContent = "Listo. Verifica y, si aplica, ingresa Peso Cola.";
       }catch(err){
         console.error(err);
-        $("reportStatus").textContent = "No se pudo cargar SDA. Revisa conexión/permisos/índices.";
-        alert("No se pudo cargar la información de SDA. Revisa conexión/permisos o índices en Firestore.");
+        $("reportStatus").textContent = "No se pudo cargar SDA.";
+        alert("No se pudo cargar la información de SDA.");
       }
 
+      applyProviderUI();
       applyPesoColaPermission();
       updateButtons();
     };
 
     $("btnBackPick").onclick = ()=>{ showView("pick"); };
 
+    // ====== LOAD SDA (normal create) ======
     async function loadFromSDA(cuadrillasArr, fechaKey){
       rows = [];
       pesadasCols = [];
@@ -998,7 +1119,7 @@
         if(!(Number.isFinite(lbs) && lbs > 0)) return;
 
         docs.push({
-          cuadrilla: String(x.cuadrilla || "").trim(),
+          cuadrilla: String(x.cuadrilla || "").trim().toUpperCase(),
           pesadaNumero: Number(x.pesadaNumero||0),
           hora: x.hora || "",
           usuario: x.usuario || "",
@@ -1031,7 +1152,6 @@
         if(!pid) continue;
 
         const key = isMulti ? `${r.cuadrilla}::${pid}` : pid;
-
         if(!personMap.has(key)){
           personMap.set(key,{
             personId: pid,
@@ -1068,11 +1188,15 @@
       recalcAll();
     }
 
+    // ====== TABLE RENDER (filters for providers) ======
     function renderReportTable(){
       const thead = $("theadReport");
       const tbody = $("tbodyReport");
       thead.innerHTML = "";
       tbody.innerHTML = "";
+
+      const dispRows = getDisplayRows();
+      const { subMap, sub2 } = computeDisplaySubtotals(dispRows);
 
       const tr1 = document.createElement("tr");
       tr1.innerHTML = `
@@ -1094,11 +1218,10 @@
       thead.appendChild(tr1);
       thead.appendChild(document.createElement("tr"));
 
-      // ✅ APLICACIÓN DESCUENTO: depende de variable global descuentoIndividual
       const descInd = Number(descuentoIndividual||0);
       const applyDesc = (Number.isFinite(descInd) && descInd < 0) ? descInd : 0;
 
-      rows.forEach((r, idx)=>{
+      dispRows.forEach((r, idx)=>{
         const tr = document.createElement("tr");
         const nom = `${esc(r.apellidos)} ${esc(r.nombres)}`.trim();
         const cuad = esc((r.cuadrilla || "").trim());
@@ -1110,7 +1233,7 @@
         `;
 
         for(const c of pesadasCols){
-          const v = Number(r.byPesada[c.pesadaNumero]||0);
+          const v = Number((r.byPesada||{})[c.pesadaNumero]||0);
           tr.innerHTML += `<td class="num">${v ? fmt0(v) : ""}</td>`;
         }
 
@@ -1129,33 +1252,36 @@
       trS.innerHTML = `<td class="colNo" colspan="3">SUBTOTAL 1</td>`;
 
       for(const c of pesadasCols){
-        trS.innerHTML += `<td class="num">${fmt0(subtotalPorPesada.get(c.pesadaNumero)||0)}</td>`;
+        trS.innerHTML += `<td class="num">${fmt0(subMap.get(c.pesadaNumero)||0)}</td>`;
       }
 
-      trS.innerHTML += `<td class="num">${fmt0(subtotal2Total)}</td>`;
+      trS.innerHTML += `<td class="num">${fmt0(sub2)}</td>`;
       trS.innerHTML += `<td class="num ${applyDesc<0?'descuentoNeg':''}">${applyDesc<0?fmt0(applyDesc):""}</td>`;
-      const totFinal = subtotal2Total + (applyDesc * (rows.length||0));
+      const totFinal = sub2 + (applyDesc * (dispRows.length||0));
       trS.innerHTML += `<td class="num">${fmt0(totFinal)}</td>`;
       tbody.appendChild(trS);
     }
 
+    // ====== RECALC (normal create) ======
     function recalcAll(){
-      numPersonas = rows.length || 0;
-      pesadaCabezas = subtotal2Total || 0;
-
+      if(providerMode) return; // providers no crean informe
       const inpVal = parseEsNumber($("pesoCola").value);
       pesoCola = Number.isFinite(inpVal) ? inpVal : 0;
 
+      const dispRows = rows || [];
+      const numP = dispRows.length || 0;
+      const pesadaC = subtotal2Total || 0;
+
       elevadoEntero = (pesoCola > 0) ? (pesoCola / 0.66) : 0;
       cabezaPosible = (pesoCola > 0) ? (elevadoEntero - pesoCola) : 0;
-      descuentoTotal = cabezaPosible - pesadaCabezas;
-      descuentoIndividual = (numPersonas > 0) ? (descuentoTotal / numPersonas) : 0;
+      descuentoTotal = cabezaPosible - pesadaC;
+      descuentoIndividual = (numP > 0) ? (descuentoTotal / numP) : 0;
 
       $("elevadoEntero").textContent = fmt3(elevadoEntero);
       $("cabezaPosible").textContent = fmt3(cabezaPosible);
-      $("pesadaCabezas").textContent = fmt3(pesadaCabezas);
+      $("pesadaCabezas").textContent = fmt3(pesadaC);
       $("descuentoTotal").textContent = fmt0(descuentoTotal);
-      $("numPersonas").textContent = fmt0(numPersonas);
+      $("numPersonas").textContent = fmt0(numP);
 
       const diEl = $("descuentoIndividual");
       diEl.textContent = fmt0(descuentoIndividual);
@@ -1165,20 +1291,12 @@
     }
 
     $("pesoCola").addEventListener("input", ()=>{
+      if(providerMode) return;
       if(reportSaved || reportSigned) return;
       recalcAll();
     });
 
-    async function reauthForSensitiveAction(){
-      const user = auth.currentUser;
-      if(!user || !user.email) throw new Error("No hay sesión activa.");
-      const pass = prompt("Para confirmar FIRMA, ingrese su contraseña de Firebase:");
-      if(!pass) throw new Error("Acción cancelada.");
-      const cred = EmailAuthProvider.credential(user.email, pass);
-      await reauthenticateWithCredential(user, cred);
-      return true;
-    }
-
+    // ====== SAVE NUMBER (normal users) ======
     async function allocateNextReportNumber(){
       const yyyy = String(new Date().getFullYear());
       const ref = doc(db, COL_SID_COUNTER, yyyy);
@@ -1196,8 +1314,10 @@
       return String(n).padStart(7,"0");
     }
 
-    // ✅ GUARDAR: NO firma. Deja pendiente.
+    // ====== GUARDAR (blocked for providers) ======
     $("btnGuardar").onclick = async ()=>{
+      if(providerMode) return;
+
       await refreshInternetStatus();
       if(!hasInternet){
         alert("⚠️ Sin internet: no se puede GUARDAR.");
@@ -1231,9 +1351,9 @@
         pesoCola,
         elevadoEntero,
         cabezaPosible,
-        pesadaCabezas,
+        pesadaCabezas: subtotal2Total,
         descuentoTotal,
-        numPersonas,
+        numPersonas: (rows.length||0),
         descuentoIndividual,
 
         pesadasCols,
@@ -1257,20 +1377,30 @@
         reportSigned = false;
 
         $("reportStatus").textContent = "Guardado. Pendiente de firma (Jefferson).";
-
-        applyPesoColaPermission();
         watchReportDoc(reportDocId);
         updateButtons();
 
         alert(`Informe guardado: ${reportNumber}\nPendiente de firma (Jefferson).`);
       }catch(err){
         console.error(err);
-        alert("No se pudo guardar el informe. Revisa permisos/conexión.");
+        alert("No se pudo guardar el informe.");
       }
     };
 
-    // ✅ FIRMAR: admin firma informe guardado. Habilita PDF/EXCEL a todos.
+    // ====== FIRMAR (blocked for providers) ======
+    async function reauthForSensitiveAction(){
+      const user = auth.currentUser;
+      if(!user || !user.email) throw new Error("No hay sesión activa.");
+      const pass = prompt("Para confirmar FIRMA, ingrese su contraseña de Firebase:");
+      if(!pass) throw new Error("Acción cancelada.");
+      const cred = EmailAuthProvider.credential(user.email, pass);
+      await reauthenticateWithCredential(user, cred);
+      return true;
+    }
+
     $("btnFirmar").onclick = async ()=>{
+      if(providerMode) return;
+
       await refreshInternetStatus();
       if(!hasInternet){
         alert("Sin internet: no se puede firmar.");
@@ -1281,7 +1411,7 @@
         return;
       }
       if(!reportSaved || !reportDocId){
-        alert("Primero debe GUARDAR el informe (generar N°) o BUSCAR un informe guardado.");
+        alert("Primero debe GUARDAR el informe o BUSCAR un informe guardado.");
         return;
       }
       if(reportSigned){
@@ -1309,15 +1439,13 @@
         });
 
         $("reportStatus").textContent = "Firmando…";
-
-        // onSnapshot actualizará todo
       }catch(err){
         console.error(err);
-        alert("No se pudo firmar. Verifica contraseña/conexión.");
+        alert("No se pudo firmar.");
       }
     };
 
-    // ✅ PDF: solo firmado
+    // ====== PDF (only if signed) ======
     $("btnPdf").onclick = async ()=>{
       if(!reportSigned){
         alert("Este informe aún NO está firmado. PDF se habilita después de la firma.");
@@ -1376,7 +1504,7 @@
       pdf.save(fname);
     };
 
-    // ✅ EXCEL: solo firmado
+    // ====== EXCEL (only if signed) ======
     $("btnXls").onclick = ()=>{
       if(!reportSigned){
         alert("Este informe aún NO está firmado. Excel se habilita después de la firma.");
@@ -1387,10 +1515,11 @@
         const XLSX = window.XLSX;
         if(!XLSX){ alert("No se pudo cargar la librería de Excel."); return; }
 
+        const dispRows = getDisplayRows();
+        const { subMap, sub2 } = computeDisplaySubtotals(dispRows);
+
         const headers = ["N°","NOMINA","CUADRILLA"];
-        for(const c of pesadasCols){
-          headers.push(`PESADA ${c.pesadaNumero}`);
-        }
+        for(const c of pesadasCols) headers.push(`PESADA ${c.pesadaNumero}`);
         headers.push("SUBTOTAL 2","DESCUENTO","TOTAL");
 
         const descInd = Number(descuentoIndividual||0);
@@ -1398,18 +1527,12 @@
 
         const aoa = [];
         aoa.push(["SID | INFORME DESCABEZADO"]);
-
-        const cuadrillaLabel = (currentCuadrillas && currentCuadrillas.length > 1)
-          ? currentCuadrillas.join(" + ")
-          : (currentCuadrillas[0] || "");
-
-        aoa.push(["Informe N°", reportNumber||"", "Cuadrilla", cuadrillaLabel, "Fecha", currentFecha||"", "Circuito", `Circuito ${currentCircuito||"1"}`]);
-        aoa.push(["Responsable", currentUserName||currentUserEmail||""]);
+        aoa.push(["Informe N°", reportNumber||"", "Cuadrilla", (providerMode?providerCuadrilla:(currentCuadrillas.join(" + "))), "Fecha", currentFecha||""]);
         aoa.push(["Firmado por", signedByName || signedBy || "", "Firmado el", prettyWhen(signedAt), "Dispositivo", signedDevice || ""]);
         aoa.push([]);
         aoa.push(headers);
 
-        rows.forEach((r, idx)=>{
+        dispRows.forEach((r, idx)=>{
           const nom = `${(r.apellidos||"").trim()} ${(r.nombres||"").trim()}`.trim();
           const cuad = (r.cuadrilla || "").trim();
           const line = [idx+1, nom, cuad];
@@ -1425,17 +1548,16 @@
           line.push(subtotal2 || 0);
           line.push(applyDesc ? applyDesc : "");
           line.push(total || 0);
-
           aoa.push(line);
         });
 
         const sub = ["SUBTOTAL 1","", ""];
         for(const c of pesadasCols){
-          sub.push(Number(subtotalPorPesada.get(c.pesadaNumero)||0) || 0);
+          sub.push(Number(subMap.get(c.pesadaNumero)||0) || 0);
         }
-        sub.push(Number(subtotal2Total||0) || 0);
+        sub.push(Number(sub2||0) || 0);
         sub.push(applyDesc ? applyDesc : "");
-        sub.push(Number(subtotal2Total + (applyDesc * (rows.length||0))) || 0);
+        sub.push(Number(sub2 + (applyDesc * (dispRows.length||0))) || 0);
         aoa.push(sub);
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -1460,15 +1582,25 @@
       }
     };
 
-    // BUSCAR (Reporte) - prompts
+    // ====== BUSCAR (Report button) ======
     $("btnBuscar").onclick = async ()=>{
-      const n = prompt("Ingrese N° de Informe (7 dígitos).\n\nDeje vacío para buscar por FECHA + Circuito.");
       await refreshInternetStatus();
       if(!hasInternet){
         alert("Sin internet: no se puede buscar.");
         return;
       }
 
+      // Provider: buscar por fecha + su cuadrilla (sin prompts)
+      if(providerMode){
+        const f = (currentFecha || $("metaFecha").textContent || $("findFecha").value || todayKey()).trim();
+        const found = await findLatestReportByDateAndCuadrilla(f, providerCuadrilla);
+        if(!found){ alert("No se encontró informe para esa fecha."); return; }
+        loadReportFromDoc(found);
+        return;
+      }
+
+      // Normal: con prompts
+      const n = prompt("Ingrese N° de Informe (7 dígitos).\n\nDeje vacío para buscar por FECHA + Circuito.");
       try{
         let foundDoc = null;
 
@@ -1506,11 +1638,11 @@
         loadReportFromDoc(foundDoc);
       }catch(err){
         console.error(err);
-        alert("Error buscando informe. Puede requerir índice en Firestore.");
+        alert("Error buscando informe.");
       }
     };
 
-    // BUSCAR desde pantalla Pick (sin prompts)
+    // ====== BUSCAR desde PICK ======
     $("btnBuscarPick").onclick = async ()=>{
       await refreshInternetStatus();
       if(!hasInternet){
@@ -1519,6 +1651,18 @@
       }
 
       try{
+        // Provider: solo fecha + su cuadrilla
+        if(providerMode){
+          const f = ($("findFecha").value || $("selFecha").value || todayKey()).trim();
+          currentFecha = f;
+
+          const found = await findLatestReportByDateAndCuadrilla(f, providerCuadrilla);
+          if(!found){ alert("No se encontró informe para esa fecha."); return; }
+          loadReportFromDoc(found);
+          return;
+        }
+
+        // Normal: por número o fecha+circuito
         const nRaw = ($("findNumero").value || "").trim();
         let foundDoc = null;
 
@@ -1569,18 +1713,17 @@
         loadReportFromDoc(foundDoc);
       }catch(err){
         console.error(err);
-        alert("Error buscando informe. Puede requerir índice en Firestore.");
+        alert("Error buscando informe.");
       }
     };
 
-    // ✅ CARGA informe guardado (FIX DESCUENTO)
+    // ====== LOAD REPORT DOC ======
     function loadReportFromDoc(docData){
       reportDocId = docData.id;
       reportNumber = docData.reportNumber || "";
       reportSaved = true;
       reportSigned = !!docData.signed;
 
-      // ✅ cargar meta firma
       signedBy = docData.signedBy || "";
       signedByName = docData.signedByName || "";
       signedAt = docData.signedAt || "";
@@ -1594,9 +1737,8 @@
       currentFecha = docData.fecha || "";
       currentCircuito = String(docData.circuito || "1");
 
-      const cuadrillaLabel = (currentCuadrillas.length > 1)
-        ? currentCuadrillas.join(" + ")
-        : (currentCuadrillas[0] || "");
+      // Provider: metaCuadrilla fijo a su cuadrilla
+      const cuadrillaLabel = providerMode ? providerCuadrilla : ((currentCuadrillas.length>1)? currentCuadrillas.join(" + "): (currentCuadrillas[0]||""));
 
       $("metaCuadrilla").textContent = cuadrillaLabel || "—";
       $("metaFecha").textContent = currentFecha;
@@ -1604,71 +1746,37 @@
       $("infoResponsable").textContent = docData.responsableNombre || docData.responsableEmail || "—";
       $("infoNumero").textContent = reportNumber || "—";
 
-      // ✅ CARGAR VARIABLES GLOBALES (FIX)
-      pesoCola = Number(docData.pesoCola||0);
-      elevadoEntero = Number(docData.elevadoEntero||0);
-      cabezaPosible = Number(docData.cabezaPosible||0);
-      pesadaCabezas = Number(docData.pesadaCabezas||0);
-      descuentoTotal = Number(docData.descuentoTotal||0);
-      numPersonas = Number(docData.numPersonas||0);
+      // Variables globales (para descuento real)
       descuentoIndividual = Number(docData.descuentoIndividual||0);
-
-      // ✅ reflejar panel
-      $("pesoCola").value = pesoCola ? pesoCola.toLocaleString("es-EC",{minimumFractionDigits:3,maximumFractionDigits:3}) : "";
-      $("elevadoEntero").textContent = fmt3(elevadoEntero);
-      $("cabezaPosible").textContent = fmt3(cabezaPosible);
-      $("pesadaCabezas").textContent = fmt3(pesadaCabezas);
-      $("descuentoTotal").textContent = fmt0(descuentoTotal);
-      $("numPersonas").textContent = fmt0(numPersonas);
-      $("descuentoIndividual").textContent = fmt0(descuentoIndividual);
-      $("descuentoIndividual").classList.toggle("vRed", descuentoIndividual < 0);
 
       pesadasCols = docData.pesadasCols || [];
       rows = docData.rows || [];
 
-      // fallback para informes viejos (si filas no traen cuadrilla)
+      // fallback para informes viejos
       const fallbackCuad = (Array.isArray(docData.cuadrillas) && docData.cuadrillas.length)
-        ? docData.cuadrillas[0]
-        : (docData.cuadrilla || "");
+        ? String(docData.cuadrillas[0]||"").trim().toUpperCase()
+        : String(docData.cuadrilla || "").trim().toUpperCase();
 
       rows = rows.map(r => ({
         ...r,
-        cuadrilla: (r.cuadrilla || fallbackCuad || "").trim()
+        cuadrilla: String(r.cuadrilla || fallbackCuad || "").trim().toUpperCase()
       }));
 
-      // ✅ recomputar subtotales para la fila SUBTOTAL 1
-      subtotalPorPesada = new Map();
-      subtotal2Total = 0;
-
-      const nums = pesadasCols.map(x=>Number(x.pesadaNumero||0)).filter(n=>n>0);
-      for(const n of nums) subtotalPorPesada.set(n, 0);
-
-      rows.forEach(r=>{
-        let s2=0;
-        nums.forEach(n=>{
-          const v = Number((r.byPesada||{})[n]||0);
-          s2 += v;
-          subtotalPorPesada.set(n,(subtotalPorPesada.get(n)||0)+v);
-        });
-        r.subtotal2 = s2;
-      });
-      subtotal2Total = rows.reduce((a,b)=>a+(Number(b.subtotal2||0)),0);
-
-      // ✅ pinta firma + meta
+      // UI firma/meta
       applySignatureUI();
 
+      // Provider: oculta panel/firma y deja solo tabla + pdf/xls si firmado
+      applyProviderUI();
+
+      // Status
       if(reportSigned){
         $("reportStatus").textContent = "Firmado. PDF/EXCEL habilitados.";
       }else{
-        $("reportStatus").textContent = "Guardado. Pendiente de firma (Jefferson).";
+        $("reportStatus").textContent = "Pendiente de firma.";
       }
 
       showView("report");
-
-      applyPesoColaPermission();
       renderReportTable();
-
-      // escuchar firma en vivo
       watchReportDoc(reportDocId);
       updateButtons();
     }
