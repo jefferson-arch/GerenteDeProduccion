@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- SID - Informe-Firestore-DescabezadoOnly.html -->
-<!-- BUILD_SID_INFORME_DESCABEZADO v1.3.0 MULTI_CUADRILLA 2026-01-31 -->
+<!-- BUILD_SID_INFORME_DESCABEZADO v1.3.1 MULTI_CUADRILLA + COL_CUADRILLA 2026-01-31 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -154,7 +154,7 @@
       width:100%;
       border-collapse:collapse;
       table-layout:fixed;
-      min-width:980px;
+      min-width:1120px; /* ✅ un poco más por la nueva columna */
       font-size:16px;
       font-family:var(--font);
     }
@@ -175,8 +175,10 @@
       color:#fff;
       font-weight:900;
     }
+
     .colNo{width:48px;text-align:center;font-weight:900}
     .colNomina{width:240px;text-align:left;font-weight:900}
+    .colCuadrilla{width:160px;text-align:center;font-weight:900} /* ✅ NUEVA */
     .num{text-align:right;font-weight:900}
     .descuentoNeg{color:#d4001a;font-weight:900}
     .muted{color:#666;font-family:Arial,Helvetica,sans-serif;font-size:12px}
@@ -184,7 +186,7 @@
 
     @media (max-width:980px){
       .topGrid{grid-template-columns: 200px 1fr 120px 320px;}
-      table.report{min-width:1050px}
+      table.report{min-width:1200px}
     }
     @media (max-width:720px){
       .topGrid{grid-template-columns: 1fr; }
@@ -395,7 +397,6 @@
     const $ = (id)=>document.getElementById(id);
     const safe = (id)=>document.getElementById(id) || null;
 
-    // Mostrar errores JS en pantalla (para no depender de consola)
     function uiError(msg){
       const el = safe("loginMsg") || safe("bootMsg");
       if(el) el.textContent = msg;
@@ -436,10 +437,9 @@
 
     /**
      * FIRMA:
-     * Para evitar que se rompa el HTML por un base64 truncado, usamos archivo local:
-     *   - Coloca "firma.png" en la misma carpeta del HTML (en tu repo).
+     * Coloca "firma.png" en la misma carpeta del HTML (en tu repo).
      */
-    const SIGNATURE_DATA_URI = ""; // (opcional) data:image/png;base64,...
+    const SIGNATURE_DATA_URI = "";
     const SIGNATURE_FALLBACK_URL = "firma.png";
 
     function todayKey(){
@@ -488,10 +488,10 @@
     let currentUserName = "";
 
     // ✅ MULTI CUADRILLAS
-    let selectedCuadrillas = [];     // chips (hasta 10)
-    let currentCuadrillas = [];      // cuadrillas efectivas del reporte
+    let selectedCuadrillas = [];  // chips (hasta 10)
+    let currentCuadrillas = [];   // cuadrillas efectivas del reporte
 
-    let currentCuadrilla = "";       // compat (single o "MULTI")
+    let currentCuadrilla = "";    // compat
     let currentFecha = "";
     let currentCircuito = "1";
 
@@ -589,7 +589,6 @@
       const val = ($("selCuadrilla").value || "").trim();
       if(!val){ alert("Seleccione una CUADRILLA para agregar."); return; }
 
-      // max 10 por Firestore 'in'
       if(selectedCuadrillas.length >= 10){
         alert("Máximo 10 cuadrillas por informe (límite Firestore 'in').");
         return;
@@ -687,7 +686,6 @@
 
         $("selFecha").value = todayKey();
 
-        // reset multi al entrar
         selectedCuadrillas = [];
         renderCuadrillaChips();
 
@@ -708,7 +706,6 @@
     $("btnCrear").onclick = async ()=>{
       const cSingle = ($("selCuadrilla").value || "").trim();
 
-      // ✅ cuadrillas efectivas
       const effective = (selectedCuadrillas.length > 0)
         ? [...selectedCuadrillas]
         : (cSingle ? [cSingle] : []);
@@ -724,7 +721,6 @@
       currentFecha = $("selFecha").value || todayKey();
       currentCircuito = $("selCircuito").value || "1";
 
-      // ✅ meta display
       const labelCuadrilla = (effective.length === 1)
         ? effective[0]
         : effective.join(" + ");
@@ -769,7 +765,8 @@
       subtotalPorPesada = new Map();
       subtotal2Total = 0;
 
-      const cuadrillas = (Array.isArray(cuadrillasArr) ? cuadrillasArr : []).map(x=>String(x||"").trim()).filter(Boolean);
+      const cuadrillas = (Array.isArray(cuadrillasArr) ? cuadrillasArr : [])
+        .map(x=>String(x||"").trim()).filter(Boolean);
 
       let q;
       if(cuadrillas.length === 1){
@@ -830,7 +827,7 @@
         const pid = String(r.personId || "");
         if(!pid) continue;
 
-        // ✅ evita colisiones si mismo personId aparece en dos cuadrillas
+        // evita colisiones si mismo personId aparece en dos cuadrillas
         const key = isMulti ? `${r.cuadrilla}::${pid}` : pid;
 
         if(!personMap.has(key)){
@@ -869,16 +866,20 @@
       recalcAll();
     }
 
+    // ✅ TABLA CON COLUMNA CUADRILLA (ya no va dentro del nombre)
     function renderReportTable(){
       const thead = $("theadReport");
       const tbody = $("tbodyReport");
       thead.innerHTML = "";
       tbody.innerHTML = "";
 
-      const isMulti = (currentCuadrillas && currentCuadrillas.length > 1);
-
       const tr1 = document.createElement("tr");
-      tr1.innerHTML = `<th class="colNo" rowspan="2">N°</th><th class="colNomina" rowspan="2">NOMINA</th>`;
+      tr1.innerHTML = `
+        <th class="colNo" rowspan="2">N°</th>
+        <th class="colNomina" rowspan="2">NOMINA</th>
+        <th class="colCuadrilla" rowspan="2">CUADRILLA</th>
+      `;
+
       for(const c of pesadasCols){
         tr1.innerHTML += `
           <th>
@@ -887,6 +888,7 @@
             <div style="margin-top:3px;">PESADA ${c.pesadaNumero}</div>
           </th>`;
       }
+
       tr1.innerHTML += `<th rowspan="2">SUBTOTAL 2</th><th rowspan="2">DESCUENTO</th><th rowspan="2">TOTAL</th>`;
       thead.appendChild(tr1);
       thead.appendChild(document.createElement("tr"));
@@ -897,13 +899,15 @@
       rows.forEach((r, idx)=>{
         const tr = document.createElement("tr");
 
-        const nomBase = `${esc(r.apellidos)} ${esc(r.nombres)}`;
-        const nom = isMulti && r.cuadrilla
-          ? `${nomBase} <span class="muted">(${esc(r.cuadrilla)})</span>`
-          : nomBase;
+        const nom = `${esc(r.apellidos)} ${esc(r.nombres)}`.trim();
+        const cuad = esc((r.cuadrilla || "").trim());
 
-        tr.innerHTML = `<td class="colNo">${idx+1}</td>
-                        <td class="colNomina">${nom}</td>`;
+        tr.innerHTML = `
+          <td class="colNo">${idx+1}</td>
+          <td class="colNomina">${nom}</td>
+          <td class="colCuadrilla">${cuad}</td>
+        `;
+
         for(const c of pesadasCols){
           const v = Number(r.byPesada[c.pesadaNumero]||0);
           tr.innerHTML += `<td class="num">${v ? fmt0(v) : ""}</td>`;
@@ -921,10 +925,12 @@
 
       const trS = document.createElement("tr");
       trS.className = "subRow";
-      trS.innerHTML = `<td class="colNo" colspan="2">SUBTOTAL 1</td>`;
+      trS.innerHTML = `<td class="colNo" colspan="3">SUBTOTAL 1</td>`;
+
       for(const c of pesadasCols){
         trS.innerHTML += `<td class="num">${fmt0(subtotalPorPesada.get(c.pesadaNumero)||0)}</td>`;
       }
+
       trS.innerHTML += `<td class="num">${fmt0(subtotal2Total)}</td>`;
       trS.innerHTML += `<td class="num ${descuentoIndividual<0?'descuentoNeg':''}">${descuentoIndividual<0?fmt0(descuentoIndividual):""}</td>`;
       const totFinal = subtotal2Total + ((descuentoIndividual<0)? descuentoIndividual * (rows.length||0) : 0);
@@ -1049,7 +1055,7 @@
         reportNumber,
         circuito: Number(currentCircuito||1),
 
-        // ✅ compat + multi
+        // compat + multi
         cuadrilla: (currentCuadrillas.length === 1) ? currentCuadrillas[0] : "MULTI",
         cuadrillas: currentCuadrillas,
 
@@ -1066,7 +1072,7 @@
         descuentoIndividual,
 
         pesadasCols,
-        rows,
+        rows, // rows ya trae r.cuadrilla por persona
 
         signed: true,
         signedBy,
@@ -1139,12 +1145,13 @@
       pdf.save(fname);
     };
 
+    // ✅ Exportar Excel (.xlsx) con columna CUADRILLA
     $("btnXls").onclick = ()=>{
       try{
         const XLSX = window.XLSX;
         if(!XLSX){ alert("No se pudo cargar la librería de Excel."); return; }
 
-        const headers = ["N°","NOMINA"];
+        const headers = ["N°","NOMINA","CUADRILLA"];
         for(const c of pesadasCols){
           headers.push(`PESADA ${c.pesadaNumero}`);
         }
@@ -1165,13 +1172,11 @@
         aoa.push([]);
         aoa.push(headers);
 
-        const isMulti = (currentCuadrillas && currentCuadrillas.length > 1);
-
         rows.forEach((r, idx)=>{
-          const nomBase = `${(r.apellidos||"").trim()} ${(r.nombres||"").trim()}`.trim();
-          const nom = (isMulti && r.cuadrilla) ? `${nomBase} (${r.cuadrilla})` : nomBase;
+          const nom = `${(r.apellidos||"").trim()} ${(r.nombres||"").trim()}`.trim();
+          const cuad = (r.cuadrilla || "").trim();
 
-          const line = [idx+1, nom];
+          const line = [idx+1, nom, cuad];
 
           for(const c of pesadasCols){
             const v = Number((r.byPesada||{})[c.pesadaNumero] || 0);
@@ -1188,7 +1193,8 @@
           aoa.push(line);
         });
 
-        const sub = ["SUBTOTAL 1",""];
+        // Fila SUBTOTAL 1
+        const sub = ["SUBTOTAL 1","", ""];
         for(const c of pesadasCols){
           sub.push(Number(subtotalPorPesada.get(c.pesadaNumero)||0) || 0);
         }
@@ -1199,9 +1205,11 @@
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
 
+        // Anchos aproximados
         const cols = [];
-        cols.push({wch:6});
-        cols.push({wch:32});
+        cols.push({wch:6});   // N°
+        cols.push({wch:32});  // NOMINA
+        cols.push({wch:16});  // CUADRILLA
         for(let i=0;i<pesadasCols.length;i++) cols.push({wch:10});
         cols.push({wch:12},{wch:12},{wch:12});
         ws["!cols"] = cols;
@@ -1274,7 +1282,6 @@
       reportDocId = docData.id;
       reportNumber = docData.reportNumber || "";
 
-      // ✅ soporta multi guardado (cuadrillas) o legacy (cuadrilla)
       currentCuadrillas = Array.isArray(docData.cuadrillas) && docData.cuadrillas.length
         ? docData.cuadrillas
         : [docData.cuadrilla || ""].filter(Boolean);
@@ -1297,6 +1304,16 @@
       pesadasCols = docData.pesadasCols || [];
       rows = docData.rows || [];
       pesoCola = Number(docData.pesoCola||0);
+
+      // ✅ Fallback para informes viejos (si las filas no traen r.cuadrilla)
+      const fallbackCuad = (Array.isArray(docData.cuadrillas) && docData.cuadrillas.length)
+        ? docData.cuadrillas[0]
+        : (docData.cuadrilla || "");
+
+      rows = rows.map(r => ({
+        ...r,
+        cuadrilla: (r.cuadrilla || fallbackCuad || "").trim()
+      }));
 
       $("pesoCola").value = pesoCola ? pesoCola.toLocaleString("es-EC",{minimumFractionDigits:3,maximumFractionDigits:3}) : "";
       $("pesoCola").readOnly = true;
