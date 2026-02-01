@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- SID - Informe-Firestore-DescabezadoOnly.html -->
-<!-- BUILD_SID_INFORME_DESCABEZADO v1.5.0 PROVIDER_LIMIT_BY_CUADRILLA 2026-02-01 -->
+<!-- BUILD_SID_INFORME_DESCABEZADO v1.6.0 HISTORIAL_INFORMES 2026-02-01 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -184,15 +184,58 @@
     .muted{color:#666;font-family:Arial,Helvetica,sans-serif;font-size:12px}
     .subRow td{background:#f2f2f2;font-weight:900;}
 
+    /* HISTORIAL */
+    .histBox{max-width:1180px;margin:10px auto 0;border:1px solid #ddd;padding:12px;background:#fff;}
+    .histTitle{font-family:Arial,Helvetica,sans-serif;font-weight:900;color:#333;margin:0 0 10px}
+    .histFilters{
+      display:grid;
+      grid-template-columns: 120px 1fr 120px 1fr 120px;
+      gap:10px;
+      align-items:center;
+      margin:6px 0 10px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .histFilters .btn{width:100%}
+    .histTblWrap{border:1px solid #999;overflow:auto}
+    table.hist{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      min-width:1500px;
+      font-size:14px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    table.hist th, table.hist td{
+      border:1px solid #333;
+      padding:6px 6px;
+      vertical-align:middle;
+    }
+    table.hist th{
+      background:var(--hdr);
+      color:#fff;
+      font-weight:900;
+      text-align:center;
+    }
+    .hDate{width:110px}
+    .hNum{width:120px}
+    .hCuad{width:220px}
+    .hW{width:140px}
+    .hDesc{width:130px}
+    .hTot{width:130px}
+    .hOpen{width:100px}
+    .hDel{width:110px}
+
     @media (max-width:980px){
       .topGrid{grid-template-columns: 200px 1fr 120px 320px;}
       table.report{min-width:1200px}
+      table.hist{min-width:1600px}
     }
     @media (max-width:720px){
       .topGrid{grid-template-columns: 1fr; }
       .btnCol{flex-direction:row}
       .btnCol .btn{width:auto;flex:1}
       .panel{margin-top:6px}
+      .histFilters{grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -309,11 +352,63 @@
           </div>
         </div>
 
-        <div class="btn primary" id="btnCrear" style="margin-top:12px;">CREAR INFORME</div>
+        <!-- ACCIONES -->
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <div class="btn primary" id="btnCrear" style="flex:1;">CREAR INFORME</div>
+          <div class="btn" id="btnHistorial" style="width:140px;">HISTORIAL</div>
+        </div>
+
         <div class="btn" id="btnLogoutPick" style="margin-top:10px;">CERRAR SESIÓN</div>
 
         <div class="muted" style="margin-top:10px;line-height:1.35;">
           Nota: El informe carga automáticamente las pesadas del día seleccionado desde SDA (Firestore).
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORIAL -->
+    <section id="vHist" class="view">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px;font-family:Arial,Helvetica,sans-serif;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span class="btn" id="btnHistBack">VOLVER</span>
+          <span class="btn" id="btnHistLogout">CERRAR SESIÓN</span>
+        </div>
+        <div class="muted" id="histStatus">—</div>
+      </div>
+
+      <div class="histBox">
+        <div class="histTitle">HISTORIAL DE INFORMES</div>
+
+        <div class="histFilters">
+          <label style="font-weight:900;">DESDE</label>
+          <input id="histDesde" type="date" />
+          <label style="font-weight:900;">HASTA</label>
+          <input id="histHasta" type="date" />
+          <div class="btn" id="btnHistFiltrar">APLICAR</div>
+        </div>
+
+        <div class="histTblWrap">
+          <table class="hist" id="tblHist">
+            <thead>
+              <tr>
+                <th class="hDate">FECHA</th>
+                <th class="hNum">N° INFORME</th>
+                <th class="hCuad">CUADRILLA(S)</th>
+                <th class="hW">LIBRAS COLA</th>
+                <th class="hW">LIBRAS ENTERO</th>
+                <th class="hW">LIBRAS CABEZA</th>
+                <th class="hDesc">DESCUENTO</th>
+                <th class="hTot">TOTAL</th>
+                <th class="hOpen">ABRIR</th>
+                <th class="hDel">ELIMINAR</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyHist"></tbody>
+          </table>
+        </div>
+
+        <div class="muted" style="margin-top:10px;line-height:1.35;">
+          Nota: “ELIMINAR” solo está disponible para el administrador.
         </div>
       </div>
     </section>
@@ -421,7 +516,7 @@
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential }
       from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc,
+      getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc,
       runTransaction, serverTimestamp, onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -529,6 +624,14 @@
         .replaceAll("'","&#039;");
     }
 
+    function dateAddDays(yyyyMmDd, deltaDays){
+      const [y,m,d] = String(yyyyMmDd).split("-").map(x=>Number(x||0));
+      const dt = new Date(y, (m||1)-1, d||1);
+      dt.setDate(dt.getDate() + deltaDays);
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+    }
+
     function shortDevice(){
       const ua = navigator.userAgent || "";
       const platform = navigator.platform || "";
@@ -560,7 +663,7 @@
       });
     }
 
-    const views = { login:$("vLogin"), pick:$("vPick"), report:$("vReport") };
+    const views = { login:$("vLogin"), pick:$("vPick"), hist:$("vHist"), report:$("vReport") };
     function showView(name){
       Object.values(views).forEach(v=>v.classList.remove("active"));
       views[name].classList.add("active");
@@ -882,6 +985,7 @@
     async function doLogout(){ await signOut(auth); }
     $("btnLogoutPick").onclick = doLogout;
     $("btnLogoutReport").onclick = doLogout;
+    $("btnHistLogout").onclick = doLogout;
 
     function resetAll(){
       if(unsubReport){ try{unsubReport();}catch(_){}
@@ -914,6 +1018,10 @@
 
       $("reportStatus").textContent = "—";
       $("infoNumero").textContent = "—";
+
+      $("histStatus").textContent = "—";
+      const hb = safe("tbodyHist");
+      if(hb) hb.innerHTML = "";
 
       applySignatureUI();
       updateButtons();
@@ -983,6 +1091,223 @@
       return { id: best.id, ...best.data };
     }
 
+    // ====== HISTORIAL (RANGO) ======
+    async function fetchHistorial(desde, hasta){
+      const items = [];
+      const seen = new Set();
+
+      if(providerMode){
+        // A) por campo cuadrilla
+        const qA = query(
+          collection(db, COL_SID),
+          where("fecha", ">=", desde),
+          where("fecha", "<=", hasta),
+          where("cuadrilla", "==", providerCuadrilla)
+        );
+        const sA = await getDocs(qA);
+        sA.forEach(d=>{
+          if(seen.has(d.id)) return;
+          seen.add(d.id);
+          items.push({ id:d.id, ...d.data() });
+        });
+
+        // B) por array cuadrillas
+        const qB = query(
+          collection(db, COL_SID),
+          where("fecha", ">=", desde),
+          where("fecha", "<=", hasta),
+          where("cuadrillas", "array-contains", providerCuadrilla)
+        );
+        const sB = await getDocs(qB);
+        sB.forEach(d=>{
+          if(seen.has(d.id)) return;
+          seen.add(d.id);
+          items.push({ id:d.id, ...d.data() });
+        });
+
+        // Filtro extra por seguridad (por si vino algo raro)
+        return items.filter(x=>{
+          const c = String(x.cuadrilla||"").trim().toUpperCase();
+          const arr = Array.isArray(x.cuadrillas) ? x.cuadrillas.map(a=>String(a||"").trim().toUpperCase()) : [];
+          return c === providerCuadrilla || arr.includes(providerCuadrilla);
+        });
+      }
+
+      const qAll = query(
+        collection(db, COL_SID),
+        where("fecha", ">=", desde),
+        where("fecha", "<=", hasta)
+      );
+      const snap = await getDocs(qAll);
+      snap.forEach(d=>{
+        items.push({ id:d.id, ...d.data() });
+      });
+      return items;
+    }
+
+    function histCuadrillasLabel(x){
+      const arr = Array.isArray(x.cuadrillas) ? x.cuadrillas.filter(Boolean) : [];
+      if(arr.length) return arr.join(" + ");
+      return String(x.cuadrilla || "—");
+    }
+
+    function histTotalFinal(x){
+      const pesada = Number(x.pesadaCabezas || 0);           // subtotal2Total
+      const di = Number(x.descuentoIndividual || 0);
+      const n = Number(x.numPersonas || 0);
+      if(Number.isFinite(di) && di < 0){
+        return pesada + (di * n);
+      }
+      return pesada;
+    }
+
+    function renderHistorial(items){
+      const tb = $("tbodyHist");
+      tb.innerHTML = "";
+
+      // Orden: fecha desc, reportNumber desc
+      items.sort((a,b)=>
+        String(b.fecha||"").localeCompare(String(a.fecha||"")) ||
+        (Number(b.reportNumber||0) - Number(a.reportNumber||0))
+      );
+
+      for(const x of items){
+        const fecha = String(x.fecha||"");
+        const rn = String(x.reportNumber||"");
+        const cuad = providerMode ? providerCuadrilla : histCuadrillasLabel(x);
+
+        const cola = Number(x.pesoCola||0);
+        const entero = Number(x.elevadoEntero||0);
+        const cabeza = Number(x.cabezaPosible||0);
+
+        const desc = Number(x.descuentoTotal||0);
+        const tot = histTotalFinal(x);
+
+        const tr = document.createElement("tr");
+
+        const canDelete = isAdmin(); // SOLO ADMIN
+        const delCell = canDelete
+          ? `<td class="hDel" style="text-align:center;">
+               <span class="btn danger" data-del="${esc(x.id)}" style="padding:6px 10px;">ELIMINAR</span>
+             </td>`
+          : `<td class="hDel" style="text-align:center;color:#888;">—</td>`;
+
+        tr.innerHTML = `
+          <td class="hDate" style="text-align:center;font-weight:900;">${esc(fecha)}</td>
+          <td class="hNum" style="text-align:center;font-weight:900;">${esc(rn)}</td>
+          <td class="hCuad" style="text-align:left;font-weight:900;">${esc(cuad)}</td>
+          <td class="hW" style="text-align:right;font-weight:900;">${fmt3(cola)}</td>
+          <td class="hW" style="text-align:right;font-weight:900;">${fmt3(entero)}</td>
+          <td class="hW" style="text-align:right;font-weight:900;">${fmt3(cabeza)}</td>
+          <td class="hDesc" style="text-align:right;font-weight:900;${desc<0?'color:#d4001a;':''}">${fmt0(desc)}</td>
+          <td class="hTot" style="text-align:right;font-weight:900;">${fmt0(tot)}</td>
+          <td class="hOpen" style="text-align:center;">
+            <span class="btn" data-open="${esc(x.id)}" style="padding:6px 10px;">ABRIR</span>
+          </td>
+          ${delCell}
+        `;
+        tb.appendChild(tr);
+      }
+
+      // Delegación eventos (abrir / eliminar)
+      tb.querySelectorAll("[data-open]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-open");
+          if(!id) return;
+
+          await refreshInternetStatus();
+          if(!hasInternet){
+            alert("Sin internet: no se puede abrir.");
+            return;
+          }
+
+          try{
+            const snap = await getDoc(doc(db, COL_SID, id));
+            if(!snap.exists()){
+              alert("Ese informe ya no existe.");
+              return;
+            }
+            loadReportFromDoc({ id, ...snap.data() });
+          }catch(err){
+            console.error(err);
+            alert("No se pudo abrir el informe.");
+          }
+        });
+      });
+
+      tb.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          if(!isAdmin()){
+            alert("Solo el administrador puede eliminar.");
+            return;
+          }
+          const id = btn.getAttribute("data-del");
+          if(!id) return;
+
+          const ok = confirm("¿Eliminar este informe?\n\nEsta acción NO se puede deshacer.");
+          if(!ok) return;
+
+          await refreshInternetStatus();
+          if(!hasInternet){
+            alert("Sin internet: no se puede eliminar.");
+            return;
+          }
+
+          try{
+            await deleteDoc(doc(db, COL_SID, id));
+            // quitar fila
+            btn.closest("tr")?.remove();
+            $("histStatus").textContent = "Informe eliminado.";
+          }catch(err){
+            console.error(err);
+            alert("No se pudo eliminar. Revisa permisos.");
+          }
+        });
+      });
+    }
+
+    async function openHistorial(){
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede cargar historial.");
+        return;
+      }
+
+      // defaults: últimos 14 días
+      const t = todayKey();
+      if(!$("histHasta").value) $("histHasta").value = t;
+      if(!$("histDesde").value) $("histDesde").value = dateAddDays(t, -14);
+
+      showView("hist");
+      await loadHistorial();
+    }
+
+    async function loadHistorial(){
+      const desde = $("histDesde").value || todayKey();
+      const hasta = $("histHasta").value || todayKey();
+
+      if(desde > hasta){
+        alert("Rango inválido: DESDE no puede ser mayor que HASTA.");
+        return;
+      }
+
+      $("histStatus").textContent = "Cargando historial…";
+      try{
+        const items = await fetchHistorial(desde, hasta);
+        renderHistorial(items);
+        $("histStatus").textContent = `Listo. Registros: ${items.length}`;
+      }catch(err){
+        console.error(err);
+        $("histStatus").textContent = "Error cargando historial.";
+        alert("No se pudo cargar el historial. Puede requerir índice en Firestore.");
+      }
+    }
+
+    $("btnHistorial").onclick = openHistorial;
+    $("btnHistFiltrar").onclick = loadHistorial;
+
+    $("btnHistBack").onclick = ()=>{ showView("pick"); };
+
     // ====== AUTH STATE ======
     onAuthStateChanged(auth, async (user)=>{
       if(user){
@@ -1005,6 +1330,10 @@
 
         $("selFecha").value = todayKey();
         $("findFecha").value = todayKey();
+
+        // defaults historial
+        $("histHasta").value = todayKey();
+        $("histDesde").value = dateAddDays(todayKey(), -14);
 
         // Aplicar UI según rol
         applyProviderUI();
@@ -1784,6 +2113,8 @@
     // Inicial
     $("selFecha").value = todayKey();
     $("findFecha").value = todayKey();
+    $("histHasta").value = todayKey();
+    $("histDesde").value = dateAddDays(todayKey(), -14);
     updateButtons();
 
   </script>
