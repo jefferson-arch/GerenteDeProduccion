@@ -89,13 +89,13 @@
 
     /* ------------ APP PRINCIPAL ------------ */
     .app {
-      max-width: 1200px;
-      margin: 16px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,.08);
-      overflow: hidden;
-    }
+  max-width: 1400px;           /* antes 1200px */
+  margin: 16px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,.08);
+  overflow: hidden;
+}
     header {
       background: #555c6d;
       color: #fff;
@@ -375,6 +375,47 @@
       header { flex-direction: column; align-items: flex-start; }
       header .user-info { text-align: left; }
     }
+
+    /* ================================
+   REPORTE AGRUPADO - más ancho y sin apretar columnas
+   ================================ */
+#tab-reporte .table-wrapper{
+  overflow-x: auto;      /* fuerza scroll horizontal si hace falta */
+  overflow-y: auto;
+}
+
+#tab-reporte table{
+  table-layout: auto;    /* deja que el navegador asigne ancho natural */
+  min-width: 1120px;     /* evita que las columnas se compriman */
+}
+
+/* Ajuste de anchos por columna en REPORTE (9 columnas) */
+#tab-reporte th:nth-child(1), #tab-reporte td:nth-child(1){ width: 14%; } /* Fecha */
+#tab-reporte th:nth-child(2), #tab-reporte td:nth-child(2){ width: 14%; } /* Comprador */
+#tab-reporte th:nth-child(3), #tab-reporte td:nth-child(3){ width: 20%; } /* Proveedor */
+#tab-reporte th:nth-child(4), #tab-reporte td:nth-child(4){ width: 14%; } /* Sector */
+#tab-reporte th:nth-child(5), #tab-reporte td:nth-child(5){ width: 10%; } /* Libras */
+#tab-reporte th:nth-child(6), #tab-reporte td:nth-child(6){ width: 8%;  } /* Gramaje */
+#tab-reporte th:nth-child(7), #tab-reporte td:nth-child(7){ width: 7%;  } /* Entero */
+#tab-reporte th:nth-child(8), #tab-reporte td:nth-child(8){ width: 7%;  } /* Cola */
+#tab-reporte th:nth-child(9), #tab-reporte td:nth-child(9){ width: 10%; } /* Cola aprox */
+
+/* Mantener compactos los campos numéricos y tallas */
+#tab-reporte th.numeric,
+#tab-reporte td.numeric,
+#tab-reporte th.size-cell,
+#tab-reporte td.size-cell{
+  white-space: nowrap;
+}
+
+/* En pantallas pequeñas: ocupa todo el ancho y reduce un pelín el padding */
+@media (max-width: 900px){
+  .app{ margin: 0; border-radius: 0; }
+  #tab-reporte .tab { padding: 12px; }
+  #tab-reporte table{ min-width: 1040px; } /* sigue evitando compresión */
+  #tab-reporte th, #tab-reporte td{ padding: 2px 6px; }
+}
+    
   </style>
 </head>
 <body>
