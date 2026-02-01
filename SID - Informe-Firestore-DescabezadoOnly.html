@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- SID - Informe-Firestore-DescabezadoOnly.html -->
-<!-- BUILD_SID_INFORME_DESCABEZADO v1.3.1 MULTI_CUADRILLA + COL_CUADRILLA 2026-01-31 -->
+<!-- BUILD_SID_INFORME_DESCABEZADO v1.3.2 PICK_SEARCH + MULTI_CUADRILLA + COL_CUADRILLA 2026-01-31 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -47,7 +47,7 @@
     .loginTitle{font-family:Arial,Helvetica,sans-serif;text-align:center;color:var(--blue);font-weight:900;margin:0 0 10px}
     .row{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;margin:10px 0}
     label{font-family:Arial,Helvetica,sans-serif;font-size:14px}
-    input[type="text"],input[type="password"],select{
+    input[type="text"],input[type="password"],select,input[type="date"]{
       width:100%;padding:8px 10px;border:1px solid #ccc;background:#eee;outline:none;font-size:14px;min-height:38px;font-family:Arial,Helvetica,sans-serif;
     }
     select{background:#fff}
@@ -154,7 +154,7 @@
       width:100%;
       border-collapse:collapse;
       table-layout:fixed;
-      min-width:1120px; /* ✅ un poco más por la nueva columna */
+      min-width:1120px; /* por la nueva columna */
       font-size:16px;
       font-family:var(--font);
     }
@@ -178,7 +178,7 @@
 
     .colNo{width:48px;text-align:center;font-weight:900}
     .colNomina{width:240px;text-align:left;font-weight:900}
-    .colCuadrilla{width:160px;text-align:center;font-weight:900} /* ✅ NUEVA */
+    .colCuadrilla{width:160px;text-align:center;font-weight:900}
     .num{text-align:right;font-weight:900}
     .descuentoNeg{color:#d4001a;font-weight:900}
     .muted{color:#666;font-family:Arial,Helvetica,sans-serif;font-size:12px}
@@ -245,7 +245,7 @@
           <p class="tagline">100% ECUADORIAN QUALITY</p>
         </div>
 
-        <!-- ✅ Cuadrilla + botón + -->
+        <!-- Cuadrilla + -->
         <div class="row" style="grid-template-columns:120px 1fr 44px;">
           <label>Cuadrilla</label>
           <select id="selCuadrilla">
@@ -257,7 +257,7 @@
           <div class="btn" id="btnAddCuadrilla" title="Agregar cuadrilla">+</div>
         </div>
 
-        <!-- ✅ Lista de cuadrillas agregadas -->
+        <!-- Chips -->
         <div id="cuadrillaChips" class="chipWrap"></div>
         <div class="muted hint" id="cuadrillaHint">
           Nota: Selecciona una cuadrilla y presiona <b>+</b> para agregarla al informe (máx. 10).
@@ -278,7 +278,38 @@
           </select>
         </div>
 
-        <div class="btn primary" id="btnCrear">CREAR INFORME</div>
+        <!-- ✅ BUSCAR INFORME (en pantalla Pick) -->
+        <div style="margin-top:12px;border-top:1px dashed #cfcfcf;padding-top:10px;">
+          <div style="font-family:Arial,Helvetica,sans-serif;font-weight:900;color:#333;margin-bottom:8px;">
+            BUSCAR INFORME
+          </div>
+
+          <div class="row" style="grid-template-columns:120px 1fr;">
+            <label>N° Informe</label>
+            <input id="findNumero" type="text" inputmode="numeric" />
+          </div>
+
+          <div class="row" style="grid-template-columns:120px 1fr;">
+            <label>Fecha</label>
+            <input id="findFecha" type="date" />
+          </div>
+
+          <div class="row" style="grid-template-columns:120px 1fr;">
+            <label>Circuito</label>
+            <select id="findCircuito">
+              <option value="1" selected>Circuito 1</option>
+              <option value="2">Circuito 2</option>
+            </select>
+          </div>
+
+          <div class="btn" id="btnBuscarPick">BUSCAR</div>
+
+          <div class="muted" style="margin-top:8px;line-height:1.35;">
+            Tip: Si llenas <b>N° Informe</b>, se busca por número. Si lo dejas vacío, se busca por <b>Fecha + Circuito</b>.
+          </div>
+        </div>
+
+        <div class="btn primary" id="btnCrear" style="margin-top:12px;">CREAR INFORME</div>
         <div class="btn" id="btnLogoutPick" style="margin-top:10px;">CERRAR SESIÓN</div>
 
         <div class="muted" style="margin-top:10px;line-height:1.35;">
@@ -487,7 +518,7 @@
     let currentUserEmail = "";
     let currentUserName = "";
 
-    // ✅ MULTI CUADRILLAS
+    // MULTI CUADRILLAS
     let selectedCuadrillas = [];  // chips (hasta 10)
     let currentCuadrillas = [];   // cuadrillas efectivas del reporte
 
@@ -516,7 +547,7 @@
     let reportNumber = "";
     let reportDocId = "";
 
-    // ✅ Internet detector
+    // Internet detector
     let hasInternet = true;
     let lastInternetState = null;
 
@@ -566,7 +597,7 @@
     window.addEventListener("online",  ()=>refreshInternetStatus());
     setInterval(()=>refreshInternetStatus(), 8000);
 
-    // ✅ Render chips
+    // Render chips
     function renderCuadrillaChips(){
       const wrap = $("cuadrillaChips");
       if(!wrap) return;
@@ -584,11 +615,10 @@
       });
     }
 
-    // ✅ Botón +
+    // Botón +
     $("btnAddCuadrilla").onclick = ()=>{
       const val = ($("selCuadrilla").value || "").trim();
       if(!val){ alert("Seleccione una CUADRILLA para agregar."); return; }
-
       if(selectedCuadrillas.length >= 10){
         alert("Máximo 10 cuadrillas por informe (límite Firestore 'in').");
         return;
@@ -685,6 +715,7 @@
         $("userNameLabel").textContent = `(${currentUserName})`;
 
         $("selFecha").value = todayKey();
+        $("findFecha").value = todayKey(); // ✅ fecha por defecto en buscar
 
         selectedCuadrillas = [];
         renderCuadrillaChips();
@@ -827,7 +858,6 @@
         const pid = String(r.personId || "");
         if(!pid) continue;
 
-        // evita colisiones si mismo personId aparece en dos cuadrillas
         const key = isMulti ? `${r.cuadrilla}::${pid}` : pid;
 
         if(!personMap.has(key)){
@@ -866,7 +896,7 @@
       recalcAll();
     }
 
-    // ✅ TABLA CON COLUMNA CUADRILLA (ya no va dentro del nombre)
+    // TABLA con columna CUADRILLA
     function renderReportTable(){
       const thead = $("theadReport");
       const tbody = $("tbodyReport");
@@ -1054,11 +1084,8 @@
       const data = {
         reportNumber,
         circuito: Number(currentCircuito||1),
-
-        // compat + multi
         cuadrilla: (currentCuadrillas.length === 1) ? currentCuadrillas[0] : "MULTI",
         cuadrillas: currentCuadrillas,
-
         fecha: currentFecha,
         responsableEmail: currentUserEmail,
         responsableNombre: currentUserName,
@@ -1072,7 +1099,7 @@
         descuentoIndividual,
 
         pesadasCols,
-        rows, // rows ya trae r.cuadrilla por persona
+        rows,
 
         signed: true,
         signedBy,
@@ -1145,7 +1172,7 @@
       pdf.save(fname);
     };
 
-    // ✅ Exportar Excel (.xlsx) con columna CUADRILLA
+    // Exportar Excel (.xlsx) con CUADRILLA
     $("btnXls").onclick = ()=>{
       try{
         const XLSX = window.XLSX;
@@ -1193,7 +1220,6 @@
           aoa.push(line);
         });
 
-        // Fila SUBTOTAL 1
         const sub = ["SUBTOTAL 1","", ""];
         for(const c of pesadasCols){
           sub.push(Number(subtotalPorPesada.get(c.pesadaNumero)||0) || 0);
@@ -1205,11 +1231,10 @@
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
 
-        // Anchos aproximados
         const cols = [];
-        cols.push({wch:6});   // N°
-        cols.push({wch:32});  // NOMINA
-        cols.push({wch:16});  // CUADRILLA
+        cols.push({wch:6});
+        cols.push({wch:32});
+        cols.push({wch:16});
         for(let i=0;i<pesadasCols.length;i++) cols.push({wch:10});
         cols.push({wch:12},{wch:12},{wch:12});
         ws["!cols"] = cols;
@@ -1226,6 +1251,7 @@
       }
     };
 
+    // BUSCAR (botón en Reporte) - se mantiene igual (con prompts)
     $("btnBuscar").onclick = async ()=>{
       const n = prompt("Ingrese N° de Informe (7 dígitos).\n\nDeje vacío para buscar por FECHA + Circuito.");
       await refreshInternetStatus();
@@ -1276,6 +1302,74 @@
       }
     };
 
+    // ✅ BUSCAR desde pantalla Pick (SIN PROMPTS)
+    $("btnBuscarPick").onclick = async ()=>{
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede buscar.");
+        return;
+      }
+
+      try{
+        const nRaw = ($("findNumero").value || "").trim();
+        let foundDoc = null;
+
+        // 1) por número
+        if(nRaw){
+          const clean = nRaw.replace(/\D+/g,"");
+          if(!clean){
+            alert("Ingrese un N° de informe válido.");
+            return;
+          }
+          const num = clean.padStart(7,"0");
+          const id = `SID_${num}`;
+
+          const snap = await getDoc(doc(db, COL_SID, id));
+          if(!snap.exists()){
+            alert("No existe ese informe.");
+            return;
+          }
+          foundDoc = { id, ...snap.data() };
+        }
+
+        // 2) por fecha + circuito
+        if(!foundDoc){
+          const f = ($("findFecha").value || "").trim() || todayKey();
+          const c = ($("findCircuito").value || "1");
+
+          const q = query(
+            collection(db, COL_SID),
+            where("fecha","==", f),
+            where("circuito","==", Number(c))
+          );
+
+          const snap = await getDocs(q);
+          if(snap.empty){
+            alert("No se encontró informe para esa fecha+circuito.");
+            return;
+          }
+
+          // si hay varios, el más alto reportNumber
+          let best = null;
+          snap.forEach(d=>{
+            const data = d.data() || {};
+            const rn = Number(data.reportNumber || 0);
+            if(!best || rn > best.rn){
+              best = { rn, id: d.id, data };
+            }
+          });
+
+          foundDoc = { id: best.id, ...best.data };
+        }
+
+        loadReportFromDoc(foundDoc);
+        alert("Informe cargado. Modo consulta: solo PDF.");
+      }catch(err){
+        console.error(err);
+        alert("Error buscando informe. Puede requerir índice en Firestore.");
+      }
+    };
+
     function loadReportFromDoc(docData){
       viewOnly = true;
 
@@ -1305,7 +1399,7 @@
       rows = docData.rows || [];
       pesoCola = Number(docData.pesoCola||0);
 
-      // ✅ Fallback para informes viejos (si las filas no traen r.cuadrilla)
+      // fallback para informes viejos
       const fallbackCuad = (Array.isArray(docData.cuadrillas) && docData.cuadrillas.length)
         ? docData.cuadrillas[0]
         : (docData.cuadrilla || "");
@@ -1363,6 +1457,7 @@
 
     // Set fecha hoy al cargar
     $("selFecha").value = todayKey();
+    $("findFecha").value = todayKey();
 
   </script>
 </body>
