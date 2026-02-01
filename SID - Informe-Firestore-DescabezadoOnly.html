@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- SID - Informe-Firestore-DescabezadoOnly.html -->
-<!-- BUILD_SID_INFORME_DESCABEZADO v1.4.0 BTN_WORKFLOW_SIGN_AFTER_SAVE 2026-01-31 -->
+<!-- BUILD_SID_INFORME_DESCABEZADO v1.4.2 DEVICE_PARSER + DISCOUNT_FIX_ON_LOAD 2026-02-01 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -375,6 +375,16 @@
               <tr><td class="k2">Descuento individual:</td><td class="v" id="descuentoIndividual">0</td></tr>
               <tr><td class="k small">Informe:</td><td class="vBlue" id="infoCircuito">Circuito 1</td></tr>
               <tr><td class="k small">Responsable:</td><td class="vBlue" id="infoResponsable">—</td></tr>
+
+              <!-- ✅ Firma meta -->
+              <tr><td class="k small">Firmado por:</td><td class="vBlue" id="infoFirmadoPor">—</td></tr>
+              <tr><td class="k small">Firmado el:</td><td class="vBlue" id="infoFirmadoCuando">—</td></tr>
+              <tr>
+                <td class="k small">Dispositivo:</td>
+                <td class="vBlue" id="infoFirmadoDevice" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.15;word-break:break-word;">
+                  —
+                </td>
+              </tr>
             </table>
           </div>
         </div>
@@ -459,7 +469,7 @@
       "jeffersonfigueroa@oceantreasure.local"
     ]);
 
-    // ✅ Supervisores (regla de botones)
+    // Supervisores (regla de botones)
     const SUPERVISORS = new Set([
       "gingervaldiviezo@oceantreasure.local",
       "aracellytomala@oceantreasure.local"
@@ -476,6 +486,7 @@
     /**
      * FIRMA:
      * Coloca "firma.png" en la misma carpeta del HTML (en tu repo).
+     * (Si tienes QR/firma específica, reemplaza este archivo.)
      */
     const SIGNATURE_DATA_URI = "";
     const SIGNATURE_FALLBACK_URL = "firma.png";
@@ -516,6 +527,39 @@
         .replaceAll("'","&#039;");
     }
 
+    // ✅ Dispositivo bonito: "Windows 11 | Edge"
+    function shortDevice(){
+      const ua = navigator.userAgent || "";
+      const platform = navigator.platform || "";
+      let os = "PC";
+      if(/Windows NT 10\.0/.test(ua)) os = "Windows 10/11";
+      if(/Windows NT 6\./.test(ua)) os = "Windows";
+      if(/Android/.test(ua)) os = "Android";
+      if(/iPhone/.test(ua)) os = "iPhone";
+      if(/iPad/.test(ua)) os = "iPad";
+      if(/Mac OS X/.test(ua) && !/iPhone|iPad/.test(ua)) os = "macOS";
+      if(/Linux/.test(platform) && !/Android/.test(ua)) os = "Linux";
+
+      let browser = "Navegador";
+      if(/Edg\//.test(ua)) browser = "Edge";
+      else if(/OPR\//.test(ua) || /Opera/.test(ua)) browser = "Opera";
+      else if(/Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua)) browser = "Chrome";
+      else if(/Firefox\//.test(ua)) browser = "Firefox";
+      else if(/Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Edg\//.test(ua)) browser = "Safari";
+
+      return `${os} | ${browser}`;
+    }
+
+    function prettyWhen(iso){
+      if(!iso) return "—";
+      const d = new Date(iso);
+      if(!Number.isFinite(d.getTime())) return "—";
+      return d.toLocaleString("es-EC", {
+        year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit"
+      });
+    }
+
     const views = { login:$("vLogin"), pick:$("vPick"), report:$("vReport") };
     function showView(name){
       Object.values(views).forEach(v=>v.classList.remove("active"));
@@ -532,15 +576,20 @@
     let currentFecha = "";
     let currentCircuito = "1";
 
-    // ✅ Estados del flujo
-    let reportSaved = false;      // ya tiene N° y doc creado
-    let reportSigned = false;     // firmado en Firestore
+    // Estados del flujo
+    let reportSaved = false;
+    let reportSigned = false;
     let reportNumber = "";
     let reportDocId = "";
 
+    // ✅ Firma meta
     let signedBy = "";
+    let signedByName = "";
     let signedAt = "";
+    let signedDevice = "";
+    let signedUA = "";
 
+    // Datos reporte
     let pesadasCols = [];
     let rows = [];
     let subtotalPorPesada = new Map();
@@ -554,10 +603,10 @@
     let numPersonas = 0;
     let descuentoIndividual = 0;
 
-    // ✅ Listener en vivo del informe (para habilitar PDF/EXCEL a todos)
+    // Listener en vivo del informe
     let unsubReport = null;
 
-    // ✅ Internet detector
+    // Internet detector
     let hasInternet = true;
     let lastInternetState = null;
 
@@ -570,27 +619,35 @@
       el.classList.toggle("disabled", !enabled);
     }
 
+    function setSignMetaUI(){
+      const por = safe("infoFirmadoPor");
+      const cuando = safe("infoFirmadoCuando");
+      const dev = safe("infoFirmadoDevice");
+
+      if(por) por.textContent = reportSigned ? (signedByName || (signedBy||"").split("@")[0] || "—") : "—";
+      if(cuando) cuando.textContent = reportSigned ? prettyWhen(signedAt) : "—";
+      if(dev) dev.textContent = reportSigned ? (signedDevice || "—") : "—";
+    }
+
     function updateButtons(){
-      // BUSCAR siempre visible (aunque su handler valida internet)
+      // BUSCAR siempre activo
       setBtnEnabled("btnBuscar", true);
 
-      // GUARDAR: solo si NO se ha guardado aún y hay internet
+      // GUARDAR: solo si no guardado y hay internet
       setBtnEnabled("btnGuardar", !reportSaved && hasInternet);
 
-      // FIRMAR: solo ADMIN, solo si está guardado y NO firmado, y con internet
+      // FIRMAR: solo admin, solo si guardado y no firmado y con internet
       setBtnEnabled("btnFirmar", reportSaved && !reportSigned && isAdmin() && hasInternet);
 
-      // PDF/EXCEL: solo cuando ya está firmado (para todos)
+      // PDF/EXCEL: solo si firmado (para todos)
       setBtnEnabled("btnPdf", reportSigned);
       setBtnEnabled("btnXls", reportSigned);
-
-      // Si es supervisor y está creando, debe ver PDF/EXCEL/FIRMAR deshabilitados (ya lo cubre arriba)
     }
 
     function applyPesoColaPermission(){
       const can = PESO_COLA_ALLOWED.has(currentUserEmail);
       const inp = $("pesoCola");
-      // solo editable antes de guardar y si tiene permiso
+      // editable solo antes de guardar y si tiene permiso
       inp.readOnly = !can || reportSaved || reportSigned;
       inp.style.background = (inp.readOnly ? "#f3f3f3" : "#fff");
       inp.title = inp.readOnly ? "Bloqueado (solo antes de guardar y con permiso)" : "Ingrese Peso Cola";
@@ -621,6 +678,7 @@
         $("firmaImg").style.display = "none";
         $("firmaPlaceholder").style.display = "block";
       }
+      setSignMetaUI();
     }
 
     function watchReportDoc(docId){
@@ -632,14 +690,16 @@
       unsubReport = onSnapshot(ref, (snap)=>{
         if(!snap.exists()) return;
         const data = snap.data() || {};
+
         reportSigned = !!data.signed;
         signedBy = data.signedBy || "";
+        signedByName = data.signedByName || "";
         signedAt = data.signedAt || "";
+        signedDevice = data.signedDevice || "";
+        signedUA = data.signedUA || "";
 
-        // si ya firmó, muestro firma y habilito PDF/EXCEL para todos
         applySignatureUI();
 
-        // status
         if(reportSaved && !reportSigned){
           $("reportStatus").textContent = "Guardado. Pendiente de firma (Jefferson).";
         }
@@ -771,14 +831,28 @@
       reportSigned = false;
       reportNumber = "";
       reportDocId = "";
+
       signedBy = "";
+      signedByName = "";
       signedAt = "";
+      signedDevice = "";
+      signedUA = "";
 
       currentFecha = "";
       currentCircuito = "1";
 
-      rows=[]; pesadasCols=[]; subtotalPorPesada=new Map(); subtotal2Total=0;
-      pesoCola=0;
+      pesadasCols = [];
+      rows = [];
+      subtotalPorPesada = new Map();
+      subtotal2Total = 0;
+
+      pesoCola = 0;
+      elevadoEntero = 0;
+      cabezaPosible = 0;
+      pesadaCabezas = 0;
+      descuentoTotal = 0;
+      numPersonas = 0;
+      descuentoIndividual = 0;
 
       $("reportStatus").textContent = "—";
       $("infoNumero").textContent = "—";
@@ -807,7 +881,6 @@
         $("selFecha").value = todayKey();
         $("findFecha").value = todayKey();
 
-        // no reseteo todo si ya estás viendo un informe
         if(!reportDocId){
           selectedCuadrillas = [];
           renderCuadrillaChips();
@@ -852,15 +925,21 @@
       $("infoCircuito").textContent = `Circuito ${currentCircuito}`;
       $("infoResponsable").textContent = currentUserName || currentUserEmail;
 
-      // ✅ Nuevo informe (no guardado / no firmado)
+      // Nuevo informe
       reportSaved = false;
       reportSigned = false;
       reportNumber = "";
       reportDocId = "";
       $("infoNumero").textContent = "—";
+
+      signedBy = "";
+      signedByName = "";
+      signedAt = "";
+      signedDevice = "";
+      signedUA = "";
+
       applySignatureUI();
 
-      // detener listener si existía otro doc
       if(unsubReport){ try{unsubReport();}catch(_){}
         unsubReport = null;
       }
@@ -1015,7 +1094,8 @@
       thead.appendChild(tr1);
       thead.appendChild(document.createElement("tr"));
 
-      const descInd = descuentoIndividual;
+      // ✅ APLICACIÓN DESCUENTO: depende de variable global descuentoIndividual
+      const descInd = Number(descuentoIndividual||0);
       const applyDesc = (Number.isFinite(descInd) && descInd < 0) ? descInd : 0;
 
       rows.forEach((r, idx)=>{
@@ -1053,8 +1133,8 @@
       }
 
       trS.innerHTML += `<td class="num">${fmt0(subtotal2Total)}</td>`;
-      trS.innerHTML += `<td class="num ${descuentoIndividual<0?'descuentoNeg':''}">${descuentoIndividual<0?fmt0(descuentoIndividual):""}</td>`;
-      const totFinal = subtotal2Total + ((descuentoIndividual<0)? descuentoIndividual * (rows.length||0) : 0);
+      trS.innerHTML += `<td class="num ${applyDesc<0?'descuentoNeg':''}">${applyDesc<0?fmt0(applyDesc):""}</td>`;
+      const totFinal = subtotal2Total + (applyDesc * (rows.length||0));
       trS.innerHTML += `<td class="num">${fmt0(totFinal)}</td>`;
       tbody.appendChild(trS);
     }
@@ -1116,7 +1196,7 @@
       return String(n).padStart(7,"0");
     }
 
-    // ✅ GUARDAR: ahora NO requiere firma. Guarda "pendiente de firma".
+    // ✅ GUARDAR: NO firma. Deja pendiente.
     $("btnGuardar").onclick = async ()=>{
       await refreshInternetStatus();
       if(!hasInternet){
@@ -1159,10 +1239,12 @@
         pesadasCols,
         rows,
 
-        // ✅ pendiente de firma
         signed: false,
         signedBy: "",
+        signedByName: "",
         signedAt: "",
+        signedDevice: "",
+        signedUA: "",
 
         createdAt: serverTimestamp(),
         createdStamp: stamp
@@ -1176,13 +1258,8 @@
 
         $("reportStatus").textContent = "Guardado. Pendiente de firma (Jefferson).";
 
-        // bloquear edición peso cola
         applyPesoColaPermission();
-
-        // escuchar firma en tiempo real
         watchReportDoc(reportDocId);
-
-        // aplicar botones
         updateButtons();
 
         alert(`Informe guardado: ${reportNumber}\nPendiente de firma (Jefferson).`);
@@ -1192,7 +1269,7 @@
       }
     };
 
-    // ✅ FIRMAR: ahora firma un informe ya guardado (admin) y habilita PDF/EXCEL para todos
+    // ✅ FIRMAR: admin firma informe guardado. Habilita PDF/EXCEL a todos.
     $("btnFirmar").onclick = async ()=>{
       await refreshInternetStatus();
       if(!hasInternet){
@@ -1216,25 +1293,31 @@
         await reauthForSensitiveAction();
 
         signedBy = currentUserEmail;
+        signedByName = currentUserName || (currentUserEmail.split("@")[0] || "");
         signedAt = new Date().toISOString();
+        signedDevice = shortDevice();
+        signedUA = (navigator.userAgent || "").slice(0, 250);
 
         await updateDoc(doc(db, COL_SID, reportDocId), {
           signed: true,
           signedBy,
+          signedByName,
           signedAt,
+          signedDevice,
+          signedUA,
           signedAtServer: serverTimestamp()
         });
 
-        // el onSnapshot actualizará UI y botones para todos
         $("reportStatus").textContent = "Firmando…";
 
+        // onSnapshot actualizará todo
       }catch(err){
         console.error(err);
         alert("No se pudo firmar. Verifica contraseña/conexión.");
       }
     };
 
-    // ✅ PDF: solo si firmado
+    // ✅ PDF: solo firmado
     $("btnPdf").onclick = async ()=>{
       if(!reportSigned){
         alert("Este informe aún NO está firmado. PDF se habilita después de la firma.");
@@ -1293,7 +1376,7 @@
       pdf.save(fname);
     };
 
-    // ✅ EXCEL: solo si firmado
+    // ✅ EXCEL: solo firmado
     $("btnXls").onclick = ()=>{
       if(!reportSigned){
         alert("Este informe aún NO está firmado. Excel se habilita después de la firma.");
@@ -1310,7 +1393,7 @@
         }
         headers.push("SUBTOTAL 2","DESCUENTO","TOTAL");
 
-        const descInd = descuentoIndividual;
+        const descInd = Number(descuentoIndividual||0);
         const applyDesc = (Number.isFinite(descInd) && descInd < 0) ? descInd : 0;
 
         const aoa = [];
@@ -1322,6 +1405,7 @@
 
         aoa.push(["Informe N°", reportNumber||"", "Cuadrilla", cuadrillaLabel, "Fecha", currentFecha||"", "Circuito", `Circuito ${currentCircuito||"1"}`]);
         aoa.push(["Responsable", currentUserName||currentUserEmail||""]);
+        aoa.push(["Firmado por", signedByName || signedBy || "", "Firmado el", prettyWhen(signedAt), "Dispositivo", signedDevice || ""]);
         aoa.push([]);
         aoa.push(headers);
 
@@ -1376,7 +1460,7 @@
       }
     };
 
-    // ✅ BUSCAR (Reporte) - mantiene prompts
+    // BUSCAR (Reporte) - prompts
     $("btnBuscar").onclick = async ()=>{
       const n = prompt("Ingrese N° de Informe (7 dígitos).\n\nDeje vacío para buscar por FECHA + Circuito.");
       await refreshInternetStatus();
@@ -1426,7 +1510,7 @@
       }
     };
 
-    // ✅ BUSCAR desde pantalla Pick (sin prompts)
+    // BUSCAR desde pantalla Pick (sin prompts)
     $("btnBuscarPick").onclick = async ()=>{
       await refreshInternetStatus();
       if(!hasInternet){
@@ -1489,14 +1573,19 @@
       }
     };
 
+    // ✅ CARGA informe guardado (FIX DESCUENTO)
     function loadReportFromDoc(docData){
-      // set estados
       reportDocId = docData.id;
       reportNumber = docData.reportNumber || "";
       reportSaved = true;
       reportSigned = !!docData.signed;
+
+      // ✅ cargar meta firma
       signedBy = docData.signedBy || "";
+      signedByName = docData.signedByName || "";
       signedAt = docData.signedAt || "";
+      signedDevice = docData.signedDevice || "";
+      signedUA = docData.signedUA || "";
 
       currentCuadrillas = Array.isArray(docData.cuadrillas) && docData.cuadrillas.length
         ? docData.cuadrillas
@@ -1515,10 +1604,29 @@
       $("infoResponsable").textContent = docData.responsableNombre || docData.responsableEmail || "—";
       $("infoNumero").textContent = reportNumber || "—";
 
+      // ✅ CARGAR VARIABLES GLOBALES (FIX)
+      pesoCola = Number(docData.pesoCola||0);
+      elevadoEntero = Number(docData.elevadoEntero||0);
+      cabezaPosible = Number(docData.cabezaPosible||0);
+      pesadaCabezas = Number(docData.pesadaCabezas||0);
+      descuentoTotal = Number(docData.descuentoTotal||0);
+      numPersonas = Number(docData.numPersonas||0);
+      descuentoIndividual = Number(docData.descuentoIndividual||0);
+
+      // ✅ reflejar panel
+      $("pesoCola").value = pesoCola ? pesoCola.toLocaleString("es-EC",{minimumFractionDigits:3,maximumFractionDigits:3}) : "";
+      $("elevadoEntero").textContent = fmt3(elevadoEntero);
+      $("cabezaPosible").textContent = fmt3(cabezaPosible);
+      $("pesadaCabezas").textContent = fmt3(pesadaCabezas);
+      $("descuentoTotal").textContent = fmt0(descuentoTotal);
+      $("numPersonas").textContent = fmt0(numPersonas);
+      $("descuentoIndividual").textContent = fmt0(descuentoIndividual);
+      $("descuentoIndividual").classList.toggle("vRed", descuentoIndividual < 0);
+
       pesadasCols = docData.pesadasCols || [];
       rows = docData.rows || [];
-      pesoCola = Number(docData.pesoCola||0);
 
+      // fallback para informes viejos (si filas no traen cuadrilla)
       const fallbackCuad = (Array.isArray(docData.cuadrillas) && docData.cuadrillas.length)
         ? docData.cuadrillas[0]
         : (docData.cuadrilla || "");
@@ -1528,8 +1636,7 @@
         cuadrilla: (r.cuadrilla || fallbackCuad || "").trim()
       }));
 
-      $("pesoCola").value = pesoCola ? pesoCola.toLocaleString("es-EC",{minimumFractionDigits:3,maximumFractionDigits:3}) : "";
-
+      // ✅ recomputar subtotales para la fila SUBTOTAL 1
       subtotalPorPesada = new Map();
       subtotal2Total = 0;
 
@@ -1547,20 +1654,8 @@
       });
       subtotal2Total = rows.reduce((a,b)=>a+(Number(b.subtotal2||0)),0);
 
-      // recalcular panel con valores guardados
-      $("elevadoEntero").textContent = fmt3(docData.elevadoEntero||0);
-      $("cabezaPosible").textContent = fmt3(docData.cabezaPosible||0);
-      $("pesadaCabezas").textContent = fmt3(docData.pesadaCabezas||0);
-      $("descuentoTotal").textContent = fmt0(docData.descuentoTotal||0);
-      $("numPersonas").textContent = fmt0(docData.numPersonas||0);
-      $("descuentoIndividual").textContent = fmt0(docData.descuentoIndividual||0);
-      $("descuentoIndividual").classList.toggle("vRed", Number(docData.descuentoIndividual||0) < 0);
-
-      renderReportTable();
-
-      // UI firma + permisos
+      // ✅ pinta firma + meta
       applySignatureUI();
-      applyPesoColaPermission();
 
       if(reportSigned){
         $("reportStatus").textContent = "Firmado. PDF/EXCEL habilitados.";
@@ -1570,9 +1665,11 @@
 
       showView("report");
 
-      // escuchar cambios (firma en vivo)
-      watchReportDoc(reportDocId);
+      applyPesoColaPermission();
+      renderReportTable();
 
+      // escuchar firma en vivo
+      watchReportDoc(reportDocId);
       updateButtons();
     }
 
