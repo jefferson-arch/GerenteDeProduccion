@@ -183,6 +183,19 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+    .hint {
+      font-size: 0.78rem;
+      color: #555;
+      background: #f5f6fb;
+      border: 1px solid #e0e3f1;
+      border-radius: 8px;
+      padding: 8px 10px;
+      line-height: 1.35;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
     .actions { margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px; }
     .actions-backup { margin-top: 4px; margin-bottom: 4px; justify-content: flex-start; }
 
@@ -283,6 +296,36 @@
     }
     .actions-report { display: flex; justify-content: flex-end; margin-bottom: 8px; gap: 8px; }
     .pdf-header-info { font-size: 0.75rem; margin-bottom: 4px; }
+
+    /* ====== BADGE CUPO (REPORTE AGRUPADO) ====== */
+    .cupo-badge{
+      display:inline-block;
+      margin-left:10px;
+      padding:3px 10px;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:800;
+      border: 1px solid rgba(0,0,0,.08);
+      vertical-align: middle;
+    }
+    /* rojo + fondo rosa palo */
+    .cupo-full{
+      color:#b00020;
+      background:#f6c9d2;
+      border-color:#f0a9b7;
+    }
+    /* azul + fondo verde claro */
+    .cupo-ok{
+      color:#0b57d0;
+      background:#c9f3d3;
+      border-color:#9fe6b1;
+    }
+    .cupo-muted{
+      color:#555;
+      background:#eeeeef;
+      border-color:#d7d7db;
+      font-weight:700;
+    }
 
     .catalog-section {
       margin-bottom: 20px;
@@ -418,6 +461,19 @@
         </div>
       </div>
 
+      <!-- ===== NUEVO: CUPO MÁXIMO DIARIO ===== -->
+      <div class="form-row">
+        <div>
+          <label for="cupo-max">Cupo máximo diario (lb)</label>
+          <input type="number" step="1" id="cupo-max" placeholder="140000" min="0" />
+        </div>
+        <div style="grid-column: span 3;">
+          <div class="hint">
+            Este valor se usa en <b>Reporte agrupado</b> para mostrar <b>CUPO COMPLETO</b> o <b>CUPO DISPONIBLE</b> por día.
+          </div>
+        </div>
+      </div>
+
       <div class="actions actions-backup" id="backup-actions">
         <button type="button" class="btn-export" onclick="exportarJSON()">Exportar datos</button>
         <button type="button" class="btn-import" onclick="document.getElementById('file-import-json').click()">Importar datos</button>
@@ -483,6 +539,7 @@
         <span><strong>Volumen de compra con cabeza:</strong> <span id="footer-total-kilos">0,00</span></span>
         <span><strong>Gramaje promedio:</strong> <span id="footer-gramaje-promedio">0,00</span></span>
         <span><strong>Total Cola aprox:</strong> <span id="footer-total-monto">0,00</span></span>
+        <span><strong>Cupo máximo diario:</strong> <span id="footer-cupo-max">-</span></span>
       </div>
     </div>
   </section>
@@ -529,7 +586,6 @@
 /* =========================================================
    FIREBASE CONFIG
    ========================================================= */
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
   authDomain: "oceantreasure-app.firebaseapp.com",
@@ -550,10 +606,17 @@ const REGISTROS_COL = "sgc_compra_registros";
 const META_COL = "sgc_compra_meta";
 const CATALOGOS_DOC = "catalogos";
 
+// ===== NUEVO: CONFIG (CUPO MÁXIMO DIARIO) =====
+const CONFIG_DOC = "config";
+
+/*
+  Estructura esperada en sgc_compra_meta/config:
+  {
+    cupoMaxDiario: 140000
+  }
+*/
+
 // === Control de acceso por EMAIL (a nivel de página) ===
-// ✅ Jefferson: acceso completo
-// ✅ Gerencia General: solo vista (solo Reporte agrupado)
-// ❌ Cualquier otro usuario: no entra (se expulsa)
 const ADMIN_EMAIL  = "jeffersonfigueroa@oceantreasure.local";
 const VIEW_EMAIL   = "gerenciageneral@oceantreasure.local";
 const ALLOWED_EMAILS = [ADMIN_EMAIL, VIEW_EMAIL];
@@ -574,9 +637,13 @@ let compradores = [];
 let proveedores = [];
 let sectores = [];
 
+// ===== NUEVO: estado de cupo =====
+let cupoMaxDiario = 0;
+
 // Unsubscribe listeners
 let unsubRegistros = null;
 let unsubCatalogos = null;
+let unsubConfig = null;
 
 // === Helpers ===
 const usernameToEmail = (username) => {
@@ -604,6 +671,7 @@ const formatNumber = (value, decimals) => {
 const stopListeners = () => {
   if (typeof unsubRegistros === "function") { unsubRegistros(); unsubRegistros = null; }
   if (typeof unsubCatalogos === "function") { unsubCatalogos(); unsubCatalogos = null; }
+  if (typeof unsubConfig === "function") { unsubConfig(); unsubConfig = null; }
 };
 
 const showLoginError = (msg) => {
@@ -650,8 +718,8 @@ const applyRoleRestrictions = (role) => {
 
   } else {
     // Admin: dejar el modelo de pestañas EXACTO (solo se ve la tab activa)
-    if (tabsNav) tabsNav.style.display = "";     // vuelve al CSS original
-    if (tabEntrada) tabEntrada.style.display = ""; // quita inline override
+    if (tabsNav) tabsNav.style.display = "";
+    if (tabEntrada) tabEntrada.style.display = "";
     if (tabCreacion) tabCreacion.style.display = "";
     if (tabReporte) tabReporte.style.display = "";
 
@@ -671,6 +739,13 @@ const assertAdmin = () => {
     return false;
   }
   return true;
+};
+
+// ===== NUEVO: UI cupo footer =====
+const refreshCupoFooter = () => {
+  const el = document.getElementById("footer-cupo-max");
+  if (!el) return;
+  el.textContent = cupoMaxDiario > 0 ? formatNumber(cupoMaxDiario, 0) : "-";
 };
 
 // ----------------- RENDER TAB 1 (CON ORDENAMIENTO Y FILTRO) -----------------
@@ -732,7 +807,7 @@ const renderEntrada = () => {
   });
 };
 
-// ----------------- RENDER TAB 2 -----------------
+// ----------------- RENDER TAB 2 (CON CUPO) -----------------
 const renderReporte = () => {
   const tbody = document.getElementById("reporte-tbody");
   if (!tbody) return;
@@ -742,13 +817,60 @@ const renderReporte = () => {
 
   let fAct = null, sLib = 0, sGrS = 0, sGrC = 0, sCol = 0, tLib = 0, tGrS = 0, tGrC = 0, tCol = 0;
 
+  const buildCupoBadge = (totalDia) => {
+    const cupo = Number(cupoMaxDiario) || 0;
+    if (!(cupo > 0)) {
+      return { text: "CUPO NO DEFINIDO", cls: "cupo-muted" };
+    }
+
+    const diff = cupo - (Number(totalDia) || 0);
+
+    // total >= cupo => "CUPO COMPLETO" (y si se pasó, mostrar negativo + DESBORDADO)
+    if (diff <= 0) {
+      if (diff === 0) {
+        return { text: "CUPO COMPLETO", cls: "cupo-full" };
+      }
+      return { text: `CUPO COMPLETO: ${formatNumber(diff, 0)} DESBORDADO`, cls: "cupo-full" }; // diff negativo
+    }
+
+    // total < cupo => disponible
+    return { text: `CUPO DISPONIBLE: ${formatNumber(diff, 0)}`, cls: "cupo-ok" };
+  };
+
   const insSub = () => {
     if (fAct === null || sGrC === 0) return;
-    const tr = document.createElement("tr"); tr.className = "subtotal-row";
-    const td1 = document.createElement("td"); td1.colSpan = 4; td1.textContent = "Subtotal:"; tr.appendChild(td1);
-    const td2 = document.createElement("td"); td2.className = "numeric"; td2.textContent = formatNumber(sLib, 2); tr.appendChild(td2);
-    const td3 = document.createElement("td"); td3.className = "numeric"; td3.textContent = formatNumber(sGrS / sGrC, 2); tr.appendChild(td3);
-    const td4 = document.createElement("td"); td4.className = "numeric"; td4.textContent = formatNumber(sCol, 2); tr.appendChild(td4);
+
+    const tr = document.createElement("tr");
+    tr.className = "subtotal-row";
+
+    const td1 = document.createElement("td");
+    td1.colSpan = 4;
+    td1.textContent = "Subtotal:";
+
+    // ===== NUEVO: badge de cupo junto al subtotal del día =====
+    const badge = buildCupoBadge(sLib);
+    const span = document.createElement("span");
+    span.className = `cupo-badge ${badge.cls}`;
+    span.textContent = badge.text;
+    td1.appendChild(span);
+
+    tr.appendChild(td1);
+
+    const td2 = document.createElement("td");
+    td2.className = "numeric";
+    td2.textContent = formatNumber(sLib, 2);
+    tr.appendChild(td2);
+
+    const td3 = document.createElement("td");
+    td3.className = "numeric";
+    td3.textContent = formatNumber(sGrS / sGrC, 2);
+    tr.appendChild(td3);
+
+    const td4 = document.createElement("td");
+    td4.className = "numeric";
+    td4.textContent = formatNumber(sCol, 2);
+    tr.appendChild(td4);
+
     tbody.appendChild(tr);
   };
 
@@ -776,6 +898,7 @@ const renderReporte = () => {
   document.getElementById("footer-total-kilos").textContent = formatNumber(tLib, 2);
   document.getElementById("footer-gramaje-promedio").textContent = formatNumber(tGrC > 0 ? tGrS / tGrC : 0, 2);
   document.getElementById("footer-total-monto").textContent = formatNumber(tCol, 2);
+  refreshCupoFooter();
 };
 
 const renderCatalogos = () => {
@@ -819,10 +942,30 @@ const actualizarTodo = () => {
   if (loggedInRole === "admin") renderCatalogos();
 };
 
-// Cálculo "Cola aprox" en vivo (solo admin usa esta pantalla, pero no estorba)
+// Cálculo "Cola aprox" en vivo
 document.getElementById("kilos").addEventListener("input", e => {
   document.getElementById("monto").value = (Number(e.target.value) * 0.66).toFixed(2);
 });
+
+// ===== NUEVO: Guardar cupo máximo diario (solo admin) =====
+const cupoInput = document.getElementById("cupo-max");
+if (cupoInput) {
+  const saveCupo = async () => {
+    if (!assertAdmin()) return;
+    const val = Number(cupoInput.value);
+    const cupo = Number.isFinite(val) ? val : 0;
+
+    try {
+      await db.collection(META_COL).doc(CONFIG_DOC).set({ cupoMaxDiario: cupo }, { merge: true });
+    } catch (e) {
+      console.error(e);
+      alert("No se pudo guardar el cupo (permisos o conexión).");
+    }
+  };
+
+  cupoInput.addEventListener("change", saveCupo);
+  cupoInput.addEventListener("blur", saveCupo);
+}
 
 // Agregar fila (Firestore) - SOLO ADMIN
 document.getElementById("entrada-form").addEventListener("submit", async (e) => {
@@ -844,6 +987,10 @@ document.getElementById("entrada-form").addEventListener("submit", async (e) => 
     await db.collection(REGISTROS_COL).add(docData);
     e.target.reset();
     document.getElementById("fecha").value = new Date().toISOString().slice(0,10);
+    // Mantener cupo visible (si ya estaba cargado)
+    if (loggedInRole === "admin" && cupoInput) {
+      cupoInput.value = cupoMaxDiario > 0 ? String(cupoMaxDiario) : "";
+    }
   } catch (err) {
     console.error(err);
     alert("No se pudo guardar (permisos o conexión).");
@@ -909,7 +1056,13 @@ document.getElementById("btn-logout").onclick = async () => {
 // Backup JSON (EXPORT) - SOLO ADMIN
 function exportarJSON() {
   if (!assertAdmin()) return;
-  const payload = { registros, compradores, proveedores, sectores };
+  const payload = {
+    registros,
+    compradores,
+    proveedores,
+    sectores,
+    config: { cupoMaxDiario }
+  };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -931,6 +1084,11 @@ document.getElementById("file-import-json").onchange = async (e) => {
       const d = JSON.parse(ev.target.result);
 
       if (!confirm("Esto REEMPLAZARÁ los datos actuales en la nube. ¿Continuar?")) return;
+
+      // 0) Config (cupo)
+      const cfg = d.config || {};
+      const cupoFromFile = Number(cfg.cupoMaxDiario) || 0;
+      await db.collection(META_COL).doc(CONFIG_DOC).set({ cupoMaxDiario: cupoFromFile }, { merge: true });
 
       // 1) Reemplazar catálogos
       await db.collection(META_COL).doc(CATALOGOS_DOC).set({
@@ -1008,7 +1166,8 @@ window.agregarCatalogo = agregarCatalogo;
 async function exportarPDF() {
   const info = document.getElementById("pdf-header-info");
   const now = new Date();
-  info.textContent = `Fecha: ${now.toLocaleString("es-EC")} | Usuario: ${loggedInUser || "-"}`;
+  const cupoTxt = (Number(cupoMaxDiario) > 0) ? ` | Cupo máx diario: ${formatNumber(cupoMaxDiario, 0)} lb` : "";
+  info.textContent = `Fecha: ${now.toLocaleString("es-EC")} | Usuario: ${loggedInUser || "-"}${cupoTxt}`;
 
   const original = document.getElementById("reporte-contenedor");
   const clone = original.cloneNode(true);
@@ -1070,20 +1229,29 @@ async function exportarPDF() {
 window.exportarPDF = exportarPDF;
 
 // ==== Sync Firestore -> UI ====
-// ADMIN: catálogos + registros (con ensure)
-// VIEWER: solo registros (sin ensureCatalogosDoc, para evitar write)
+
+// ADMIN: catálogos + registros + config (con ensure)
+// VIEWER: registros + config (solo lectura)
 const ensureCatalogosDoc = async () => {
   const ref = db.collection(META_COL).doc(CATALOGOS_DOC);
   const snap = await ref.get();
   if (!snap.exists) {
-    // Esto escribe: SOLO ADMIN debería ejecutarlo
     await ref.set({ compradores: [], proveedores: [], sectores: [] }, { merge: true });
+  }
+};
+
+const ensureConfigDoc = async () => {
+  const ref = db.collection(META_COL).doc(CONFIG_DOC);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    await ref.set({ cupoMaxDiario: 0 }, { merge: true });
   }
 };
 
 const startRealtimeSyncAdmin = async () => {
   stopListeners();
   await ensureCatalogosDoc();
+  await ensureConfigDoc();
 
   unsubRegistros = db.collection(REGISTROS_COL).orderBy("fecha").onSnapshot((snap) => {
     registros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1097,6 +1265,18 @@ const startRealtimeSyncAdmin = async () => {
     sectores = Array.isArray(d.sectores) ? d.sectores : [];
     renderCatalogos();
   });
+
+  unsubConfig = db.collection(META_COL).doc(CONFIG_DOC).onSnapshot((snap) => {
+    const d = snap.data() || {};
+    cupoMaxDiario = Number(d.cupoMaxDiario) || 0;
+
+    // sincronizar input (admin)
+    const ci = document.getElementById("cupo-max");
+    if (ci) ci.value = cupoMaxDiario > 0 ? String(cupoMaxDiario) : "";
+
+    refreshCupoFooter();
+    renderReporte(); // para que el badge se actualice inmediatamente
+  });
 };
 
 const startRealtimeSyncViewer = async () => {
@@ -1104,7 +1284,14 @@ const startRealtimeSyncViewer = async () => {
 
   unsubRegistros = db.collection(REGISTROS_COL).orderBy("fecha").onSnapshot((snap) => {
     registros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    // Viewer: solo reporte
+    renderReporte();
+  });
+
+  // Viewer también necesita el cupo para evaluar CUPO COMPLETO/DISPONIBLE
+  unsubConfig = db.collection(META_COL).doc(CONFIG_DOC).onSnapshot((snap) => {
+    const d = snap.data() || {};
+    cupoMaxDiario = Number(d.cupoMaxDiario) || 0;
+    refreshCupoFooter();
     renderReporte();
   });
 };
@@ -1139,7 +1326,6 @@ auth.onAuthStateChanged(async (user) => {
         await startRealtimeSyncAdmin();
         document.getElementById("fecha").value = new Date().toISOString().slice(0,10);
       } else {
-        // viewer
         await startRealtimeSyncViewer();
       }
     } catch (e) {
@@ -1157,12 +1343,15 @@ auth.onAuthStateChanged(async (user) => {
     compradores = [];
     proveedores = [];
     sectores = [];
+    cupoMaxDiario = 0;
 
     document.getElementById("main-app").style.display = "none";
     document.getElementById("login-screen").style.display = "flex";
     document.getElementById("login-form").reset();
     const le = document.getElementById("login-error");
     if (le) { le.style.display = "none"; le.textContent = "Usuario o contraseña incorrectos."; }
+
+    refreshCupoFooter();
   }
 });
 
