@@ -307,6 +307,7 @@
       font-weight:800;
       border: 1px solid rgba(0,0,0,.08);
       vertical-align: middle;
+      white-space: nowrap;
     }
     /* rojo + fondo rosa palo */
     .cupo-full{
@@ -325,6 +326,10 @@
       background:#eeeeef;
       border-color:#d7d7db;
       font-weight:700;
+    }
+    /* Para que "valor + badge" no se parta en 2 líneas */
+    .subtotal-kilos-cell{
+      white-space: nowrap;
     }
 
     .catalog-section {
@@ -577,15 +582,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- Firebase (Compat) - Para GitHub Pages -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* =========================================================
-   FIREBASE CONFIG
-   ========================================================= */
 const firebaseConfig = {
   apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
   authDomain: "oceantreasure-app.firebaseapp.com",
@@ -601,22 +602,11 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const FieldValue = firebase.firestore.FieldValue;
 
-// === Colecciones/Documentos ===
 const REGISTROS_COL = "sgc_compra_registros";
 const META_COL = "sgc_compra_meta";
 const CATALOGOS_DOC = "catalogos";
-
-// ===== NUEVO: CONFIG (CUPO MÁXIMO DIARIO) =====
 const CONFIG_DOC = "config";
 
-/*
-  Estructura esperada en sgc_compra_meta/config:
-  {
-    cupoMaxDiario: 140000
-  }
-*/
-
-// === Control de acceso por EMAIL (a nivel de página) ===
 const ADMIN_EMAIL  = "jeffersonfigueroa@oceantreasure.local";
 const VIEW_EMAIL   = "gerenciageneral@oceantreasure.local";
 const ALLOWED_EMAILS = [ADMIN_EMAIL, VIEW_EMAIL];
@@ -628,24 +618,19 @@ const getRoleByEmail = (email) => {
   return "denied";
 };
 
-// === Estado en memoria ===
-let loggedInUser = null;          // username (sin dominio)
-let loggedInEmail = null;         // email real en Firebase
-let loggedInRole = null;          // admin | viewer
-let registros = [];               // {id, ...}
+let loggedInUser = null;
+let loggedInEmail = null;
+let loggedInRole = null;
+let registros = [];
 let compradores = [];
 let proveedores = [];
 let sectores = [];
-
-// ===== NUEVO: estado de cupo =====
 let cupoMaxDiario = 0;
 
-// Unsubscribe listeners
 let unsubRegistros = null;
 let unsubCatalogos = null;
 let unsubConfig = null;
 
-// === Helpers ===
 const usernameToEmail = (username) => {
   const u = String(username || "").trim();
   return u.includes("@") ? u : `${u}@oceantreasure.local`;
@@ -698,32 +683,27 @@ const setRoleUI = (role) => {
 };
 
 const applyRoleRestrictions = (role) => {
-  // Viewer: solo Reporte agrupado, ocultar tabs y secciones.
   const tabsNav = document.getElementById("tabs-nav");
   const tabEntrada = document.getElementById("tab-entrada");
   const tabCreacion = document.getElementById("tab-creacion");
   const tabReporte = document.getElementById("tab-reporte");
 
   if (role === "viewer") {
-    if (tabsNav) tabsNav.style.display = "none"; // sin navegación
+    if (tabsNav) tabsNav.style.display = "none";
     if (tabEntrada) tabEntrada.style.display = "none";
     if (tabCreacion) tabCreacion.style.display = "none";
     if (tabReporte) tabReporte.style.display = "block";
 
-    // Asegurar que solo REPORTE quede activo
     document.querySelectorAll(".tab").forEach(t => {
       t.classList.toggle("active", t.id === "tab-reporte");
     });
     document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
-
   } else {
-    // Admin: dejar el modelo de pestañas EXACTO (solo se ve la tab activa)
     if (tabsNav) tabsNav.style.display = "";
     if (tabEntrada) tabEntrada.style.display = "";
     if (tabCreacion) tabCreacion.style.display = "";
     if (tabReporte) tabReporte.style.display = "";
 
-    // Activar ENTRADA por defecto
     document.querySelectorAll(".tabs button, .tab").forEach(el => el.classList.remove("active"));
     const btnEntrada = document.querySelector('.tabs button[data-tab="entrada"]');
     if (btnEntrada) btnEntrada.classList.add("active");
@@ -732,7 +712,6 @@ const applyRoleRestrictions = (role) => {
   }
 };
 
-// ====== Reglas de acción en cliente (extra, además de tus rules) ======
 const assertAdmin = () => {
   if (loggedInRole !== "admin") {
     alert("Acción no permitida (solo administrador).");
@@ -741,14 +720,12 @@ const assertAdmin = () => {
   return true;
 };
 
-// ===== NUEVO: UI cupo footer =====
 const refreshCupoFooter = () => {
   const el = document.getElementById("footer-cupo-max");
   if (!el) return;
   el.textContent = cupoMaxDiario > 0 ? formatNumber(cupoMaxDiario, 0) : "-";
 };
 
-// ----------------- RENDER TAB 1 (CON ORDENAMIENTO Y FILTRO) -----------------
 const renderEntrada = () => {
   const tbody = document.getElementById("entrada-tbody");
   if (!tbody) return;
@@ -790,24 +767,18 @@ const renderEntrada = () => {
       btnDel.className = "secondary";
       btnDel.onclick = async () => {
         if (!reg.id) return;
-        try {
-          await db.collection(REGISTROS_COL).doc(reg.id).delete();
-        } catch (e) {
-          console.error(e);
-          alert("No se pudo borrar (permisos o conexión).");
-        }
+        try { await db.collection(REGISTROS_COL).doc(reg.id).delete(); }
+        catch (e) { console.error(e); alert("No se pudo borrar (permisos o conexión)."); }
       };
       tdAcc.appendChild(btnDel);
-    } else {
-      tdAcc.textContent = "-";
-    }
+    } else tdAcc.textContent = "-";
 
     tr.appendChild(tdAcc);
     tbody.appendChild(tr);
   });
 };
 
-// ----------------- RENDER TAB 2 (CON CUPO) -----------------
+/* ====== REPORTE AGRUPADO (badge junto a TOTAL LIBRAS) ====== */
 const renderReporte = () => {
   const tbody = document.getElementById("reporte-tbody");
   if (!tbody) return;
@@ -819,21 +790,14 @@ const renderReporte = () => {
 
   const buildCupoBadge = (totalDia) => {
     const cupo = Number(cupoMaxDiario) || 0;
-    if (!(cupo > 0)) {
-      return { text: "CUPO NO DEFINIDO", cls: "cupo-muted" };
-    }
+    if (!(cupo > 0)) return { text: "CUPO NO DEFINIDO", cls: "cupo-muted" };
 
     const diff = cupo - (Number(totalDia) || 0);
 
-    // total >= cupo => "CUPO COMPLETO" (y si se pasó, mostrar negativo + DESBORDADO)
     if (diff <= 0) {
-      if (diff === 0) {
-        return { text: "CUPO COMPLETO", cls: "cupo-full" };
-      }
-      return { text: `CUPO COMPLETO: ${formatNumber(diff, 0)} DESBORDADO`, cls: "cupo-full" }; // diff negativo
+      if (diff === 0) return { text: "CUPO COMPLETO", cls: "cupo-full" };
+      return { text: `CUPO COMPLETO: ${formatNumber(diff, 0)} DESBORDADO`, cls: "cupo-full" };
     }
-
-    // total < cupo => disponible
     return { text: `CUPO DISPONIBLE: ${formatNumber(diff, 0)}`, cls: "cupo-ok" };
   };
 
@@ -843,29 +807,35 @@ const renderReporte = () => {
     const tr = document.createElement("tr");
     tr.className = "subtotal-row";
 
+    // Col 1-4
     const td1 = document.createElement("td");
     td1.colSpan = 4;
     td1.textContent = "Subtotal:";
-
-    // ===== NUEVO: badge de cupo junto al subtotal del día =====
-    const badge = buildCupoBadge(sLib);
-    const span = document.createElement("span");
-    span.className = `cupo-badge ${badge.cls}`;
-    span.textContent = badge.text;
-    td1.appendChild(span);
-
     tr.appendChild(td1);
 
+    // Col 5 (Libras) => AQUÍ VA EL BADGE JUNTO AL TOTAL
     const td2 = document.createElement("td");
-    td2.className = "numeric";
-    td2.textContent = formatNumber(sLib, 2);
+    td2.className = "numeric subtotal-kilos-cell";
+
+    const spanVal = document.createElement("span");
+    spanVal.textContent = formatNumber(sLib, 2);
+
+    const badge = buildCupoBadge(sLib);
+    const spanBadge = document.createElement("span");
+    spanBadge.className = `cupo-badge ${badge.cls}`;
+    spanBadge.textContent = badge.text;
+
+    td2.appendChild(spanVal);
+    td2.appendChild(spanBadge);
     tr.appendChild(td2);
 
+    // Col 6 (Gramaje promedio)
     const td3 = document.createElement("td");
     td3.className = "numeric";
     td3.textContent = formatNumber(sGrS / sGrC, 2);
     tr.appendChild(td3);
 
+    // Col 7 (Cola)
     const td4 = document.createElement("td");
     td4.className = "numeric";
     td4.textContent = formatNumber(sCol, 2);
@@ -883,13 +853,18 @@ const renderReporte = () => {
       const tdG = document.createElement("td"); tdG.colSpan = 7; tdG.textContent = formatoFechaLargo(reg.fecha);
       trG.appendChild(tdG); tbody.appendChild(trG);
     }
+
     sLib += Number(reg.kilos) || 0; sGrS += Number(reg.gramaje) || 0; sGrC++; sCol += Number(reg.monto) || 0;
     tLib += Number(reg.kilos) || 0; tGrS += Number(reg.gramaje) || 0; tGrC++; tCol += Number(reg.monto) || 0;
 
     const tr = document.createElement("tr");
-    [formatoFechaCorta(reg.fecha), reg.comprador || "", reg.proveedor || "", reg.sector || "", formatNumber(reg.kilos, 2), formatNumber(reg.gramaje, 2), formatNumber(reg.monto, 2)]
+    [formatoFechaCorta(reg.fecha), reg.comprador || "", reg.proveedor || "", reg.sector || "",
+     formatNumber(reg.kilos, 2), formatNumber(reg.gramaje, 2), formatNumber(reg.monto, 2)]
       .forEach((v,i)=>{
-        const td = document.createElement("td"); if(i>=4) td.className="numeric"; td.textContent=v; tr.appendChild(td);
+        const td = document.createElement("td");
+        if(i>=4) td.className="numeric";
+        td.textContent=v;
+        tr.appendChild(td);
       });
     tbody.appendChild(tr);
   });
@@ -942,19 +917,16 @@ const actualizarTodo = () => {
   if (loggedInRole === "admin") renderCatalogos();
 };
 
-// Cálculo "Cola aprox" en vivo
 document.getElementById("kilos").addEventListener("input", e => {
   document.getElementById("monto").value = (Number(e.target.value) * 0.66).toFixed(2);
 });
 
-// ===== NUEVO: Guardar cupo máximo diario (solo admin) =====
 const cupoInput = document.getElementById("cupo-max");
 if (cupoInput) {
   const saveCupo = async () => {
     if (!assertAdmin()) return;
     const val = Number(cupoInput.value);
     const cupo = Number.isFinite(val) ? val : 0;
-
     try {
       await db.collection(META_COL).doc(CONFIG_DOC).set({ cupoMaxDiario: cupo }, { merge: true });
     } catch (e) {
@@ -962,12 +934,10 @@ if (cupoInput) {
       alert("No se pudo guardar el cupo (permisos o conexión).");
     }
   };
-
   cupoInput.addEventListener("change", saveCupo);
   cupoInput.addEventListener("blur", saveCupo);
 }
 
-// Agregar fila (Firestore) - SOLO ADMIN
 document.getElementById("entrada-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!assertAdmin()) return;
@@ -987,17 +957,13 @@ document.getElementById("entrada-form").addEventListener("submit", async (e) => 
     await db.collection(REGISTROS_COL).add(docData);
     e.target.reset();
     document.getElementById("fecha").value = new Date().toISOString().slice(0,10);
-    // Mantener cupo visible (si ya estaba cargado)
-    if (loggedInRole === "admin" && cupoInput) {
-      cupoInput.value = cupoMaxDiario > 0 ? String(cupoMaxDiario) : "";
-    }
+    if (loggedInRole === "admin" && cupoInput) cupoInput.value = cupoMaxDiario > 0 ? String(cupoMaxDiario) : "";
   } catch (err) {
     console.error(err);
     alert("No se pudo guardar (permisos o conexión).");
   }
 });
 
-// Limpiar TODO (Firestore) - SOLO ADMIN
 document.getElementById("btn-limpiar").onclick = async () => {
   if (!assertAdmin()) return;
   if (!confirm("¿Borrar TODO en la nube?")) return;
@@ -1020,7 +986,6 @@ document.getElementById("btn-limpiar").onclick = async () => {
   }
 };
 
-// Tabs (solo admin)
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.onclick = () => {
     if (loggedInRole === "viewer") return;
@@ -1030,7 +995,6 @@ document.querySelectorAll(".tabs button").forEach(btn => {
   };
 });
 
-// LOGIN (Firebase Auth)
 const loginForm = document.getElementById("login-form");
 loginForm.onsubmit = async (e) => {
   e.preventDefault();
@@ -1048,21 +1012,11 @@ loginForm.onsubmit = async (e) => {
   }
 };
 
-// LOGOUT
-document.getElementById("btn-logout").onclick = async () => {
-  await auth.signOut();
-};
+document.getElementById("btn-logout").onclick = async () => { await auth.signOut(); };
 
-// Backup JSON (EXPORT) - SOLO ADMIN
 function exportarJSON() {
   if (!assertAdmin()) return;
-  const payload = {
-    registros,
-    compradores,
-    proveedores,
-    sectores,
-    config: { cupoMaxDiario }
-  };
+  const payload = { registros, compradores, proveedores, sectores, config: { cupoMaxDiario } };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -1071,7 +1025,6 @@ function exportarJSON() {
 }
 window.exportarJSON = exportarJSON;
 
-// Import JSON (IMPORT) - SOLO ADMIN
 document.getElementById("file-import-json").onchange = async (e) => {
   if (!assertAdmin()) return;
 
@@ -1082,22 +1035,18 @@ document.getElementById("file-import-json").onchange = async (e) => {
   reader.onload = async (ev) => {
     try {
       const d = JSON.parse(ev.target.result);
-
       if (!confirm("Esto REEMPLAZARÁ los datos actuales en la nube. ¿Continuar?")) return;
 
-      // 0) Config (cupo)
       const cfg = d.config || {};
       const cupoFromFile = Number(cfg.cupoMaxDiario) || 0;
       await db.collection(META_COL).doc(CONFIG_DOC).set({ cupoMaxDiario: cupoFromFile }, { merge: true });
 
-      // 1) Reemplazar catálogos
       await db.collection(META_COL).doc(CATALOGOS_DOC).set({
         compradores: Array.isArray(d.compradores) ? d.compradores : [],
         proveedores: Array.isArray(d.proveedores) ? d.proveedores : [],
         sectores: Array.isArray(d.sectores) ? d.sectores : []
       }, { merge: true });
 
-      // 2) Borrar registros actuales
       const snap = await db.collection(REGISTROS_COL).get();
       const docs = snap.docs;
 
@@ -1109,7 +1058,6 @@ document.getElementById("file-import-json").onchange = async (e) => {
         await batch.commit();
       }
 
-      // 3) Insertar registros importados
       const regs = Array.isArray(d.registros) ? d.registros : [];
       const addChunks = [];
       for (let i = 0; i < regs.length; i += 450) addChunks.push(regs.slice(i, i + 450));
@@ -1141,7 +1089,6 @@ document.getElementById("file-import-json").onchange = async (e) => {
   reader.readAsText(file);
 };
 
-// Agregar catálogos (Firestore) - SOLO ADMIN
 async function agregarCatalogo(tipo) {
   if (!assertAdmin()) return;
 
@@ -1162,7 +1109,6 @@ async function agregarCatalogo(tipo) {
 }
 window.agregarCatalogo = agregarCatalogo;
 
-// PDF (permitido para admin y viewer)
 async function exportarPDF() {
   const info = document.getElementById("pdf-header-info");
   const now = new Date();
@@ -1228,24 +1174,16 @@ async function exportarPDF() {
 }
 window.exportarPDF = exportarPDF;
 
-// ==== Sync Firestore -> UI ====
-
-// ADMIN: catálogos + registros + config (con ensure)
-// VIEWER: registros + config (solo lectura)
 const ensureCatalogosDoc = async () => {
   const ref = db.collection(META_COL).doc(CATALOGOS_DOC);
   const snap = await ref.get();
-  if (!snap.exists) {
-    await ref.set({ compradores: [], proveedores: [], sectores: [] }, { merge: true });
-  }
+  if (!snap.exists) await ref.set({ compradores: [], proveedores: [], sectores: [] }, { merge: true });
 };
 
 const ensureConfigDoc = async () => {
   const ref = db.collection(META_COL).doc(CONFIG_DOC);
   const snap = await ref.get();
-  if (!snap.exists) {
-    await ref.set({ cupoMaxDiario: 0 }, { merge: true });
-  }
+  if (!snap.exists) await ref.set({ cupoMaxDiario: 0 }, { merge: true });
 };
 
 const startRealtimeSyncAdmin = async () => {
@@ -1269,13 +1207,10 @@ const startRealtimeSyncAdmin = async () => {
   unsubConfig = db.collection(META_COL).doc(CONFIG_DOC).onSnapshot((snap) => {
     const d = snap.data() || {};
     cupoMaxDiario = Number(d.cupoMaxDiario) || 0;
-
-    // sincronizar input (admin)
     const ci = document.getElementById("cupo-max");
     if (ci) ci.value = cupoMaxDiario > 0 ? String(cupoMaxDiario) : "";
-
     refreshCupoFooter();
-    renderReporte(); // para que el badge se actualice inmediatamente
+    renderReporte();
   });
 };
 
@@ -1287,7 +1222,6 @@ const startRealtimeSyncViewer = async () => {
     renderReporte();
   });
 
-  // Viewer también necesita el cupo para evaluar CUPO COMPLETO/DISPONIBLE
   unsubConfig = db.collection(META_COL).doc(CONFIG_DOC).onSnapshot((snap) => {
     const d = snap.data() || {};
     cupoMaxDiario = Number(d.cupoMaxDiario) || 0;
@@ -1296,7 +1230,6 @@ const startRealtimeSyncViewer = async () => {
   });
 };
 
-// Auth state
 auth.onAuthStateChanged(async (user) => {
   if (user) {
     const emailLower = String(user.email || "").toLowerCase();
@@ -1312,7 +1245,6 @@ auth.onAuthStateChanged(async (user) => {
     loggedInEmail = emailLower || "-";
     loggedInUser = (loggedInEmail.split("@")[0]) || "-";
 
-    // UI base
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("main-app").style.display = "block";
     document.getElementById("header-user").textContent = loggedInUser;
@@ -1332,9 +1264,7 @@ auth.onAuthStateChanged(async (user) => {
       console.error(e);
       alert("Error al cargar datos (permisos o conexión).");
     }
-
   } else {
-    // Logout / no auth
     stopListeners();
     loggedInUser = null;
     loggedInEmail = null;
@@ -1355,7 +1285,6 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
 
-// Por defecto fecha de hoy (admin lo usa)
 document.getElementById("fecha").value = new Date().toISOString().slice(0,10);
 </script>
 
