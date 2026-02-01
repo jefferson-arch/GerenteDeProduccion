@@ -89,14 +89,14 @@
 
     /* ------------ APP PRINCIPAL ------------ */
     .app {
-  max-width: 1400px;          /* antes 1200 */
-  width: calc(100% - 24px);   /* para que siempre aproveche el ancho */
-  margin: 16px auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 0 12px rgba(0,0,0,.08);
-  overflow: hidden;
-}
+      max-width: 1400px;          /* más ancho */
+      width: calc(100% - 24px);   /* aprovecha mejor el ancho */
+      margin: 16px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
     header {
       background: #555c6d;
       color: #fff;
@@ -268,7 +268,7 @@
       border-collapse: collapse;
       font-size: 0.78rem;
       background: #fff;
-      table-layout: fixed;
+      table-layout: fixed; /* por defecto fijo (para ingreso) */
     }
     thead { position: sticky; top: 0; z-index: 1; }
     thead tr { background: #ececf4; }
@@ -375,47 +375,48 @@
       .form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       header { flex-direction: column; align-items: flex-start; }
       header .user-info { text-align: left; }
+      .app{ width: 100%; margin: 0; border-radius: 0; }
     }
 
-/* ================================
-   REPORTE AGRUPADO: automático y bien distribuido
-   ================================ */
-#tab-reporte .table-wrapper{
-  overflow-x: auto;  /* si no cabe, scroll horizontal (sin aplastar) */
-  overflow-y: auto;
-}
+    /* ================================
+       REPORTE AGRUPADO: automático y bien distribuido
+       ================================ */
+    #tab-reporte .table-wrapper{
+      overflow-x: auto;  /* si no cabe, scroll horizontal (sin aplastar) */
+      overflow-y: auto;
+    }
 
-#tab-reporte table{
-  table-layout: auto; /* CLAVE: ancho automático según contenido */
-  width: 100%;
-  min-width: 1050px;  /* evita compresión fea; en pantallas pequeñas hace scroll */
-}
+    #tab-reporte table{
+      table-layout: auto; /* CLAVE: ancho automático según contenido */
+      width: 100%;
+      min-width: 1050px;  /* evita compresión fea; en pantallas pequeñas hace scroll */
+    }
 
-/* Columnas numéricas y tallas: compactas para liberar espacio */
-#tab-reporte th.numeric,
-#tab-reporte td.numeric,
-#tab-reporte th.size-cell,
-#tab-reporte td.size-cell{
-  white-space: nowrap;
-}
+    /* Columnas numéricas y tallas: compactas para liberar espacio */
+    #tab-reporte th.numeric,
+    #tab-reporte td.numeric,
+    #tab-reporte th.size-cell,
+    #tab-reporte td.size-cell{
+      white-space: nowrap;
+    }
 
-/* Proveedor y Sector: que aprovechen el ancho */
-#tab-reporte th:nth-child(3), #tab-reporte td:nth-child(3),
-#tab-reporte th:nth-child(4), #tab-reporte td:nth-child(4){
-  white-space: normal;
-  word-break: break-word;
-}
+    /* Proveedor y Sector: que aprovechen el ancho */
+    #tab-reporte th:nth-child(3), #tab-reporte td:nth-child(3),
+    #tab-reporte th:nth-child(4), #tab-reporte td:nth-child(4){
+      white-space: normal;
+      word-break: break-word;
+    }
 
-/* Un look un poquito más limpio */
-#tab-reporte th, #tab-reporte td{
-  padding: 3px 6px;
-}
+    /* Un look un poquito más limpio */
+    #tab-reporte th, #tab-reporte td{
+      padding: 3px 6px;
+    }
 
-@media (max-width: 900px){
-  .app{ margin: 0; border-radius: 0; }
-  #tab-reporte table{ min-width: 980px; }
-  #tab-reporte th, #tab-reporte td{ padding: 2px 6px; }
-}
+    @media (max-width: 900px){
+      #tab-reporte table{ min-width: 980px; }
+      #tab-reporte th, #tab-reporte td{ padding: 2px 6px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -710,7 +711,6 @@ const tallaEnteroDesdeGramaje = (gramaje) => {
   if (!Number.isFinite(g) || g <= 0) return "";
 
   const conteoKg = 1000 / g; // entero
-  // Entero: 10-20, 20-30, ..., 100-120, >120 => JUVENIL
   if (conteoKg < 20) return "10-20";
   if (conteoKg < 30) return "20-30";
   if (conteoKg < 40) return "30-40";
@@ -727,14 +727,13 @@ const tallaColaDesdeGramaje = (gramaje) => {
   const g = Number(gramaje);
   if (!Number.isFinite(g) || g <= 0) return "";
 
-  const colaGram = g * 0.66;     // gramos cola aprox
+  const colaGram = g * 0.66;
   if (colaGram <= 0) return "";
 
-  const conteoLb = 454 / colaGram; // cola por libra
-  // Cola: U10, U12, U15, 16-20, ..., 91-110, >110 => JUVENIL
+  const conteoLb = 454 / colaGram;
   if (conteoLb < 10) return "U10";
   if (conteoLb < 12) return "U12";
-  if (conteoLb < 16) return "U15"; // cubre 12-15.99
+  if (conteoLb < 16) return "U15";
 
   if (conteoLb < 21) return "16-20";
   if (conteoLb < 26) return "21-25";
@@ -910,13 +909,11 @@ const renderReporte = () => {
     const tr = document.createElement("tr");
     tr.className = "subtotal-row";
 
-    // Col 1-4
     const td1 = document.createElement("td");
     td1.colSpan = 4;
     td1.textContent = "Subtotal:";
     tr.appendChild(td1);
 
-    // Col 5 (Libras) + badge cupo
     const td2 = document.createElement("td");
     td2.className = "numeric subtotal-kilos-cell";
     const spanVal = document.createElement("span");
@@ -931,26 +928,22 @@ const renderReporte = () => {
     td2.appendChild(spanBadge);
     tr.appendChild(td2);
 
-    // Col 6 (Gramaje promedio)
     const gProm = (sGrC > 0) ? (sGrS / sGrC) : 0;
     const td3 = document.createElement("td");
     td3.className = "numeric";
     td3.textContent = formatNumber(gProm, 2);
     tr.appendChild(td3);
 
-    // Col 7 (Entero del promedio)
     const tdE = document.createElement("td");
     tdE.className = "size-cell";
     tdE.textContent = tallaEnteroDesdeGramaje(gProm);
     tr.appendChild(tdE);
 
-    // Col 8 (Cola del promedio)
     const tdC = document.createElement("td");
     tdC.className = "size-cell";
     tdC.textContent = tallaColaDesdeGramaje(gProm);
     tr.appendChild(tdC);
 
-    // Col 9 (Cola aprox total)
     const td4 = document.createElement("td");
     td4.className = "numeric";
     td4.textContent = formatNumber(sCol, 2);
@@ -1005,7 +998,6 @@ const renderReporte = () => {
 
   insSub();
 
-  // Totales footer
   const gPromTotal = (tGrC > 0) ? (tGrS / tGrC) : 0;
 
   document.getElementById("footer-total-kilos").textContent = formatNumber(tLib, 2);
