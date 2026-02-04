@@ -782,7 +782,20 @@
         showNetBanner("online","CONEXIÓN RESTABLECIDA.");
         setTimeout(()=>hideNetBanner(), 1800);
       }
-      updateButtons();
+      function updateButtons(){
+  const canEdit = (mode==="edit" && !locked);
+
+  setBtnEnabled("btnGuardar", canEdit && hasInternet);
+
+  // ✅ EXPORT SIEMPRE DISPONIBLE (no depende de internet)
+  setBtnEnabled("btnExcel", !!record);
+  setBtnEnabled("btnPdf",   !!record);
+
+  setBtnEnabled("btnBuscar", true);
+
+  setBtnEnabled("btnFotoProv", !!record?.fotoProveedorUrl);
+  setBtnEnabled("btnFotoBas",  !!record?.fotoBasuraUrl);
+}
     }
     window.addEventListener("offline", ()=>refreshInternetStatus());
     window.addEventListener("online",  ()=>refreshInternetStatus());
@@ -1902,6 +1915,197 @@
     // activar binding una sola vez
     bindBinsEvents();
 
+      // ==========================
+// EXPORT (EXCEL / PDF) + DETALLE GAVETAS POR BIN
+// ==========================
+function buildBinsRows(){
+  const bins = record?.bins || [];
+  return bins.map((b)=>{
+    calcBin(b);
+    return {
+      BIN: String(b.binNo || ""),
+      COLOR: String(b.color || ""),
+      KVT: Number(b.kvt || 0),
+      LIBRAS: Number(b.total || 0),
+      ESTADO: b.closed ? "TAPADO" : "ABIERTO"
+    };
+  });
+}
+
+// Detalle de cada pesada (gaveta) por BIN.
+// Nota: aquí se exporta el "net" (ya descontado gavetas + humedad si aplica), que es lo que suma al BIN.
+function buildGavetasRows(){
+  const rows = [];
+  const bins = record?.bins || [];
+  bins.forEach((b)=>{
+    const binNo = String(b.binNo || "");
+    const color = String(b.color || "");
+
+    const adds = (b.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
+    adds.forEach((w,idx)=>{
+      rows.push({
+        BIN: binNo,
+        COLOR: color,
+        GAVETA: idx + 1,
+        TIPO: "PESADA",
+        LIBRAS: Number(w || 0)
+      });
+    });
+
+    // Si quieres también registrar eliminaciones en el detalle:
+    const dels = (b.entries||[]).filter(e=>e.t==="del").map(e=>Number(e.val||0));
+    dels.forEach((w)=>{
+      rows.push({
+        BIN: binNo,
+        COLOR: color,
+        GAVETA: "",
+        TIPO: "ELIMINAR",
+        LIBRAS: Number(w || 0)
+      });
+    });
+  });
+  return rows;
+}
+
+function exportExcel(){
+  try{
+    if(!window.XLSX){
+      alert("No se cargó la librería XLSX. Revisa conexión o el CDN.");
+      return;
+    }
+
+    // asegurar cálculos
+    (record?.bins || []).forEach(calcBin);
+
+    const headerPairs = [
+      ["REGISTRO", record?.regNumber || ""],
+      ["FECHA", record?.fecha || ""],
+      ["HORA INICIO", record?.horaInicio || ""],
+      ["HORA FINAL", record?.horaFinal || ""],
+      ["PESADOR", `${record?.pesadorName || ""} (${record?.pesadorEmail || ""})`],
+      ["SUPERVISOR", record?.supervisorEmail || ""],
+      ["CIRCUITO", String(record?.circuito || 1)],
+      ["SECUENCIAL", record?.secuencial || ""],
+      ["LOTE", record?.lote || ""],
+      ["PARCIAL", record?.parcial || ""],
+      ["PISCINA", record?.piscina || ""],
+      ["PROVEEDOR", record?.proveedor || ""],
+      ["LIBRAS (GUIA)", fmt2(record?.librasGuia || 0)],
+      ["HUMEDAD", record?.humedad?.enabled ? `SI (${record?.humedad?.pct || 0}%)` : "NO"],
+      ["BASURA (lb)", fmt2(record?.basuraLbs || 0)],
+      ["PESO COLA TOTAL", fmt0(totalPesoCola())],
+      ["KVT TOTAL", fmt0(totalKvt())]
+    ];
+
+    const binsRows = buildBinsRows();
+    const gavRows  = buildGavetasRows();
+
+    const wb = window.XLSX.utils.book_new();
+
+    // Sheet 1: ENCABEZADO (formato 2 columnas)
+    const ws1 = window.XLSX.utils.aoa_to_sheet([["CAMPO","VALOR"], ...headerPairs]);
+    window.XLSX.utils.book_append_sheet(wb, ws1, "ENCABEZADO");
+
+    // Sheet 2: BINS
+    const ws2 = window.XLSX.utils.json_to_sheet(binsRows);
+    window.XLSX.utils.book_append_sheet(wb, ws2, "BINS");
+
+    // Sheet 3: GAVETAS (detalle por BIN)
+    const ws3 = window.XLSX.utils.json_to_sheet(gavRows);
+    window.XLSX.utils.book_append_sheet(wb, ws3, "GAVETAS");
+
+    const sec = (record?.secuencial || "SN").toString().replace(/\D+/g,"") || "SN";
+    const reg = (record?.regNumber || "REG").toString();
+    const file = `PCD_REGCOLA_${sec}_${reg}_${(record?.fecha||todayKey())}.xlsx`;
+
+    window.XLSX.writeFile(wb, file);
+  }catch(err){
+    console.error(err);
+    alert("No se pudo exportar EXCEL. Revisa consola (F12).");
+  }
+}
+
+function exportPDF(){
+  try{
+    if(!window.jspdf || !window.jspdf.jsPDF){
+      alert("No se cargó jsPDF. Revisa conexión o el CDN.");
+      return;
+    }
+
+    (record?.bins || []).forEach(calcBin);
+
+    const { jsPDF } = window.jspdf;
+    const docPdf = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+    docPdf.setFont("times","normal");
+
+    const marginX = 36;
+    let y = 34;
+
+    docPdf.setFontSize(14);
+    docPdf.text("PCD | REGISTRO PESO COLA", marginX, y);
+    y += 18;
+
+    docPdf.setFontSize(10);
+    const line1 = `Registro: ${record?.regNumber||""}   Fecha: ${record?.fecha||""}   Inicio: ${record?.horaInicio||""}   Final: ${record?.horaFinal||""}`;
+    const line2 = `Secuencial: ${record?.secuencial||""}   Proveedor: ${record?.proveedor||""}   Piscina: ${record?.piscina||""}   Circuito: ${record?.circuito||1}`;
+    const line3 = `Humedad: ${record?.humedad?.enabled ? `SI (${record?.humedad?.pct||0}%)` : "NO"}   Basura(lb): ${fmt2(record?.basuraLbs||0)}   Peso Cola: ${fmt0(totalPesoCola())}   KVT: ${fmt0(totalKvt())}`;
+    docPdf.text(line1, marginX, y); y += 12;
+    docPdf.text(line2, marginX, y); y += 12;
+    docPdf.text(line3, marginX, y); y += 10;
+
+    // Tabla resumen bins
+    const binsRows = buildBinsRows();
+    const binsBody = binsRows.map(r=>[
+      r.BIN, r.COLOR, String(r.ESTADO), fmt0(r.KVT), fmt0(r.LIBRAS)
+    ]);
+
+    docPdf.autoTable({
+      startY: y + 10,
+      head: [["BIN","COLOR","ESTADO","KVT","LIBRAS"]],
+      body: binsBody,
+      styles: { font: "times", fontSize: 9 },
+      headStyles: { fontStyle: "bold" },
+      margin: { left: marginX, right: marginX }
+    });
+
+    // Tabla detalle gavetas (nueva página si hace falta)
+    const gavRows = buildGavetasRows()
+      .filter(r=>r.TIPO==="PESADA") // ✅ principalmente lo que pides (gavetas pesadas)
+      .map(r=>[
+        r.BIN, r.COLOR, String(r.GAVETA), fmt0(r.LIBRAS)
+      ]);
+
+    // Si no hay gavetas (no pesó nada)
+    if(gavRows.length){
+      docPdf.addPage("a4","landscape");
+      docPdf.setFontSize(12);
+      docPdf.text("DETALLE DE GAVETAS POR BIN (PESADAS)", marginX, 34);
+
+      docPdf.autoTable({
+        startY: 50,
+        head: [["BIN","COLOR","# GAVETA","LIBRAS"]],
+        body: gavRows,
+        styles: { font: "times", fontSize: 9 },
+        headStyles: { fontStyle: "bold" },
+        margin: { left: marginX, right: marginX }
+      });
+    }
+
+    const sec = (record?.secuencial || "SN").toString().replace(/\D+/g,"") || "SN";
+    const reg = (record?.regNumber || "REG").toString();
+    const file = `PCD_REGCOLA_${sec}_${reg}_${(record?.fecha||todayKey())}.pdf`;
+
+    docPdf.save(file);
+  }catch(err){
+    console.error(err);
+    alert("No se pudo exportar PDF. Revisa consola (F12).");
+  }
+}
+
+// ✅ Asignar acciones a botones
+$("btnExcel").onclick = ()=>{ if(record) exportExcel(); };
+$("btnPdf").onclick   = ()=>{ if(record) exportPDF(); };
+    
     // LOGIN
     const bootMsgEl = $("bootMsg");
     if(bootMsgEl) bootMsgEl.textContent = "Cargando Firebase…";
