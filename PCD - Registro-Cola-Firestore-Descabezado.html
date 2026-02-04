@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- PCD - Registro-Cola-Firestore-Descabezado.html -->
-<!-- BUILD_PCD_REGISTRO_COLA v1.1.0 2026-02-03 -->
+<!-- BUILD_PCD_REGISTRO_COLA v1.2.0 2026-02-03 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -11,6 +11,11 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+
+  <!-- LIBRERÍAS EXPORT -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     :root{
@@ -552,8 +557,7 @@
         </div>
 
         <div class="mDet" id="mDet">DETALLE
-—
-</div>
+—</div>
 
         <div class="mBtns">
           <div class="btn primary" id="mOk">ACEPTAR</div>
@@ -591,11 +595,6 @@
 
   </div>
 
-  <!-- ✅ Exportadores (Excel/PDF) -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -604,7 +603,7 @@
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc,
-      runTransaction, serverTimestamp
+      runTransaction, serverTimestamp, limit
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import {
       getStorage, ref as sRef, uploadBytes, getDownloadURL
@@ -658,7 +657,7 @@
       const s1 = raw.replace(/\s+/g,"");
       if(s1.includes(",")){
         const noThousands = s1.replace(/\./g,"");
-        const norm = noThousands.replace(",",".");
+        const norm = noThousands.replace(",","." );
         const v = Number(norm);
         return Number.isFinite(v) ? v : NaN;
       }
@@ -696,6 +695,20 @@
     const COL_PCD = "pcd_registro_cola";          // finales
     const COL_PCD_TMP = "pcd_registro_cola_tmp";  // borradores
     const COL_PCD_COUNTER = "pcd_counters";
+
+    // >>> AJUSTE: colecciones posibles de SPC (para autollenar por Secuencial)
+    // Si tu SPC usa un nombre específico, ponlo de primero.
+    const SPC_CANDIDATE_COLS = [
+      "spc_programacion",
+      "spc_programacion_diaria",
+      "spc_programacion_planta",
+      "spc_programacion_firestore",
+      "spc_programacion_yanela",
+      "spc_programacion_only",
+      "spc_programacion_diario",
+      "spc_programacion_daily",
+      "spc_programacion_v2"
+    ];
 
     const ADMIN = "jeffersonfigueroa@oceantreasure.local";
     const ALLOWED = new Set([
@@ -777,6 +790,9 @@
     let mode = "edit";
 
     let record = null;
+
+    // modal state
+    let activeBinIdx = -1;
 
     function isAdmin(){ return currentUserEmail === ADMIN; }
     function getDraftRef(){ return doc(db, COL_PCD_TMP, tmpDocId); }
@@ -1010,6 +1026,12 @@
       const bas = parseEsNumber($("inpBasura").value);
       record.basuraLbs = Number.isFinite(bas) ? bas : 0;
 
+      // asegurar campos SPC en payload
+      record.proveedor = $("inpProveedor").value || record.proveedor || "";
+      record.piscina = $("inpPiscina").value || record.piscina || "";
+      const lbs = parseEsNumber($("inpLbsGuia").value);
+      record.librasGuia = Number.isFinite(lbs) ? lbs : (Number(record.librasGuia)||0);
+
       return {
         ...record,
         locked: !!locked,
@@ -1156,6 +1178,131 @@
       showView("app");
     }
 
+    // ==========================
+    // AUTOLLENADO DESDE SPC
+    // ==========================
+    function pickField(obj, keys){
+      for(const k of keys){
+        if(obj && obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== ""){
+          return obj[k];
+        }
+      }
+      return "";
+    }
+    function pickNumber(obj, keys){
+      const v = pickField(obj, keys);
+      const n = typeof v === "number" ? v : parseEsNumber(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function extractSPC(data){
+      // intenta diferentes nombres de campos comunes
+      const proveedor = pickField(data, ["proveedor","Proveedor","proveedorNombre","nombreProveedor","proveedor_name","PROVEEDOR","productor","PRODUCTOR","razonSocial"]);
+      const piscina   = pickField(data, ["piscina","PISCINA","pisc","PISC","piscNo","piscinaNo","piscina_n","numeroPiscina","pool","POOL"]);
+      const lbsGuia   = pickNumber(data, ["librasGuia","LibrasGuia","lbsGuia","LBS_GUIA","libras_guia","pesoGuia","PESO_GUIA","libras","Libras","lbGuia"]);
+      return { proveedor:String(proveedor||"").trim(), piscina:String(piscina||"").trim(), librasGuia: lbsGuia };
+    }
+
+    async function fetchSPCBySecuencial(secuencialRaw){
+      const sec = String(secuencialRaw||"").trim().replace(/\D+/g,"");
+      if(!sec) return null;
+
+      // candidatos de docId (por si SPC guarda doc por secuencial)
+      const sec8 = sec.padStart(8,"0");
+      const docIdCandidates = [
+        sec, sec8,
+        `SPC_${sec}`, `SPC_${sec8}`,
+        `spc_${sec}`, `spc_${sec8}`,
+        `PROG_${sec}`, `PROG_${sec8}`
+      ];
+
+      // 1) probar por docId
+      for(const col of SPC_CANDIDATE_COLS){
+        for(const id of docIdCandidates){
+          try{
+            const s = await getDoc(doc(db, col, id));
+            if(s.exists()){
+              const d = s.data() || {};
+              return { __col: col, __id: s.id, ...d };
+            }
+          }catch(_){}
+        }
+      }
+
+      // 2) probar query where(secuencial == sec) en colecciones candidatas
+      for(const col of SPC_CANDIDATE_COLS){
+        try{
+          const q1 = query(collection(db, col), where("secuencial","==",sec), limit(1));
+          const snap = await getDocs(q1);
+          if(!snap.empty){
+            const d = snap.docs[0];
+            return { __col: col, __id: d.id, ...(d.data()||{}) };
+          }
+        }catch(_){}
+        try{
+          const q2 = query(collection(db, col), where("secuencial","==",Number(sec)), limit(1));
+          const snap2 = await getDocs(q2);
+          if(!snap2.empty){
+            const d = snap2.docs[0];
+            return { __col: col, __id: d.id, ...(d.data()||{}) };
+          }
+        }catch(_){}
+      }
+
+      return null;
+    }
+
+    let spcTimer = null;
+    let lastSPCSec = "";
+
+    async function tryAutoFillFromSPC(){
+      if(!record) return;
+      if(locked || mode==="view") return;
+
+      const raw = ($("inpSecuencial").value || "").trim();
+      const sec = raw.replace(/\D+/g,"");
+      if(!sec || sec.length < 3) return; // evita consultas por 1-2 dígitos
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setStatus("Sin internet: no se puede consultar SPC.");
+        return;
+      }
+
+      if(sec === lastSPCSec) return;
+      lastSPCSec = sec;
+
+      setStatus("Consultando SPC por Secuencial…");
+      const data = await fetchSPCBySecuencial(sec);
+
+      if(!data){
+        setStatus("No se encontró el Secuencial en SPC (verifica colección/campos).");
+        return;
+      }
+
+      const ex = extractSPC(data);
+
+      // llenar UI
+      if(ex.proveedor) $("inpProveedor").value = ex.proveedor;
+      if(ex.piscina) $("inpPiscina").value = ex.piscina;
+      if(ex.librasGuia > 0) $("inpLbsGuia").value = fmt2(ex.librasGuia);
+
+      // reflejar en record para que quede guardado en el borrador
+      record.proveedor = ex.proveedor || record.proveedor || "";
+      record.piscina = ex.piscina || record.piscina || "";
+      record.librasGuia = ex.librasGuia || record.librasGuia || 0;
+
+      scheduleSave();
+      setStatus(`SPC OK: ${ex.proveedor || "—"} | Pisc: ${ex.piscina || "—"} | Guía: ${fmt2(ex.librasGuia||0)}`);
+    }
+
+    function debounceSPC(){
+      clearTimeout(spcTimer);
+      spcTimer = setTimeout(()=>{ tryAutoFillFromSPC(); }, 550);
+    }
+
+    // ==========================
+    // FOTOS
+    // ==========================
     async function uploadPhoto(file, kind){
       if(!file) return;
       if(!record || !tmpDocId) return;
@@ -1395,16 +1542,22 @@
       scheduleSave();
     });
 
-    // Inputs -> autosave
-    ["inpLote","inpParcial","inpSecuencial","inpPiscina","inpBasura"].forEach(id=>{
+    // Inputs -> autosave + SPC
+    ["inpLote","inpParcial","inpPiscina","inpBasura"].forEach(id=>{
       $(id).addEventListener("input", ()=>{
         if(!record) return;
         record.lote = $("inpLote").value || "";
         record.parcial = $("inpParcial").value || "";
-        record.secuencial = ($("inpSecuencial").value || "").trim();
         record.piscina = $("inpPiscina").value || "";
         scheduleSave();
       });
+    });
+
+    $("inpSecuencial").addEventListener("input", ()=>{
+      if(!record) return;
+      record.secuencial = ($("inpSecuencial").value || "").trim();
+      scheduleSave();
+      debounceSPC();
     });
 
     // BUSCAR -> HISTORIAL
@@ -1412,7 +1565,253 @@
       await openHistorial();
     };
 
+    // ==========================
+    // EXPORT (EXCEL + PDF) con TABLA DETALLE
+    // ==========================
+    function detailRowsForExport(){
+      const rows = [];
+      const bins = record?.bins || [];
+      bins.forEach((b)=>{
+        const binNo = String(b.binNo||"");
+        const color = String(b.color||"");
+        const entries = b.entries || [];
+        let iAdd = 0, iDel = 0;
+
+        entries.forEach((e)=>{
+          if(e.t === "add"){
+            iAdd++;
+            rows.push({
+              binNo, color,
+              tipo: "PESADA",
+              nro: iAdd,
+              libras: Number(e.net||0)
+            });
+          }else if(e.t === "del"){
+            iDel++;
+            rows.push({
+              binNo, color,
+              tipo: "ELIMINAR",
+              nro: iDel,
+              libras: Number(e.val||0) * -1
+            });
+          }
+        });
+      });
+      return rows;
+    }
+
+    function makeFileBase(){
+      const rn = (record?.regNumber || currentReg || "00000000");
+      const sec = (record?.secuencial || "").replace(/\s+/g,"") || "SINSECUENCIAL";
+      const f = (record?.fecha || todayKey());
+      const h = (record?.horaFinal || hhmm()).replace(":","-");
+      return `PCD_${rn}_SEC_${sec}_${f}_${h}`;
+    }
+
+    function requireExportReady(){
+      if(!record) { alert("No hay registro cargado."); return false; }
+      if(mode !== "view" || !locked){
+        alert("Primero debe GUARDAR y validar supervisor para exportar.");
+        return false;
+      }
+      return true;
+    }
+
+    function exportExcel(){
+      if(!requireExportReady()) return;
+
+      if(!window.XLSX){
+        alert("No cargó la librería de Excel (xlsx). Revisa internet.");
+        return;
+      }
+
+      (record.bins||[]).forEach(calcBin);
+
+      const base = makeFileBase();
+      const resumen = [];
+      resumen.push(["PCD | REGISTRO PESO COLA"]);
+      resumen.push([]);
+      resumen.push(["Registro N°", record.regNumber || ""]);
+      resumen.push(["Fecha", record.fecha || ""]);
+      resumen.push(["Hora inicio", record.horaInicio || ""]);
+      resumen.push(["Hora final", record.horaFinal || ""]);
+      resumen.push(["Pesador", `${record.pesadorName||""} (${record.pesadorEmail||""})`]);
+      resumen.push(["Supervisor", record.supervisorEmail || ""]);
+      resumen.push(["Circuito", String(record.circuito||1)]);
+      resumen.push([]);
+      resumen.push(["Lote", record.lote || ""]);
+      resumen.push(["Parcial", record.parcial || ""]);
+      resumen.push(["Secuencial", record.secuencial || ""]);
+      resumen.push(["Piscina", record.piscina || ""]);
+      resumen.push(["Proveedor", record.proveedor || ""]);
+      resumen.push(["Libras (Guía)", Number(record.librasGuia||0)]);
+      resumen.push(["Basura (lb)", Number(record.basuraLbs||0)]);
+      resumen.push(["Peso Cola (Total)", Number(totalPesoCola()||0)]);
+      resumen.push(["KVT (Total)", Number(totalKvt()||0)]);
+      resumen.push([]);
+      resumen.push(["RESUMEN POR BIN"]);
+      resumen.push(["BIN", "COLOR", "LIBRAS", "KVT", "TAPADO"]);
+
+      (record.bins||[]).forEach((b)=>{
+        resumen.push([String(b.binNo||""), String(b.color||""), Number(b.total||0), Number(b.kvt||0), b.closed ? "SI" : "NO"]);
+      });
+
+      resumen.push([]);
+      resumen.push(["DETALLE DE GAVETAS (por BIN)"]);
+      resumen.push(["BIN", "COLOR", "TIPO", "#", "LIBRAS"]);
+
+      const det = detailRowsForExport();
+      det.forEach(r=>{
+        resumen.push([r.binNo, r.color, r.tipo, Number(r.nro||0), Number(r.libras||0)]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(resumen);
+      ws["!cols"] = [{wch:10},{wch:12},{wch:14},{wch:8},{wch:12}];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "PCD");
+
+      XLSX.writeFile(wb, `${base}.xlsx`);
+    }
+
+    async function exportPDF(){
+      if(!requireExportReady()) return;
+
+      const jspdfNS = window.jspdf;
+      if(!jspdfNS || !jspdfNS.jsPDF){
+        alert("No cargó la librería de PDF (jsPDF). Revisa internet.");
+        return;
+      }
+
+      (record.bins||[]).forEach(calcBin);
+
+      const { jsPDF } = jspdfNS;
+      const docPdf = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+
+      const base = makeFileBase();
+
+      // título
+      docPdf.setFont("times","bold");
+      docPdf.setFontSize(14);
+      docPdf.text("PCD | REGISTRO PESO COLA", 40, 40);
+
+      docPdf.setFont("times","normal");
+      docPdf.setFontSize(10);
+
+      const metaLeft = [
+        ["Registro N°", record.regNumber||""],
+        ["Fecha", record.fecha||""],
+        ["Hora inicio", record.horaInicio||""],
+        ["Hora final", record.horaFinal||""],
+        ["Pesador", `${record.pesadorName||""} (${record.pesadorEmail||""})`]
+      ];
+      const metaRight = [
+        ["Supervisor", record.supervisorEmail||""],
+        ["Circuito", String(record.circuito||1)],
+        ["Lote", record.lote||""],
+        ["Parcial", record.parcial||""],
+        ["Secuencial", record.secuencial||""]
+      ];
+      const meta3 = [
+        ["Piscina", record.piscina||""],
+        ["Proveedor", record.proveedor||""],
+        ["Libras (Guía)", fmt2(record.librasGuia||0)],
+        ["Basura (lb)", fmt2(record.basuraLbs||0)],
+        ["Peso Cola (Total)", fmt0(totalPesoCola()||0)]
+      ];
+
+      // tabla de metadatos (3 columnas)
+      const metaRows = [];
+      for(let i=0;i<5;i++){
+        metaRows.push([metaLeft[i]?.[0]||"", metaLeft[i]?.[1]||"", metaRight[i]?.[0]||"", metaRight[i]?.[1]||"", meta3[i]?.[0]||"", meta3[i]?.[1]||""]);
+      }
+
+      docPdf.autoTable({
+        startY: 55,
+        head: [["", "", "", "", "", ""]],
+        body: metaRows,
+        theme: "grid",
+        styles: { font:"times", fontSize:10, cellPadding:4 },
+        headStyles: { fillColor:[255,255,255], textColor:[0,0,0] },
+        columnStyles: {
+          0:{cellWidth:90, fontStyle:"bold"},
+          1:{cellWidth:180},
+          2:{cellWidth:90, fontStyle:"bold"},
+          3:{cellWidth:180},
+          4:{cellWidth:110, fontStyle:"bold"},
+          5:{cellWidth:170}
+        }
+      });
+
+      let y = docPdf.lastAutoTable.finalY + 12;
+
+      // resumen por BIN
+      const binsHead = [["BIN", "COLOR", "LIBRAS", "KVT", "TAPADO"]];
+      const binsBody = (record.bins||[]).map(b=>[
+        String(b.binNo||""),
+        String(b.color||""),
+        String(fmt0(b.total||0)),
+        String(fmt0(b.kvt||0)),
+        b.closed ? "SI" : "NO"
+      ]);
+
+      docPdf.setFont("times","bold");
+      docPdf.setFontSize(12);
+      docPdf.text("RESUMEN POR BIN", 40, y);
+      y += 8;
+
+      docPdf.autoTable({
+        startY: y,
+        head: binsHead,
+        body: binsBody,
+        theme: "grid",
+        styles: { font:"times", fontSize:10, cellPadding:4 },
+        headStyles: { fillColor:[22,58,99], textColor:[255,255,255], fontStyle:"bold" }
+      });
+
+      y = docPdf.lastAutoTable.finalY + 14;
+
+      // detalle de gavetas por BIN
+      const det = detailRowsForExport();
+      const detHead = [["BIN", "COLOR", "TIPO", "#", "LIBRAS"]];
+      const detBody = det.map(r=>[
+        r.binNo,
+        r.color,
+        r.tipo,
+        String(r.nro||0),
+        (r.libras < 0 ? "-" : "") + fmt0(Math.abs(r.libras||0))
+      ]);
+
+      docPdf.setFont("times","bold");
+      docPdf.setFontSize(12);
+      docPdf.text("DETALLE DE GAVETAS (por BIN)", 40, y);
+      y += 8;
+
+      docPdf.autoTable({
+        startY: y,
+        head: detHead,
+        body: detBody.length ? detBody : [["—","—","—","—","—"]],
+        theme: "grid",
+        styles: { font:"times", fontSize:10, cellPadding:4 },
+        headStyles: { fillColor:[27,75,122], textColor:[255,255,255], fontStyle:"bold" },
+        didDrawPage: (data)=> {
+          // footer con paginado
+          const pageCount = docPdf.getNumberOfPages();
+          docPdf.setFont("times","normal");
+          docPdf.setFontSize(9);
+          docPdf.text(`Página ${data.pageNumber} de ${pageCount}`, data.settings.margin.left, docPdf.internal.pageSize.height - 18);
+        }
+      });
+
+      docPdf.save(`${base}.pdf`);
+    }
+
+    $("btnExcel").onclick = ()=>{ exportExcel(); };
+    $("btnPdf").onclick   = ()=>{ exportPDF(); };
+
+    // ==========================
     // HISTORIAL
+    // ==========================
     async function fetchHistorial(desde, hasta, regOpt){
       const items = [];
 
@@ -1665,6 +2064,8 @@
       record.parcial = $("inpParcial").value || "";
       record.secuencial = ($("inpSecuencial").value || "").trim();
       record.piscina = $("inpPiscina").value || "";
+      record.proveedor = $("inpProveedor").value || "";
+      record.librasGuia = Number.isFinite(parseEsNumber($("inpLbsGuia").value)) ? parseEsNumber($("inpLbsGuia").value) : (Number(record.librasGuia)||0);
       record.basuraLbs = Number.isFinite(parseEsNumber($("inpBasura").value)) ? parseEsNumber($("inpBasura").value) : 0;
 
       record.horaFinal = hhmm();
@@ -1819,179 +2220,6 @@
         if(bootMsgEl) bootMsgEl.textContent = "";
       }
     });
-
-    // ==========================
-    // ✅ EXPORTAR EXCEL / PDF
-    // (Habilitado cuando el registro está GUARDADO y bloqueado)
-    // ==========================
-    function safeFilePart(s){
-      return String(s||"")
-        .replace(/[\\/:*?"<>|]/g, "-")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-    function fileStamp(){
-      const d = new Date();
-      const pad = (n)=>String(n).padStart(2,"0");
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
-    }
-    function exportBaseName(){
-      const rn = (record?.regNumber || currentReg || "SIN_REG").toString();
-      const f  = (record?.fecha || todayKey()).toString();
-      return `PCD_${safeFilePart(rn)}_${safeFilePart(f)}_${fileStamp()}`;
-    }
-    function ensureExportAllowed(){
-      const canEdit = (mode==="edit" && !locked);
-      if(canEdit){
-        alert("Primero debes GUARDAR + validar supervisor para habilitar EXCEL/PDF.");
-        return false;
-      }
-      if(!record){
-        alert("No hay registro cargado para exportar.");
-        return false;
-      }
-      if(String(record.estado||"") !== "GUARDADO"){
-        alert("EXCEL/PDF solo se habilita cuando el registro está GUARDADO.");
-        return false;
-      }
-      return true;
-    }
-
-    function rowsFromRecord(){
-      (record.bins||[]).forEach(calcBin);
-
-      const header = [
-        ["PCD | REGISTRO PESO COLA", ""],
-        ["Registro N°", record.regNumber || currentReg || ""],
-        ["Fecha", record.fecha || ""],
-        ["Hora inicio", record.horaInicio || ""],
-        ["Hora final", record.horaFinal || ""],
-        ["Pesador", `${record.pesadorName||""} (${record.pesadorEmail||""})`],
-        ["Supervisor", record.supervisorEmail || ""],
-        ["Circuito", String(record.circuito || 1)],
-        ["Lote", record.lote || ""],
-        ["Parcial", record.parcial || ""],
-        ["Secuencial", record.secuencial || ""],
-        ["Piscina", record.piscina || ""],
-        ["Proveedor", record.proveedor || ""],
-        ["Libras (Guía)", fmt2(record.librasGuia || 0)],
-        ["Humedad", record.humedad?.enabled ? `SI (${Number(record.humedad.pct||0)}%)` : "NO"],
-        ["Basura (lb)", fmt2(record.basuraLbs || 0)],
-        ["", ""],
-      ];
-
-      const tableHdr = [["BIN", "COLOR", "CERRADO", "LIBRAS", "KVT"]];
-      const tableRows = (record.bins||[]).map(b => ([
-        `BIN #${b.binNo || ""}`,
-        (b.color || ""),
-        b.closed ? "SI" : "NO",
-        Number(b.total||0),
-        Number(b.kvt||0)
-      ]));
-
-      const totals = [
-        ["", ""],
-        ["TOTAL PESO COLA (lb)", Number(totalPesoCola() || 0)],
-        ["TOTAL KVT", Number(totalKvt() || 0)]
-      ];
-
-      return { header, tableHdr, tableRows, totals };
-    }
-
-    async function exportExcel(){
-      if(!ensureExportAllowed()) return;
-
-      if(!window.XLSX){
-        alert("No se cargó XLSX (SheetJS). Revisa que el CDN esté antes del type=module.");
-        return;
-      }
-
-      const { header, tableHdr, tableRows, totals } = rowsFromRecord();
-      const aoa = [
-        ...header,
-        ...tableHdr,
-        ...tableRows,
-        ...totals
-      ];
-
-      const ws = window.XLSX.utils.aoa_to_sheet(aoa);
-
-      ws["!cols"] = [
-        { wch: 26 },
-        { wch: 56 },
-        { wch: 16 },
-        { wch: 14 },
-        { wch: 12 },
-      ];
-
-      const wb = window.XLSX.utils.book_new();
-      window.XLSX.utils.book_append_sheet(wb, ws, "PCD");
-
-      const fname = exportBaseName() + ".xlsx";
-      window.XLSX.writeFile(wb, fname);
-    }
-
-    async function exportPDF(){
-      if(!ensureExportAllowed()) return;
-
-      if(!window.jspdf || !window.jspdf.jsPDF){
-        alert("No se cargó jsPDF. Revisa que el CDN esté antes del type=module.");
-        return;
-      }
-
-      const { header, tableRows } = rowsFromRecord();
-      const { jsPDF } = window.jspdf;
-
-      const doc = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
-
-      doc.setFont("times", "bold");
-      doc.setFontSize(14);
-      doc.text("PCD | REGISTRO PESO COLA", 40, 34);
-
-      doc.setFont("times", "normal");
-      doc.setFontSize(10);
-
-      let y = 52;
-      const leftX = 40;
-      const rightX = 420;
-
-      const pairs = header.filter(r => r[0] && r[0] !== "PCD | REGISTRO PESO COLA");
-      for(let i=0; i<pairs.length; i++){
-        const [k,v] = pairs[i];
-        const col = (i % 2 === 0) ? leftX : rightX;
-        if(i % 2 === 0 && i > 0) y += 14;
-        doc.text(`${String(k)}: ${String(v)}`, col, y);
-      }
-
-      const startY = y + 26;
-
-      doc.autoTable({
-        startY,
-        head: [["BIN", "COLOR", "CERRADO", "LIBRAS", "KVT"]],
-        body: tableRows.map(r => ([
-          String(r[0]||""),
-          String(r[1]||""),
-          String(r[2]||""),
-          String(r[3]||0),
-          String(r[4]||0),
-        ])),
-        styles: { font:"times", fontSize:10 },
-        headStyles: { fontStyle:"bold" },
-        margin: { left:40, right:40 }
-      });
-
-      const endY = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 18 : startY + 18;
-      doc.setFont("times", "bold");
-      doc.text(`TOTAL PESO COLA (lb): ${fmt0(totalPesoCola() || 0)}`, 40, endY);
-      doc.text(`TOTAL KVT: ${fmt0(totalKvt() || 0)}`, 320, endY);
-
-      const fname = exportBaseName() + ".pdf";
-      doc.save(fname);
-    }
-
-    // ✅ Conectar botones (antes no tenían handler)
-    $("btnExcel").onclick = exportExcel;
-    $("btnPdf").onclick   = exportPDF;
 
   </script>
 </body>
