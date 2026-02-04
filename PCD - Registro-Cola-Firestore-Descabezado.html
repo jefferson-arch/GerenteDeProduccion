@@ -1,6 +1,6 @@
 <!doctype html>
-<!-- PCD - Registro-Cola-Firestore-Descabezado.html -->
-<!-- BUILD_PCD_REGISTRO_COLA v1.1.4 2026-02-03 -->
+<!-- PCD - Registro-Cola-Firestore-Descabezado v1.1.6.html -->
+<!-- BUILD_PCD_REGISTRO_COLA v1.1.6 2026-02-03 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -26,7 +26,7 @@
       --danger:#b00020;
       --ok:#0b7a2a;
       --cellH:28px;
-      --font: "Times New Roman", Times, serif;
+      --font:"Times New Roman", Times, serif;
     }
     *{box-sizing:border-box}
     body{margin:0;background:#fff;color:var(--text);font-family:var(--font)}
@@ -87,14 +87,12 @@
       margin:4px 0 10px;
       letter-spacing:.4px;
     }
-
     .metaGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:10px;
       align-items:start;
     }
-
     .panel{border:1px solid #333;font-family:var(--font);}
     .panel table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:16px;}
     .panel td{border:1px solid #333;padding:4px 6px;height:var(--cellH);vertical-align:middle;}
@@ -182,30 +180,6 @@
       gap:10px;
       font-family:Arial,Helvetica,sans-serif;
     }
-
-        /* ====== HUMEDAD: agrandar el input % en celular ====== */
-  .humRow{
-    flex-wrap: wrap;            /* si no cabe, baja a la siguiente línea */
-    gap: 10px;
-  }
-
-  .humRow .pct{
-    width: 160px !important;    /* antes 92px, ahora más grande */
-  }
-
-  #humPct{
-    min-height: 52px !important;
-    font-size: 22px !important; /* números más grandes */
-    font-weight: 900 !important;
-    padding: 10px 12px !important;
-    text-align: center !important;
-    background: #fff !important;
-  }
-
-  .humRow .label{
-    font-size: 16px !important;
-  }
-    
     .fotoRow{
       border:1px solid #999;
       padding:8px;
@@ -240,13 +214,12 @@
       background:#fff;
       border:1px solid #333;
       padding:12px;
-      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+      box-shadow:0 10px 35px rgba(0,0,0,.25);
       font-family:Arial,Helvetica,sans-serif;
     }
     .modal h3{margin:0 0 8px;font-size:16px;color:var(--hdr);font-weight:900}
     .modal .sub{margin:0 0 10px;font-size:12px;color:#666}
     .modal .line{height:1px;background:#ddd;margin:10px 0}
-    .modal .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .modal .miniRow{display:grid;grid-template-columns: 120px 1fr 44px 44px; gap:8px; align-items:center}
     .miniBtn{
       width:44px;height:40px;line-height:38px;
@@ -311,76 +284,71 @@
       .footerBtns{grid-template-columns:1fr 1fr}
       .histFilters{grid-template-columns:1fr}
     }
-  
 
+    /* ====== MOBILE (mejor lectura en celular) ====== */
+    @media (max-width: 640px){
+      .wrap{padding:10px 8px}
+      input[type="text"], input[type="number"], select{font-size:16px;min-height:40px;min-width:0}
+      table{min-width:0}
+    }
 
-/* ====== MOBILE (mejor lectura en celular) ====== */
-@media (max-width: 640px){
-  .wrap{padding:10px}
-  .card{width:100%; padding:12px}
-  .headRow{
-    grid-template-columns: 110px 1fr;
-    column-gap: 8px;
-    row-gap: 8px;
-  }
-  .headRow .k{font-size:13px}
-  input[type="text"], input[type="number"], select{
-    font-size:16px;
-    min-height:40px;
-    min-width:0;
-  }
-  .tableWrap{overflow-x:auto}
-  table{min-width: 720px}
-}
+    .fotoBtnsGrid{
+      grid-column:1/-1;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width:640px){
+      .fotoBtnsGrid{ grid-template-columns:1fr !important; }
+    }
 
+    /* ====== RESPONSIVE FIX (CELULAR) ====== */
+    .bottomGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+      align-items:start;
+    }
+    @media (max-width:640px){
+      .headRow{ grid-template-columns:1fr !important; }
+      .wrap{ padding:10px 8px !important; }
+      .sheet{ width:100% !important; max-width:100% !important; }
+      .bottomGrid{ grid-template-columns:1fr !important; }
+      .fotoBox{ grid-template-columns:1fr !important; }
+      .fotoRow{ grid-template-columns:1fr auto !important; gap:8px !important; }
 
-.fotoBtnsGrid{
-  grid-column:1/-1;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-@media (max-width:640px){
-  .fotoBtnsGrid{ grid-template-columns:1fr !important; }
-}
+      /* HUMEDAD: agrandar el input % en celular */
+      .humRow{ flex-wrap:wrap; gap:10px; }
+      .humRow .pct{ width: 160px !important; } /* <- TU AJUSTE */
+      #humPct{
+        min-height:52px !important;
+        font-size:22px !important;
+        font-weight:900 !important;
+        padding:10px 12px !important;
+        text-align:center !important;
+        background:#fff !important;
+      }
+      .humRow .label{ font-size:16px !important; }
+    }
+    @media (max-width:420px){
+      .btn{ padding:8px 10px !important; font-size:12px !important; }
+      .tiny{ font-size:11px !important; }
+    }
 
-/* ====== RESPONSIVE FIX v1.1.5 (CELULAR) ====== */
-.bottomGrid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:10px;
-  align-items:start;
-}
-
-@media (max-width:640px){
-  /* Campos (Lote/Parcial/Secuencial/Piscina/Proveedor/Libras) legibles */
-  .headRow{ grid-template-columns:1fr !important; }
-  .headRow .k{ width:100%; }
-  .headRow input, .headRow select{
-    width:100% !important;
-    min-width:0 !important;
-  }
-
-  /* Evita que el navegador “encoja” toda la hoja por anchos mínimos */
-  .wrap{ padding:10px 8px !important; }
-  .sheet{ width:100% !important; max-width:100% !important; }
-  table{ min-width:0 !important; width:100% !important; }
-
-  /* Sección inferior: peso + fotos en una columna */
-  .bottomGrid{ grid-template-columns:1fr !important; }
-
-  /* Caja de fotos: apila en 1 columna */
-  .fotoBox{ grid-template-columns:1fr !important; }
-  .fotoRow{ grid-template-columns:1fr auto !important; gap:8px !important; }
-}
-
-@media (max-width:420px){
-  .btn{ padding:8px 10px !important; font-size:12px !important; }
-  .tiny{ font-size:11px !important; }
-}
-
-</style>
+    /* mini banner historial */
+    #histMiniErr{
+      display:none;
+      background:#ffe9a8;
+      border:1px solid #e0c14b;
+      color:#6b5a00;
+      padding:8px 10px;
+      font-family:Arial,Helvetica,sans-serif;
+      font-weight:900;
+      font-size:12px;
+      margin:8px 0 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -413,14 +381,13 @@
         <div id="bootMsg" style="min-height:18px;color:#555;font-family:Arial,Helvetica,sans-serif;font-size:12px;"></div>
 
         <div class="muted" style="margin-top:10px;line-height:1.35;">
-          Nota: Si aparece <b>permission-denied</b>, agrega los usuarios <b>pesadorcola1</b> y <b>pesadorcola2</b> en tu lista de editores de Firestore (reglas).
+          Nota: Si aparece <b>permission-denied</b>, revisa reglas Firestore para permitir lectura/escritura a los pesadores.
         </div>
       </div>
     </section>
 
     <!-- APP -->
     <section id="vApp" class="view">
-
       <div class="topline">
         Usuario: <span class="email" id="userEmail"></span>
         &nbsp; | &nbsp; <span class="muted" id="userNameLabel"></span>
@@ -435,7 +402,6 @@
 
       <!-- Área imprimible -->
       <div id="sheet" class="sheet">
-
         <div class="logoBar">
           <img class="logoSmall" src="logo.png" alt="Oceantreasure" onerror="this.style.display='none'">
         </div>
@@ -445,31 +411,16 @@
         <div class="metaGrid">
           <div class="panel">
             <table>
-              <tr>
-                <td class="k">Registro N°:</td>
-                <td class="vR" id="regNumero">—</td>
-              </tr>
-              <tr>
-                <td class="k">Fecha:</td>
-                <td class="vR" id="regFecha">—</td>
-              </tr>
-              <tr>
-                <td class="k">Hora inicio:</td>
-                <td class="vR" id="regInicio">—</td>
-              </tr>
-              <tr>
-                <td class="k">Hora final:</td>
-                <td class="vR" id="regFinal">—</td>
-              </tr>
+              <tr><td class="k">Registro N°:</td><td class="vR" id="regNumero">—</td></tr>
+              <tr><td class="k">Fecha:</td><td class="vR" id="regFecha">—</td></tr>
+              <tr><td class="k">Hora inicio:</td><td class="vR" id="regInicio">—</td></tr>
+              <tr><td class="k">Hora final:</td><td class="vR" id="regFinal">—</td></tr>
             </table>
           </div>
 
           <div class="panel">
             <table>
-              <tr>
-                <td class="k">Pesador Cola:</td>
-                <td class="v" id="pesadorCola">—</td>
-              </tr>
+              <tr><td class="k">Pesador Cola:</td><td class="v" id="pesadorCola">—</td></tr>
               <tr>
                 <td class="k">Supervisor:</td>
                 <td class="v">
@@ -489,52 +440,40 @@
                   </select>
                 </td>
               </tr>
-              <tr>
-                <td class="k">Estado:</td>
-                <td class="v" id="regEstado">—</td>
-              </tr>
+              <tr><td class="k">Estado:</td><td class="v" id="regEstado">—</td></tr>
             </table>
           </div>
         </div>
 
         <div class="headRow" style="margin-top:10px;">
-          <b>Lote:</b>
-          <input id="inpLote" type="text" />
-          <b>Parcial:</b>
-          <input id="inpParcial" type="text" />
+          <b>Lote:</b><input id="inpLote" type="text" />
+          <b>Parcial:</b><input id="inpParcial" type="text" />
         </div>
 
         <div class="headRow">
-          <b>Secuencial:</b>
-          <input id="inpSecuencial" type="text" inputmode="numeric" />
-          <b>Piscina:</b>
-          <input id="inpPiscina" type="text" inputmode="numeric" />
+          <b>Secuencial:</b><input id="inpSecuencial" type="text" inputmode="numeric" />
+          <b>Piscina:</b><input id="inpPiscina" type="text" inputmode="numeric" />
         </div>
 
         <div class="headRow">
-          <b>Proveedor:</b>
-          <input id="inpProveedor" type="text" readonly />
-          <b>Libras (Guía):</b>
-          <input id="inpLbsGuia" type="text" readonly />
+          <b>Proveedor:</b><input id="inpProveedor" type="text" readonly />
+          <b>Libras (Guía):</b><input id="inpLbsGuia" type="text" readonly />
         </div>
 
         <div class="humRow">
           <span class="label">HUMEDAD:</span>
           <span class="radio">
             <label style="display:flex;gap:8px;align-items:center;">
-              <input type="radio" name="hum" id="humNo" value="0" checked>
-              NO
+              <input type="radio" name="hum" id="humNo" value="0" checked> NO
             </label>
             <label style="display:flex;gap:8px;align-items:center;">
-              <input type="radio" name="hum" id="humSi" value="1">
-              SI
+              <input type="radio" name="hum" id="humSi" value="1"> SI
             </label>
           </span>
           <span class="pct" style="display:flex;gap:8px;align-items:center;">
             <input id="humPct" type="number" min="0" max="20" step="0.1" value="2" disabled>
             <span class="label">%</span>
           </span>
-
           <span class="muted" id="humHint" style="margin-left:auto;">Descuento aplicado por gaveta pesada.</span>
         </div>
 
@@ -562,19 +501,16 @@
         <div class="bottomGrid">
           <div class="panel">
             <table>
-              <tr>
-                <td class="k">PESO COLA:</td>
-                <td class="bigGreen" id="pesoColaTotal">0</td>
-              </tr>
+              <tr><td class="k">PESO COLA:</td><td class="bigGreen" id="pesoColaTotal">0</td></tr>
               <tr>
                 <td class="k">BASURA (lb):</td>
-                <td class="vR"><input id="inpBasura" type="text" inputmode="decimal" style="width:100%;border:none;outline:none;text-align:right;font-weight:900;font-family:var(--font);font-size:16px;background:#fff"></td>
+                <td class="vR">
+                  <input id="inpBasura" type="text" inputmode="decimal"
+                    style="width:100%;border:none;outline:none;text-align:right;font-weight:900;font-family:var(--font);font-size:16px;background:#fff">
+                </td>
               </tr>
-            <tr>
-          <td class="k">BINES:</td>
-          <td class="vR"><div id="binsCountLine" style="font-weight:700;">0 pesados / 0 tapados</div></td>
-        </tr>
-        </table>
+              <tr><td class="k">BINES:</td><td class="vR"><div id="binsCountLine" style="font-weight:700;">0 pesados / 0 tapados</div></td></tr>
+            </table>
           </div>
 
           <div class="fotoBox">
@@ -606,13 +542,11 @@
           <div class="btn" id="btnPdf">PDF</div>
           <div class="btn" id="btnBuscar">BUSCAR</div>
         </div>
-
       </div>
 
       <!-- inputs ocultos para cámara -->
       <input id="fileFotoProv" type="file" accept="image/*" capture="environment" style="display:none">
       <input id="fileFotoBas"  type="file" accept="image/*" capture="environment" style="display:none">
-
     </section>
 
     <!-- HISTORIAL -->
@@ -628,6 +562,8 @@
       <div class="histBox">
         <div class="histTitle">HISTORIAL DE REGISTROS (PCD)</div>
 
+        <div id="histMiniErr">Error cargando historial.</div>
+
         <div class="histFilters">
           <label style="font-weight:900;">DESDE</label>
           <input id="histDesde" type="date" />
@@ -641,12 +577,12 @@
           <div class="btn" id="btnHistFiltrar" style="width:160px;">APLICAR</div>
         </div>
 
-        
         <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin:8px 0;font-family:Arial,Helvetica,sans-serif;">
           <div class="muted" id="histSumMine" style="font-weight:900;">—</div>
           <div class="muted" id="histSumAll" style="font-weight:900;display:none;">—</div>
         </div>
-<div class="histTblWrap">
+
+        <div class="histTblWrap">
           <table class="hist" id="tblHist">
             <thead>
               <tr>
@@ -670,7 +606,6 @@
         </div>
       </div>
     </section>
-
   </div>
 
   <!-- MODAL: PESAR -->
@@ -689,12 +624,10 @@
       <div class="radioLine">
         <span style="font-weight:900;">GAVETAS:</span>
         <label style="display:flex;gap:8px;align-items:center;">
-          <input type="radio" name="mGav" id="mGav1" value="1" checked>
-          1 gaveta
+          <input type="radio" name="mGav" id="mGav1" value="1" checked> 1 gaveta
         </label>
         <label style="display:flex;gap:8px;align-items:center;">
-          <input type="radio" name="mGav" id="mGav2" value="2">
-          2 gavetas
+          <input type="radio" name="mGav" id="mGav2" value="2"> 2 gavetas
         </label>
       </div>
 
@@ -747,7 +680,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script type="module">
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
       getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
@@ -757,12 +689,8 @@
       getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc,
       runTransaction, serverTimestamp, orderBy, limit
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-    import {
-      getStorage, ref as sRef, uploadBytes, getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
-    import {
-      getAuth as getAuth2, signInWithEmailAndPassword as signIn2, signOut as signOut2
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+    import { getAuth as getAuth2, signInWithEmailAndPassword as signIn2, signOut as signOut2 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
@@ -774,10 +702,8 @@
       measurementId: "G-HMMQKJY8NJ"
     };
 
-    // Helpers
     const $ = (id)=>document.getElementById(id);
     const safe = (id)=>document.getElementById(id) || null;
-
 
     function uiError(msg){
       const el = safe("loginMsg") || safe("bootMsg") || safe("statusLine");
@@ -811,16 +737,13 @@
     function parseEsNumber(s){
       const raw = String(s||"").trim();
       if(!raw) return NaN;
-      // Soporta: 6.070,00  / 6070,00 / 6070.00
       const s1 = raw.replace(/\s+/g,"");
-      // si trae coma decimal, quita miles con punto
       if(s1.includes(",")){
         const noThousands = s1.replace(/\./g,"");
         const norm = noThousands.replace(",",".");
         const v = Number(norm);
         return Number.isFinite(v) ? v : NaN;
       }
-      // si no trae coma, intenta directo
       const v = Number(s1);
       return Number.isFinite(v) ? v : NaN;
     }
@@ -837,8 +760,16 @@
       return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
     function nowISO(){ return new Date().toISOString(); }
+    function addDaysIso(dateStr, delta){
+      const d = dateStr ? new Date(dateStr+"T00:00:00") : new Date();
+      d.setDate(d.getDate()+delta);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
 
-    // Internet detector (igual estilo SID)
+    // Internet detector
     let hasInternet = true;
     let lastInternetState = null;
 
@@ -889,6 +820,12 @@
 
     function setStatus(msg){ $("statusLine").textContent = msg || "—"; }
     function setHistStatus(msg){ $("histStatus").textContent = msg || "—"; }
+    function showHistErr(show, text){
+      const el = $("histMiniErr");
+      if(!el) return;
+      el.style.display = show ? "block" : "none";
+      if(text) el.textContent = text;
+    }
 
     // Views
     const views = { login:$("vLogin"), app:$("vApp"), hist:$("vHist") };
@@ -903,110 +840,90 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
-    // Persistencia local (como tus otros sistemas)
-    // Persistencia local (si falla, no rompe el login)
     setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
-    // Auth secundario para validar Supervisor sin cambiar la sesión del pesador
+    // Auth secundario (supervisor) sin romper sesión
     const app2 = initializeApp(firebaseConfig, "pcd-supervisor-verify");
     const authVerify = getAuth2(app2);
-    // Persistencia in-memory para validar Supervisor (si falla, no rompe el login)
     setPersistence(authVerify, inMemoryPersistence).catch(()=>{});
 
     // Collections
-    const COL_PCD = "pcd_registro_cola";          // ✅ finales (solo GUARDADO)
-    const COL_PCD_TMP = "pcd_registro_cola_tmp";    // ✅ borradores (no van al historial)
+    const COL_PCD = "pcd_registro_cola";
+    const COL_PCD_TMP = "pcd_registro_cola_tmp";
     const COL_PCD_COUNTER = "pcd_counters";
 
-    // SPC lookup (misma dinámica SID)
+    // SPC lookup (si no lo usas, igual queda)
     const SPC_COLLECTIONS = [
-      "programacion",
-      "spc_programacion",
-      "spc_programacion_diario",
-      "spc_programacion_diaria",
-      "spc_programacion_planta",
-      "spc_programacion_2025",
-      "SPC",
-      "spc"
+      "programacion","spc_programacion","spc_programacion_diario","spc_programacion_diaria",
+      "spc_programacion_planta","spc_programacion_2025","SPC","spc"
     ];
 
-    // ✅ Acceso permitido (solo pesadores + admin)
     const ADMIN = "jeffersonfigueroa@oceantreasure.local";
     const ALLOWED = new Set([
       "pesadorcola1@oceantreasure.local",
       "pesadorcola2@oceantreasure.local",
       ADMIN
     ]);
-
-    // Supervisores válidos (para selector)
     const SUPERVISORS = new Set([
       "aracellytomala@oceantreasure.local",
       "gingervaldiviezo@oceantreasure.local"
     ]);
 
-    // Estado de registro
     let currentUserEmail = "";
     let currentUserName = "";
 
-    let tmpDocId = "";          // TMP_xxx
-    let finalDocId = "";        // PCD_00000001 (solo al GUARDAR)
-    let currentReg = "";        // mostrado en pantalla (provisional hasta GUARDAR)
-    let locked = false;         // bloqueado luego de GUARDAR
-    let draftSaved = false;     // borrador en BD (TMP)
-    let mode = "edit";          // edit | view
+    let tmpDocId = "";
+    let finalDocId = "";
+    let currentReg = "";
+    let locked = false;
+    let mode = "edit"; // edit | view
+    let record = null;
+    let saveTimer = null;
+    let lastSavedHash = "";
 
-    let record = null;          // objeto completo
-    let activeBinIdx = -1;      // bin que se está pesando
-
-    // Helpers de referencias (TMP vs FINAL)
     function isAdmin(){ return currentUserEmail === ADMIN; }
     function getDraftRef(){ return doc(db, COL_PCD_TMP, tmpDocId); }
     function getFinalRef(id){ return doc(db, COL_PCD, id); }
 
-    // Debounce guardado
-    let saveTimer = null;
-    let lastSavedHash = "";
-
-    // ========= MODELOS =========
     function blankRecord(){
       const fecha = todayKey();
       const start = hhmm();
       return {
-        regNumber: "",
+        regNumber:"",
         fecha,
-        horaInicio: start,
-        horaFinal: "",
-        createdAtIso: nowISO(),
-        updatedAtIso: nowISO(),
+        horaInicio:start,
+        horaFinal:"",
+        createdAtIso:nowISO(),
+        updatedAtIso:nowISO(),
 
-        supervisorEmail: "",
-        pesadorEmail: currentUserEmail,
-        pesadorName: currentUserName,
+        supervisorEmail:"",
+        pesadorEmail:currentUserEmail,
+        pesadorName:currentUserName,
 
-        circuito: 1,
+        circuito:1,
 
-        lote: "",
-        parcial: "",
-        secuencial: "",
-        piscina: "",
-        proveedor: "",
-        librasGuia: 0,
+        lote:"",
+        parcial:"",
+        secuencial:"",
+        piscina:"",
+        proveedor:"",
+        librasGuia:0,
 
-        humedad: { enabled:false, pct: 0 },
+        humedad:{ enabled:false, pct:0 },
 
-        bins: [], // {binNo,color,closed,total,kvt,entries:[]}
-        basuraLbs: 0,
+        bins:[],
+        basuraLbs:0,
 
-        fotoProveedorUrl: "",
-        fotoProveedorName: "",
-        fotoBasuraUrl: "",
-        fotoBasuraName: "",
+        fotoProveedorUrl:"",
+        fotoProveedorName:"",
+        fotoBasuraUrl:"",
+        fotoBasuraName:"",
 
-        estado: "BORRADOR",
-        locked: false,
+        estado:"BORRADOR",
+        locked:false,
 
-        supervisorValidatedBy: "",
-        supervisorValidatedAtIso: ""
+        supervisorValidatedBy:"",
+        supervisorValidatedAtIso:""
       };
     }
 
@@ -1021,49 +938,8 @@
       bin.kvt = kvt;
       return bin;
     }
-
-    function totalPesoCola(){
-      return (record?.bins||[]).reduce((a,b)=>a+(Number(b.total||0)),0);
-    }
-    function totalKvt(){
-      return (record?.bins||[]).reduce((a,b)=>a+(Number(b.kvt||0)),0);
-    }
-
-    function normalizeColor(c){
-      const x = String(c||"").trim().toUpperCase();
-      if(!x) return "";
-      return x;
-    }
-
-    // ========= UI =========
-    function setLockedUI(isLocked){
-      locked = !!isLocked;
-      const dis = locked || mode==="view";
-
-      // Inputs principales
-      ["inpLote","inpParcial","inpSecuencial","inpPiscina","inpBasura"].forEach(id=>{
-        const el = safe(id);
-        if(el) el.disabled = dis;
-      });
-      $("selSupervisor").disabled = dis;
-      $("selCircuito").disabled = dis;
-
-      // Humedad
-      $("humNo").disabled = dis;
-      $("humSi").disabled = dis;
-      $("humPct").disabled = dis || !$("humSi").checked;
-
-      // Bines
-      setBtnEnabled("btnAddBin", !dis);
-      renderBins();
-
-      // Fotos
-      setBtnEnabled("btnTakeFotoProv", !dis);
-      setBtnEnabled("btnTakeFotoBas", !dis);
-
-      // Footer
-      updateButtons();
-    }
+    function totalPesoCola(){ return (record?.bins||[]).reduce((a,b)=>a+(Number(b.total||0)),0); }
+    function totalKvt(){ return (record?.bins||[]).reduce((a,b)=>a+(Number(b.kvt||0)),0); }
 
     function setBtnEnabled(id, enabled){
       const el = safe(id);
@@ -1074,13 +950,35 @@
     function updateButtons(){
       const canEdit = (mode==="edit" && !locked);
       setBtnEnabled("btnGuardar", canEdit && hasInternet);
-      setBtnEnabled("btnExcel", !canEdit); // en modo lectura o locked
-      setBtnEnabled("btnPdf", !canEdit);   // en modo lectura o locked
+      setBtnEnabled("btnExcel", !canEdit);
+      setBtnEnabled("btnPdf", !canEdit);
       setBtnEnabled("btnBuscar", true);
+      setBtnEnabled("btnAddBin", canEdit && currentOpenBinIndex()===-1);
 
-      // Abrir fotos
+      setBtnEnabled("btnTakeFotoProv", canEdit);
+      setBtnEnabled("btnTakeFotoBas",  canEdit);
+
       setBtnEnabled("btnFotoProv", !!record?.fotoProveedorUrl);
       setBtnEnabled("btnFotoBas",  !!record?.fotoBasuraUrl);
+    }
+
+    function setLockedUI(isLocked){
+      locked = !!isLocked;
+      const dis = locked || mode==="view";
+
+      ["inpLote","inpParcial","inpSecuencial","inpPiscina","inpBasura"].forEach(id=>{
+        const el = safe(id);
+        if(el) el.disabled = dis;
+      });
+      $("selSupervisor").disabled = dis;
+      $("selCircuito").disabled = dis;
+
+      $("humNo").disabled = dis;
+      $("humSi").disabled = dis;
+      $("humPct").disabled = dis || !$("humSi").checked;
+
+      renderBins();
+      updateButtons();
     }
 
     function applyHumUI(){
@@ -1100,7 +998,9 @@
       $("regInicio").textContent = record?.horaInicio || "—";
       $("regFinal").textContent  = record?.horaFinal || "—";
       $("regEstado").textContent = record?.estado || "—";
-      $("pesadorCola").textContent = record?.pesadorName ? `${record.pesadorName} (${record.pesadorEmail})` : (currentUserEmail||"—");
+      $("pesadorCola").textContent = record?.pesadorName
+        ? `${record.pesadorName} (${record.pesadorEmail})`
+        : (currentUserEmail||"—");
 
       $("inpLote").value = record?.lote || "";
       $("inpParcial").value = record?.parcial || "";
@@ -1111,25 +1011,19 @@
       $("selSupervisor").value = record?.supervisorEmail || "";
       $("selCircuito").value = String(record?.circuito || 1);
 
-      // Humedad
       const en = !!record?.humedad?.enabled;
       $("humSi").checked = en;
       $("humNo").checked = !en;
       $("humPct").value = String(record?.humedad?.pct ?? (en?2:0));
       $("humPct").disabled = locked || mode==="view" || !en;
 
-      // Basura
       $("inpBasura").value = (record?.basuraLbs ? fmt2(record.basuraLbs) : "");
 
-      // Fotos
       $("fotoProvName").textContent = record?.fotoProveedorName || (record?.fotoProveedorUrl ? "foto_proveedor" : "—");
       $("fotoBasName").textContent  = record?.fotoBasuraName || (record?.fotoBasuraUrl ? "foto_basura" : "—");
 
-      // Totales
       $("pesoColaTotal").textContent = fmt0(totalPesoCola());
 
-
-      // Bines pesados / tapados
       try{
         const bins = record?.bins || [];
         const pesados = bins.filter(b=>{
@@ -1138,9 +1032,9 @@
           return n>0 || w>0;
         }).length;
         const tapados = bins.filter(b=>!!b.closed).length;
-        const el = document.getElementById("binsCountLine");
-        if(el) el.textContent = `${pesados} pesados / ${tapados} tapados`;
-      }catch(e){}
+        $("binsCountLine").textContent = `${pesados} pesados / ${tapados} tapados`;
+      }catch(_){}
+
       updateButtons();
     }
 
@@ -1171,46 +1065,49 @@
 
       bins.forEach((b, i)=>{
         calcBin(b);
-        const tr = document.createElement("tr");
-
         const canPesar = canEdit && !b.closed;
         const canTapar = canEdit && !b.closed;
 
+        const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="cBin center">BIN #: ${esc(b.binNo)}</td>
           <td class="cColor center">${esc(b.color || "")}</td>
-          <td class="cAct center">
-            <span class="btn ${canPesar ? "" : "disabled"}" data-pesar="${i}">PESAR</span>
-          </td>
-          <td class="cAct center">
-            <span class="btn ${canTapar ? "" : "disabled"}" data-tapar="${i}">TAPAR</span>
-          </td>
+          <td class="cAct center"><span class="btn ${canPesar ? "" : "disabled"}" data-pesar="${i}">PESAR</span></td>
+          <td class="cAct center"><span class="btn ${canTapar ? "" : "disabled"}" data-tapar="${i}">TAPAR</span></td>
           <td class="cLb num">${fmt0(b.total || 0)}</td>
           <td class="cKvt center">${fmt0(b.kvt || 0)}</td>
         `;
         tb.appendChild(tr);
       });
 
-      // Eventos
       tb.querySelectorAll("[data-pesar]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           if(btn.classList.contains("disabled")) return;
-          const idx = Number(btn.getAttribute("data-pesar")||-1);
-          openPesar(idx);
+          openPesar(Number(btn.getAttribute("data-pesar")||-1));
         });
       });
-
       tb.querySelectorAll("[data-tapar]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           if(btn.classList.contains("disabled")) return;
-          const idx = Number(btn.getAttribute("data-tapar")||-1);
-          doTapar(idx);
+          doTapar(Number(btn.getAttribute("data-tapar")||-1));
         });
       });
 
       $("pesoColaTotal").textContent = fmt0(totalPesoCola());
       setBinHint();
     }
+
+    function sanitizeSecuencial(s){
+      const raw = String(s||"").trim();
+      if(!raw) return "";
+      const digits = raw.replace(/\D+/g,"");
+      return digits || raw;
+    }
+
+    // ========= MODAL PESAR =========
+    let modalBinIdx = -1;
+    let modalEntries = [];
+    let baseEntries = [];
 
     function buildDetalleText(entries){
       if(!entries || !entries.length) return "—";
@@ -1222,17 +1119,11 @@
       const total = parts.join(" + ").replaceAll("+ -","- ");
       return `${total} = ${fmt0(calcEntriesTotal(entries))}`;
     }
-
     function calcEntriesTotal(entries){
       const adds = entries.filter(e=>e.t==="add").reduce((a,e)=>a+Number(e.net||0),0);
       const dels = entries.filter(e=>e.t==="del").reduce((a,e)=>a+Number(e.val||0),0);
       return Math.max(0, Math.floor((adds - dels) + 1e-9));
     }
-
-    // ========= MODAL PESAR =========
-    let modalBinIdx = -1;
-    let modalEntries = [];
-    let baseEntries = [];
 
     function modalOpen(){
       $("mPesarBack").classList.add("active");
@@ -1248,15 +1139,11 @@
       $("mDetalle").textContent = "—";
       $("mFinal").textContent = "0";
     }
-
     function updateModalUI(){
       $("mDetalle").textContent = buildDetalleText(modalEntries);
       $("mFinal").textContent = fmt0(calcEntriesTotal(modalEntries));
     }
-
-    function getGavetas(){
-      return $("mGav2").checked ? 2 : 1;
-    }
+    function getGavetas(){ return $("mGav2").checked ? 2 : 1; }
 
     function computeNet(raw){
       const gav = getGavetas();
@@ -1265,11 +1152,8 @@
       const humEn = !!record?.humedad?.enabled;
       const humPct = humEn ? (Number(record?.humedad?.pct||0) || 0) : 0;
 
-      if(humEn && humPct > 0){
-        x = x * (1 - (humPct/100));
-      }
+      if(humEn && humPct > 0) x = x * (1 - (humPct/100));
 
-      // según tu ejemplo: 63,7 => 63  (floor)
       const net = Math.max(0, Math.floor(x + 1e-9));
       return { net, gav, humPct };
     }
@@ -1294,43 +1178,23 @@
 
     $("mPlus").onclick = ()=>{
       const raw = parseEsNumber($("mLbs").value);
-      if(!Number.isFinite(raw) || raw <= 0){
-        alert("Ingrese un valor válido de LIBRAS.");
-        return;
-      }
+      if(!Number.isFinite(raw) || raw <= 0){ alert("Ingrese un valor válido de LIBRAS."); return; }
       if(!record) return;
 
       const { net, gav, humPct } = computeNet(raw);
-      modalEntries.push({
-        t:"add",
-        raw: Number(raw),
-        gavetas: gav,
-        humPct: Number(humPct||0),
-        net: Number(net),
-        atIso: nowISO()
-      });
+      modalEntries.push({ t:"add", raw:Number(raw), gavetas:gav, humPct:Number(humPct||0), net:Number(net), atIso:nowISO() });
       $("mLbs").value = "";
       updateModalUI();
     };
 
     $("mMinus").onclick = ()=>{
       const val = parseEsNumber($("mLbs").value);
-      if(!Number.isFinite(val) || val <= 0){
-        alert("Ingrese el valor de LIBRAS a ELIMINAR.");
-        return;
-      }
-      if(!modalEntries.length){
-        alert("No hay detalle aún.");
-        return;
-      }
+      if(!Number.isFinite(val) || val <= 0){ alert("Ingrese el valor de LIBRAS a ELIMINAR."); return; }
+      if(!modalEntries.length){ alert("No hay detalle aún."); return; }
       const ok = confirm(`¿Eliminar ${fmt0(val)} lb del BIN?\n\nEsto descontará y reducirá 1 KVT.`);
       if(!ok) return;
 
-      modalEntries.push({
-        t:"del",
-        val: Number(Math.floor(val + 1e-9)),
-        atIso: nowISO()
-      });
+      modalEntries.push({ t:"del", val:Number(Math.floor(val + 1e-9)), atIso:nowISO() });
       $("mLbs").value = "";
       updateModalUI();
     };
@@ -1346,7 +1210,6 @@
     };
 
     $("mCancelar").onclick = ()=>{
-      // revert
       if(modalBinIdx >= 0 && record?.bins?.[modalBinIdx]){
         record.bins[modalBinIdx].entries = JSON.parse(JSON.stringify(baseEntries));
         calcBin(record.bins[modalBinIdx]);
@@ -1372,18 +1235,12 @@
       const binNoRaw = prompt("Ingrese el NÚMERO de BIN:", "");
       if(binNoRaw === null) return;
       const binNo = String(binNoRaw||"").trim().replace(/\D+/g,"");
-      if(!binNo){
-        alert("Número de BIN inválido.");
-        return;
-      }
+      if(!binNo){ alert("Número de BIN inválido."); return; }
 
       const colorRaw = prompt("Ingrese el COLOR del BIN (ej: GRIS):", "GRIS");
       if(colorRaw === null) return;
-      const color = normalizeColor(colorRaw);
-      if(!color){
-        alert("Color inválido.");
-        return;
-      }
+      const color = String(colorRaw||"").trim().toUpperCase();
+      if(!color){ alert("Color inválido."); return; }
 
       const bins = record.bins || [];
       if(bins.some(b=>String(b.binNo)===String(binNo))){
@@ -1391,16 +1248,7 @@
         if(!ok) return;
       }
 
-      const bin = {
-        binNo: Number(binNo),
-        color,
-        closed: false,
-        total: 0,
-        kvt: 0,
-        entries: []
-      };
-
-      record.bins.push(bin);
+      record.bins.push({ binNo:Number(binNo), color, closed:false, total:0, kvt:0, entries:[] });
       renderBins();
       scheduleSave();
     };
@@ -1408,7 +1256,6 @@
     function doTapar(idx){
       if(!record) return;
       if(locked || mode==="view") return;
-
       const bin = record.bins[idx];
       if(!bin || bin.closed) return;
 
@@ -1421,13 +1268,6 @@
     }
 
     // ========= SPC LOOKUP =========
-    function sanitizeSecuencial(s){
-      const raw = String(s||"").trim();
-      if(!raw) return "";
-      const digits = raw.replace(/\D+/g,"");
-      return digits || raw;
-    }
-
     function pickField(data, keys){
       for(const k of keys){
         if(data && Object.prototype.hasOwnProperty.call(data,k)){
@@ -1437,7 +1277,6 @@
       }
       return null;
     }
-
     function toNumberAny(v){
       if(v === null || v === undefined) return 0;
       if(typeof v === "number") return Number.isFinite(v) ? v : 0;
@@ -1449,28 +1288,12 @@
       const n = Number(s2);
       return Number.isFinite(n) ? n : 0;
     }
-
     function extractSPC(data){
-      const prov = pickField(data, [
-        "proveedor","Proveedor","PROVEEDOR",
-        "productor","Productor","PRODUCTOR",
-        "nombreProveedor","NOMBRE_PROVEEDOR","proveedorNombre"
-      ]);
-
-      const lbsRaw = pickField(data, [
-        "guiaLbs","guia_lbs","GUIALBS","GUIA_LBS",
-        "guiaLibras","guia_libras","GUIA_LIBRAS",
-        "librasGuia","LIBRAS_GUIA",
-        "libras","Libras","LIBRAS","peso","pesoLibras","PESO_LB","lb","lbs","LB"
-      ]);
-
+      const prov = pickField(data, ["proveedor","Proveedor","PROVEEDOR","productor","Productor","PRODUCTOR","nombreProveedor","NOMBRE_PROVEEDOR","proveedorNombre"]);
+      const lbsRaw = pickField(data, ["guiaLbs","guia_lbs","GUIALBS","GUIA_LBS","guiaLibras","guia_libras","GUIA_LIBRAS","librasGuia","LIBRAS_GUIA","libras","Libras","LIBRAS","peso","pesoLibras","PESO_LB","lb","lbs","LB"]);
       const piscina = pickField(data, ["Pisc","PISC","pisc","piscina","Piscina","PISCINA"]);
-      const proveedor = String(prov || "").trim();
-      const libras = toNumberAny(lbsRaw);
-
-      return { proveedor, libras, piscina: (piscina!==null? String(piscina).trim():"") };
+      return { proveedor:String(prov||"").trim(), libras:toNumberAny(lbsRaw), piscina:(piscina!==null?String(piscina).trim():"") };
     }
-
     async function lookupSPCBySecuencial(secInput){
       const secRaw = sanitizeSecuencial(secInput);
       const secStr = (secRaw.replace(/^0+/,"") || "0");
@@ -1478,7 +1301,6 @@
 
       let permDenied = false;
 
-      // 1) docId
       for(const colName of SPC_COLLECTIONS){
         try{
           const ref = doc(db, colName, secStr);
@@ -1487,12 +1309,9 @@
             const out = extractSPC(snap.data());
             if(out) return out;
           }
-        }catch(e){
-          if(e?.code === "permission-denied") permDenied = true;
-        }
+        }catch(e){ if(e?.code === "permission-denied") permDenied = true; }
       }
 
-      // 2) where secuencial
       const secNum = Number(secStr);
       for(const colName of SPC_COLLECTIONS){
         try{
@@ -1504,9 +1323,7 @@
           const qs = query(collection(db, colName), where("secuencial","==", secStr), limit(1));
           const ss = await getDocs(qs);
           if(!ss.empty) return extractSPC(ss.docs[0].data());
-        }catch(e){
-          if(e?.code === "permission-denied") permDenied = true;
-        }
+        }catch(e){ if(e?.code === "permission-denied") permDenied = true; }
       }
 
       if(permDenied) return { __error:"permission-denied" };
@@ -1517,6 +1334,7 @@
       if(!record) return;
       const sec = sanitizeSecuencial($("inpSecuencial").value);
       record.secuencial = sec;
+
       if(!sec){
         record.proveedor = "";
         record.librasGuia = 0;
@@ -1526,10 +1344,7 @@
       }
 
       await refreshInternetStatus();
-      if(!hasInternet){
-        setStatus("Sin internet: no se puede buscar SPC.");
-        return;
-      }
+      if(!hasInternet){ setStatus("Sin internet: no se puede buscar SPC."); return; }
 
       setStatus("Buscando en SPC…");
       const found = await lookupSPCBySecuencial(sec);
@@ -1554,24 +1369,34 @@
 
       record.proveedor = found.proveedor || "";
       record.librasGuia = Number(found.libras||0) || 0;
-
-      // Piscina: si está vacío y viene desde SPC, úsala
-      if(!(record.piscina && String(record.piscina).trim()) && found.piscina){
-        record.piscina = found.piscina;
-      }
+      if(!(record.piscina && String(record.piscina).trim()) && found.piscina) record.piscina = found.piscina;
 
       setStatus("Listo.");
       renderHeader();
       scheduleSave();
     }
 
-    // ========= GUARDADO DRAFT =========
+    // ========= GUARDADO (BORRADOR AUTO) =========
     function stableHash(obj){
-      try{
-        return JSON.stringify(obj);
-      }catch(_){
-        return String(Date.now());
-      }
+      try{ return JSON.stringify(obj); } catch(_){ return String(Date.now()); }
+    }
+
+    function buildPayload(){
+      (record.bins||[]).forEach(calcBin);
+
+      const bas = parseEsNumber($("inpBasura").value);
+      record.basuraLbs = Number.isFinite(bas) ? bas : 0;
+
+      return {
+        ...record,
+        locked: !!locked,
+        docId: (finalDocId || tmpDocId),
+        tmpDocId,
+        finalDocId,
+        totalPesoCola: totalPesoCola(),
+        totalKvt: totalKvt(),
+        updatedAt: serverTimestamp()
+      };
     }
 
     function scheduleSave(){
@@ -1580,9 +1405,7 @@
       if(!tmpDocId) return;
 
       clearTimeout(saveTimer);
-      saveTimer = setTimeout(async ()=>{
-        await saveDraft();
-      }, 650);
+      saveTimer = setTimeout(async ()=>{ await saveDraft(false); }, 650);
     }
 
     async function saveDraft(force=false){
@@ -1595,10 +1418,7 @@
       if(!force && hash === lastSavedHash) return;
 
       await refreshInternetStatus();
-      if(!hasInternet){
-        setStatus("Sin internet: cambios pendientes (no se guardan).");
-        return;
-      }
+      if(!hasInternet){ setStatus("Sin internet: cambios pendientes (no se guardan)."); return; }
 
       try{
         record.updatedAtIso = nowISO();
@@ -1606,43 +1426,18 @@
 
         await setDoc(getDraftRef(), payload, { merge:true });
         lastSavedHash = hash;
-        draftSaved = true;
         setStatus("Borrador guardado en Firestore.");
       }catch(err){
         console.error(err);
         const code = err?.code || "";
         setStatus(`No se pudo guardar borrador.${code ? " ("+code+")" : ""}`);
         if(code === "permission-denied"){
-          alert("permission-denied: agrega los usuarios pesadorcola1 y pesadorcola2 en tu lista de editores (reglas Firestore).");
+          alert("permission-denied: revisa reglas Firestore para permitir guardar.");
         }
       }
     }
 
-    function buildPayload(){
-      // Recalcular bins
-      (record.bins||[]).forEach(calcBin);
-
-      // Basura
-      const bas = parseEsNumber($("inpBasura").value);
-      record.basuraLbs = Number.isFinite(bas) ? bas : 0;
-
-      // Otros campos ya sincronizados en handlers
-
-      return {
-        ...record,
-        locked: !!locked,
-        docId: (finalDocId || tmpDocId),
-        tmpDocId: tmpDocId,
-        finalDocId: finalDocId,
-        totalPesoCola: totalPesoCola(),
-        totalKvt: totalKvt(),
-        updatedAt: serverTimestamp()
-      };
-    }
-
-    // ========= NÚMERO REGISTRO =========
     async function getProvisionalRegNumber(){
-      // ✅ No incrementa contador: permite reutilizar si no se guarda
       const ref = doc(db, COL_PCD_COUNTER, "global");
       const snap = await getDoc(ref);
       let lastFinal = 0;
@@ -1655,7 +1450,6 @@
     }
 
     async function allocateFinalRegNumber(){
-      // ✅ Incrementa contador SOLO al GUARDAR
       const ref = doc(db, COL_PCD_COUNTER, "global");
       const n = await runTransaction(db, async (tx)=>{
         const snap = await tx.get(ref);
@@ -1671,23 +1465,17 @@
       return String(n).padStart(8,"0");
     }
 
-    // ========= NUEVO REGISTRO =========
     async function newRegistro(){
       await refreshInternetStatus();
-      if(!hasInternet){
-        alert("Sin internet: no se puede crear un nuevo registro.");
-        return;
-      }
+      if(!hasInternet){ alert("Sin internet: no se puede crear un nuevo registro."); return; }
       if(!currentUserEmail) return;
 
       mode = "edit";
       locked = false;
-      draftSaved = false;
       lastSavedHash = "";
 
       record = blankRecord();
 
-      // ✅ Número provisional (NO se guarda como final hasta validar supervisor)
       setStatus("Creando borrador…");
       try{
         const regProv = await getProvisionalRegNumber();
@@ -1700,11 +1488,9 @@
         record.estado = "BORRADOR";
         record.locked = false;
 
-        // defaults
         record.supervisorEmail = $("selSupervisor").value || "";
         record.circuito = Number($("selCircuito").value||1) || 1;
 
-        // ✅ crear doc TMP (borrador) de una vez
         await setDoc(doc(db, COL_PCD_TMP, tmpDocId), {
           ...record,
           tmpDocId,
@@ -1715,7 +1501,6 @@
           updatedAt: serverTimestamp()
         }, { merge:false });
 
-        draftSaved = true;
         setStatus("Borrador creado. Ingrese datos y pese bines.");
         renderHeader();
         renderBins();
@@ -1724,42 +1509,32 @@
         console.error(err);
         const code = err?.code || "";
         setStatus(`No se pudo crear borrador.${code ? " ("+code+")" : ""}`);
-        if(code === "permission-denied"){
-          alert("permission-denied: revisa reglas Firestore (isEditor) para pesadores.");
-        }
+        if(code === "permission-denied") alert("permission-denied: revisa reglas Firestore para crear borrador.");
       }
     }
 
-    // ========= CARGA DESDE BD =========
     function loadFromDoc(d){
-      finalDocId = d.id || d.docId || "";
+      finalDocId = d.regNumber || d.id || d.docId || "";
       tmpDocId = d.tmpDocId || "";
       currentReg = d.regNumber || "";
-      record = {
-        ...blankRecord(),
-        ...d
-      };
+      record = { ...blankRecord(), ...d };
       locked = true;
       mode = "view";
       setStatus("Registro cargado (solo lectura).");
       renderHeader();
       renderBins();
-      setLockedUI(true); // bloquea
-      updateButtons();
+      setLockedUI(true);
       showView("app");
     }
 
-    // ========= FOTO =========
+    // ========= FOTOS =========
     async function uploadPhoto(file, kind){
       if(!file) return;
       if(!record || !tmpDocId) return;
       if(locked || mode==="view") return;
 
       await refreshInternetStatus();
-      if(!hasInternet){
-        alert("Sin internet: no se puede subir la foto.");
-        return;
-      }
+      if(!hasInternet){ alert("Sin internet: no se puede subir la foto."); return; }
 
       const maxMB = 6;
       if(file.size > maxMB*1024*1024){
@@ -1787,21 +1562,17 @@
           record.fotoBasuraName = file.name || "foto_basura";
         }
 
-
         renderHeader();
-        // ✅ Persistir foto inmediatamente (para que se vea en historial y al abrir)
+
         try{
           const patch = (kind==="proveedor")
-            ? { fotoProveedorUrl: url, fotoProveedorName: record.fotoProveedorName, fotoUpdatedAt: serverTimestamp() }
-            : { fotoBasuraUrl: url, fotoBasuraName: record.fotoBasuraName, fotoUpdatedAt: serverTimestamp() };
+            ? { fotoProveedorUrl:url, fotoProveedorName:record.fotoProveedorName, fotoUpdatedAt:serverTimestamp() }
+            : { fotoBasuraUrl:url, fotoBasuraName:record.fotoBasuraName, fotoUpdatedAt:serverTimestamp() };
           await updateDoc(getDraftRef(), patch);
-        }catch(e){
-          // si no existe todavía, caerá al setDoc por autosave igualmente
-        }
+        }catch(_){}
 
         scheduleSave();
         setStatus("Foto subida.");
-
       }catch(err){
         console.error(err);
         const code = err?.code || "";
@@ -1824,291 +1595,89 @@
       await uploadPhoto(f, "basura");
     });
 
-    $("btnFotoProv").onclick = ()=>{
-      const url = record?.fotoProveedorUrl || "";
-      if(!url) return;
-      window.open(url, "_blank", "noopener");
-    };
-    $("btnFotoBas").onclick = ()=>{
-      const url = record?.fotoBasuraUrl || "";
-      if(!url) return;
-      window.open(url, "_blank", "noopener");
-    };
+    $("btnFotoProv").onclick = ()=>{ const url = record?.fotoProveedorUrl || ""; if(url) window.open(url,"_blank","noopener"); };
+    $("btnFotoBas").onclick  = ()=>{ const url = record?.fotoBasuraUrl || ""; if(url) window.open(url,"_blank","noopener"); };
 
-    // ========= EXCEL / PDF =========
-    function buildEntriesFlat(){
-      const out = [];
-      for(const b of (record?.bins||[])){
-        const entries = b.entries || [];
-        entries.forEach((e, idx)=>{
-          if(e.t==="add"){
-            out.push({
-              bin: b.binNo,
-              color: b.color,
-              tipo: "PESADA",
-              raw: Number(e.raw||0),
-              gavetas: Number(e.gavetas||0),
-              humedadPct: Number(e.humPct||0),
-              neto: Number(e.net||0),
-              fechaHora: e.atIso || ""
-            });
-          }else if(e.t==="del"){
-            out.push({
-              bin: b.binNo,
-              color: b.color,
-              tipo: "ELIMINAR",
-              raw: "",
-              gavetas: "",
-              humedadPct: "",
-              neto: -Number(e.val||0),
-              fechaHora: e.atIso || ""
-            });
-          }
-        });
-        // resumen por bin
-        out.push({
-          bin: b.binNo,
-          color: b.color,
-          tipo: "TOTAL BIN",
-          raw: "",
-          gavetas: "",
-          humedadPct: "",
-          neto: Number(b.total||0),
-          fechaHora: ""
-        });
-      }
-      return out;
+    // ========= EXPORT EXCEL / PDF =========
+    function buildExcelRows(){
+      const rows = [];
+      rows.push(["REGISTRO", record?.regNumber||""]);
+      rows.push(["FECHA", record?.fecha||""]);
+      rows.push(["HORA INICIO", record?.horaInicio||""]);
+      rows.push(["HORA FINAL", record?.horaFinal||""]);
+      rows.push(["PESADOR", record?.pesadorEmail||""]);
+      rows.push(["SUPERVISOR", record?.supervisorEmail||""]);
+      rows.push(["CIRCUITO", record?.circuito||""]);
+      rows.push(["LOTE", record?.lote||""]);
+      rows.push(["PARCIAL", record?.parcial||""]);
+      rows.push(["SECUENCIAL", record?.secuencial||""]);
+      rows.push(["PISCINA", record?.piscina||""]);
+      rows.push(["PROVEEDOR", record?.proveedor||""]);
+      rows.push(["LIBRAS GUIA", Number(record?.librasGuia||0)]);
+      rows.push(["HUMEDAD", record?.humedad?.enabled ? "SI" : "NO"]);
+      rows.push(["HUMEDAD %", Number(record?.humedad?.pct||0)]);
+      rows.push(["BASURA (LB)", Number(record?.basuraLbs||0)]);
+      rows.push(["TOTAL PESO COLA", Number(totalPesoCola())]);
+      rows.push(["TOTAL KVT", Number(totalKvt())]);
+      rows.push([]);
+      rows.push(["BIN", "COLOR", "LIBRAS", "KVT", "CERRADO"]);
+      (record?.bins||[]).forEach(b=>{
+        calcBin(b);
+        rows.push([b.binNo, b.color, Number(b.total||0), Number(b.kvt||0), b.closed ? "SI" : "NO"]);
+      });
+      return rows;
     }
 
-    $("btnExcel").onclick = ()=>{
-      if(mode!=="view" && !locked){
-        alert("Excel se habilita después de GUARDAR.");
-        return;
-      }
-      try{
-        const XLSX = window.XLSX;
-        if(!XLSX){ alert("No se pudo cargar la librería de Excel."); return; }
+    async function exportExcel(){
+      if(!record) return;
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(buildExcelRows());
+      XLSX.utils.book_append_sheet(wb, ws, "PCD");
+      const fname = `PCD_${record.regNumber||"00000000"}_${record.fecha||todayKey()}.xlsx`;
+      XLSX.writeFile(wb, fname);
+    }
 
-        const aoa = [];
-        aoa.push(["PCD | REGISTRO PESO COLA"]);
-        aoa.push(["Registro", record.regNumber, "Fecha", record.fecha, "Inicio", record.horaInicio, "Final", record.horaFinal]);
-        aoa.push(["Lote", record.lote, "Parcial", record.parcial, "Secuencial", record.secuencial, "Piscina", record.piscina]);
-        aoa.push(["Proveedor", record.proveedor, "Libras guía", record.librasGuia, "Supervisor", record.supervisorEmail, "Pesador", record.pesadorEmail]);
-        aoa.push(["Humedad", record.humedad.enabled ? "SI" : "NO", "Pct", record.humedad.pct, "Basura", record.basuraLbs, "Circuito", record.circuito]);
-        aoa.push([]);
-        aoa.push(["BIN","COLOR","TIPO","RAW","GAVETAS","HUM%","NETO","FECHA/HORA"]);
+    async function exportPDF(){
+      if(!record) return;
+      const el = $("sheet");
+      if(!el) return;
 
-        const flat = buildEntriesFlat();
-        flat.forEach(r=>{
-          aoa.push([
-            r.bin, r.color, r.tipo, r.raw, r.gavetas, r.humedadPct, r.neto, r.fechaHora
-          ]);
-        });
+      const { jsPDF } = window.jspdf;
+      setStatus("Generando PDF…");
 
-        aoa.push([]);
-        aoa.push(["TOTAL PESO COLA", totalPesoCola(), "TOTAL KVT", totalKvt()]);
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#ffffff" });
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
 
-        const ws = XLSX.utils.aoa_to_sheet(aoa);
-        ws["!cols"] = [{wch:8},{wch:10},{wch:12},{wch:10},{wch:10},{wch:8},{wch:10},{wch:22}];
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "PCD");
-
-        const who = (currentUserEmail || "usuario").split("@")[0];
-        const fname = `PCD_${(record.regNumber||"SIN_NUMERO")}_${who}_${Date.now()}.xlsx`.replaceAll(" ","_");
-        XLSX.writeFile(wb, fname);
-      }catch(err){
-        console.error(err);
-        alert("No se pudo exportar Excel.");
-      }
-    };
-
-    $("btnPdf").onclick = async ()=>{
-      if(mode!=="view" && !locked){
-        alert("PDF se habilita después de GUARDAR.");
-        return;
-      }
-
-      const sheet = $("sheet");
-      if(!sheet){ alert("No se encontró el reporte."); return; }
-
-      const { jsPDF } = window.jspdf || {};
-      if(!jsPDF){ alert("No se pudo cargar PDF."); return; }
-
-      // Asegurar que los wrappers no recorten
-      const tblWrapEl = sheet.querySelector(".tblWrap");
-      const _old = tblWrapEl ? {overflow: tblWrapEl.style.overflow, maxHeight: tblWrapEl.style.maxHeight} : null;
-      if(tblWrapEl){ tblWrapEl.style.overflow = "visible"; tblWrapEl.style.maxHeight = "none"; }
-
-      const canvas = await html2canvas(sheet, {scale:2, useCORS:true, backgroundColor:"#ffffff"});
-
-      if(tblWrapEl && _old){ tblWrapEl.style.overflow = _old.overflow; tblWrapEl.style.maxHeight = _old.maxHeight; }
-
-      const pdf = new jsPDF({orientation:"portrait", unit:"pt", format:"a4"});
+      const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
 
-      const margin = 18;
-      const printableW = pageW - margin*2;
-      const printableH = pageH - margin*2;
+      // Ajuste proporcional a ancho
+      const imgW = pageW - 36;
+      const imgH = canvas.height * (imgW / canvas.width);
 
-      const imgW = canvas.width;
-      const imgH = canvas.height;
+      let y = 18;
+      let remaining = imgH;
 
-      const ratio = printableW / imgW;
-      let sliceHpx = Math.floor(printableH / ratio);
-      if(!Number.isFinite(sliceHpx) || sliceHpx <= 0) sliceHpx = imgH;
+      pdf.addImage(imgData, "JPEG", 18, y, imgW, imgH);
 
-      let pageIndex = 0;
-      for(let y=0; y<imgH; y += sliceHpx){
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = imgW;
-        sliceCanvas.height = Math.min(sliceHpx, imgH - y);
-
-        const ctx = sliceCanvas.getContext("2d");
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
-        ctx.drawImage(canvas, 0, y, imgW, sliceCanvas.height, 0, 0, imgW, sliceCanvas.height);
-
-        const imgData = sliceCanvas.toDataURL("image/png");
-        const sliceHpt = sliceCanvas.height * ratio;
-
-        if(pageIndex > 0) pdf.addPage();
-        pdf.addImage(imgData, "PNG", margin, margin, printableW, sliceHpt);
-        pageIndex++;
+      // multipágina si excede
+      while(remaining > pageH){
+        remaining -= pageH;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 18, 18 - (imgH - remaining), imgW, imgH);
       }
 
-      const who = (currentUserEmail || "usuario").split("@")[0];
-      const fname = `PCD_${(record.regNumber||"SIN_NUMERO")}_${who}_${Date.now()}.pdf`.replaceAll(" ","_");
+      const fname = `PCD_${record.regNumber||"00000000"}_${record.fecha||todayKey()}.pdf`;
       pdf.save(fname);
-    };
-
-    // ========= HISTORIAL =========
-    function dateAddDays(yyyyMmDd, deltaDays){
-      const [y,m,d] = String(yyyyMmDd).split("-").map(x=>Number(x||0));
-      const dt = new Date(y, (m||1)-1, d||1);
-      dt.setDate(dt.getDate() + deltaDays);
-      const pad = (n)=>String(n).padStart(2,"0");
-      return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+      setStatus("PDF generado.");
     }
 
-    async function fetchHistorial(){
-      const box = $('histList');
-      box.innerHTML = '<div class="hint">Cargando…</div>';
-
-      const from = String($('histFrom').value || '').trim();
-      const to   = String($('histTo').value || '').trim();
-      const termRaw = String($('histReg').value || '').trim();
-      const term = termRaw.replace(/\s+/g,'');
-      const userEmail = currentUserEmail || '';
-
-      try{
-        const col = collection(db, COL_PCD);
-        const clauses = [];
-
-        // Rango de fechas (si está definido)
-        if (from) clauses.push(where('fechaISO','>=', from));
-        if (to)   clauses.push(where('fechaISO','<=', to));
-
-        // Si NO es admin, solo ve sus propios registros
-        if (!isAdmin() && userEmail){
-          clauses.push(where('pesadorEmail','==', userEmail));
-        }
-
-        // Búsqueda por Registro (8) o Secuencial (4)
-        if (term){
-          const digits = term.replace(/\D/g,'');
-          if (digits.length === 8){
-            clauses.push(where('registroNumero','==', digits.padStart(8,'0')));
-          }else if (digits.length === 4){
-            clauses.push(where('secuencial','==', digits.padStart(4,'0')));
-          }else{
-            box.innerHTML = '<div class="hint">Escribe <b>8 dígitos</b> (Registro) o <b>4 dígitos</b> (Secuencial).</div>';
-            return;
-          }
-        }
-
-        // Orden
-        let q;
-        if (clauses.length){
-          q = query(col, ...clauses, orderBy('fechaISO','desc'), orderBy('updatedAt','desc'), limit(200));
-        }else{
-          q = query(col, orderBy('fechaISO','desc'), orderBy('updatedAt','desc'), limit(200));
-        }
-
-        const snap = await getDocs(q);
-        const items = [];
-        snap.forEach(d=>{
-          const x = d.data();
-          items.push({id:d.id, ...x});
-        });
-
-        renderHistorial(items);
-      }catch(err){
-        console.error(err);
-        box.innerHTML = '<div class="hint" style="color:#b91c1c">Error cargando historial. Si te pide índice, créalo en Firestore.</div>';
-      }
-    }
-
-    async function openHistorial(){
-      await refreshInternetStatus();
-      if(!hasInternet){
-        alert("Sin internet: no se puede cargar historial.");
-        return;
-      }
-
-      const t = todayKey();
-      if(!$("histHasta").value) $("histHasta").value = t;
-      if(!$("histDesde").value) $("histDesde").value = dateAddDays(t, -14);
-
-      $("histReg").value = "";
-
-      showView("hist");
-      await loadHistorial();
-    }
-
-    async function loadHistorial(){
-      const desde = $("histDesde").value || todayKey();
-      const hasta = $("histHasta").value || todayKey();
-      const reg = ($("histReg").value || "").trim();
-
-      if(desde > hasta){
-        alert("Rango inválido: DESDE no puede ser mayor que HASTA.");
-        return;
-      }
-
-      setHistStatus("Cargando historial…");
-      try{
-        const items = await fetchHistorial(desde, hasta, reg);
-        renderHistorial(items);
-        setHistStatus(`Listo. Registros: ${items.length}`);
-      }catch(err){
-        console.error(err);
-        setHistStatus("Error cargando historial.");
-        alert("No se pudo cargar el historial.");
-      }
-    }
-
-    $("btnBuscar").onclick = openHistorial;
-    $("btnHistFiltrar").onclick = loadHistorial;
-    $("btnHistBack").onclick = ()=>{ showView("app"); };
-    $("btnHistLogout").onclick = async ()=>{ await signOut(auth); };
-
-    // ========= GUARDAR FINAL (con supervisor) =========
+    // ========= GUARDAR FINAL (con validación supervisor) =========
     function openSupModal(){
-      const sup = ($("selSupervisor").value || "").trim().toLowerCase();
-      if(!sup){
-        alert("Seleccione un SUPERVISOR antes de guardar.");
-        return;
-      }
-      if(!SUPERVISORS.has(sup)){
-        alert("Supervisor inválido.");
-        return;
-      }
-      $("mSupEmail").value = sup;
-      $("mSupPass").value = "";
-      $("mSupMsg").textContent = "—";
       $("mSupBack").classList.add("active");
+      $("mSupMsg").textContent = "—";
+      $("mSupPass").value = "";
       $("mSupPass").focus();
     }
     function closeSupModal(){
@@ -2116,282 +1685,394 @@
       $("mSupPass").value = "";
       $("mSupMsg").textContent = "—";
     }
-    $("mSupBack").addEventListener("click",(e)=>{
-      if(e.target === $("mSupBack")) closeSupModal();
-    });
-    $("mSupCancel").onclick = closeSupModal;
 
-    async function validateSupervisor(email, pass){
-      // Login temporal en authVerify (inMemory)
-      try{
-        await signIn2(authVerify, email, pass);
-        await signOut2(authVerify);
-        return true;
-      }catch(err){
-        console.warn("Supervisor validate error:", err?.code||err);
-        try{ await signOut2(authVerify); }catch(_){}
-        return false;
-      }
-    }
-
-    async function finalizeSave(){
-      if(!record || !tmpDocId) return;
+    async function finalizeSaveWithSupervisor(){
+      if(!record) return;
       if(locked || mode==="view") return;
 
       await refreshInternetStatus();
-      if(!hasInternet){
-        alert("Sin internet: no se puede GUARDAR.");
-        return;
+      if(!hasInternet){ alert("Sin internet: no se puede guardar."); return; }
+
+      const sup = String($("selSupervisor").value||"").trim();
+      if(!sup){ alert("Seleccione un Supervisor antes de guardar."); return; }
+      if(!SUPERVISORS.has(sup)){
+        const ok = confirm("Supervisor no está en la lista interna.\n\n¿Deseas continuar igual?");
+        if(!ok) return;
       }
 
-      // Validaciones mínimas
-      const sup = ($("selSupervisor").value || "").trim().toLowerCase();
-      if(!sup){ alert("Seleccione un SUPERVISOR."); return; }
-      if(!SUPERVISORS.has(sup)){ alert("Supervisor inválido."); return; }
-
-      const sec = sanitizeSecuencial($("inpSecuencial").value);
-      if(!sec){ alert("Ingrese SECUENCIAL."); return; }
-
-      if(!(record.bins||[]).length){
-        alert("Agregue al menos 1 BIN y pese libras.");
-        return;
-      }
-      if(currentOpenBinIndex() !== -1){
-        alert("Debe TAPAR el BIN activo antes de guardar.");
-        return;
-      }
-
+      $("mSupEmail").value = sup;
       openSupModal();
     }
 
-    $("btnGuardar").onclick = finalizeSave;
+    $("mSupCancel").onclick = ()=>closeSupModal();
 
     $("mSupOk").onclick = async ()=>{
-      const sup = ($("mSupEmail").value || "").trim().toLowerCase();
-      const pass = $("mSupPass").value || "";
-      if(!pass){
-        $("mSupMsg").textContent = "Ingrese la contraseña del supervisor.";
-        return;
-      }
+      const supEmail = String($("mSupEmail").value||"").trim();
+      const supPass = String($("mSupPass").value||"");
+      if(!supEmail || !supPass){ $("mSupMsg").textContent = "Ingrese contraseña del supervisor."; return; }
 
       $("mSupMsg").textContent = "Validando…";
-      const ok = await validateSupervisor(sup, pass);
-
-      if(!ok){
-        $("mSupMsg").textContent = "❌ Usuario o contraseña incorrectos.";
-        return;
-      }
-
-      $("mSupMsg").textContent = "✅ Validado. Guardando…";
-
-      if(!record || !tmpDocId){
-        $("mSupMsg").textContent = "No hay borrador activo.";
-        return;
-      }
-
-      // Actualizar datos desde UI
-      record.supervisorEmail = sup;
-      record.circuito = Number($("selCircuito").value||1) || 1;
-
-      record.lote = $("inpLote").value || "";
-      record.parcial = $("inpParcial").value || "";
-      record.secuencial = sanitizeSecuencial($("inpSecuencial").value);
-      record.piscina = $("inpPiscina").value || "";
-      record.basuraLbs = Number.isFinite(parseEsNumber($("inpBasura").value)) ? parseEsNumber($("inpBasura").value) : 0;
-
-      record.horaFinal = hhmm();
-      record.estado = "GUARDADO";
-      record.locked = true;
-      record.supervisorValidatedBy = sup;
-      record.supervisorValidatedAtIso = nowISO();
 
       try{
-        // ✅ Asignar número FINAL SOLO aquí
-        const regFinal = await allocateFinalRegNumber();
-        currentReg = regFinal;
-        record.regNumber = regFinal;
+        await signIn2(authVerify, supEmail, supPass);
+      }catch(err){
+        console.error(err);
+        $("mSupMsg").textContent = "Credenciales inválidas.";
+        return;
+      }finally{
+        try{ await signOut2(authVerify); }catch(_){}
+      }
 
-        finalDocId = `PCD_${regFinal}`;
+      try{
+        // Alloc final number (doc id = regNumber)
+        const finalReg = await allocateFinalRegNumber();
+        finalDocId = finalReg;
+
+        // si el provisional era distinto, reemplaza
+        record.regNumber = finalReg;
+        record.supervisorEmail = supEmail;
+        record.horaFinal = hhmm();
+        record.estado = "GUARDADO";
+        record.locked = true;
+        record.supervisorValidatedBy = supEmail;
+        record.supervisorValidatedAtIso = nowISO();
 
         const payload = buildPayload();
-        payload.regNumber = regFinal;
-        payload.estado = "GUARDADO";
-        payload.locked = true;
+        payload.regNumber = finalReg;
+        payload.finalDocId = finalReg;
         payload.tmpDocId = tmpDocId;
-        payload.finalDocId = finalDocId;
+        payload.estado = record.estado;
+        payload.locked = true;
+        payload.horaFinal = record.horaFinal;
+        payload.supervisorValidatedBy = record.supervisorValidatedBy;
+        payload.supervisorValidatedAtIso = record.supervisorValidatedAtIso;
 
-        // ✅ Guardar final
-        await setDoc(doc(db, COL_PCD, finalDocId), {
+        // Guarda en colección final
+        await setDoc(getFinalRef(finalReg), {
           ...payload,
-          supervisorEmail: sup,
-          horaFinal: record.horaFinal,
-          estado: "GUARDADO",
-          locked: true,
-          supervisorValidatedBy: sup,
-          supervisorValidatedAtIso: record.supervisorValidatedAtIso,
-          savedAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
         }, { merge:false });
 
-        // ✅ eliminar borrador TMP
-        try{ await deleteDoc(doc(db, COL_PCD_TMP, tmpDocId)); }catch(_){}
+        // limpia borrador
+        try{ await deleteDoc(getDraftRef()); }catch(_){}
 
-        closeSupModal();
-
+        // bloquea UI
         locked = true;
         mode = "view";
-        setStatus("Guardado. Registro bloqueado.");
+        closeSupModal();
         setLockedUI(true);
         renderHeader();
         renderBins();
-        alert(`Registro guardado y bloqueado correctamente.\n\nRegistro N°: ${regFinal}`);
+        setStatus("Registro guardado y bloqueado.");
       }catch(err){
         console.error(err);
         const code = err?.code || "";
-        $("mSupMsg").textContent = `No se pudo guardar.${code ? " ("+code+")" : ""}`;
-        if(code === "permission-denied"){
-          alert("permission-denied: revisa reglas Firestore (isEditor) y permisos del contador.");
-        }
+        $("mSupMsg").textContent = "No se pudo guardar." + (code?(" ("+code+")"):"");
+        alert("No se pudo guardar en Firestore." + (code?("\nCódigo: "+code):""));
       }
     };
 
+    // ========= HISTORIAL (FIX v1.1.6) =========
+    function histDefaultDates(){
+      const h = todayKey();
+      const d = addDaysIso(h, -14); // 2 semanas por defecto
+      $("histDesde").value = d;
+      $("histHasta").value = h;
+      $("histReg").value = "";
+    }
+
+    function clearHistTable(){
+      $("tbodyHist").innerHTML = "";
+      $("histSumMine").textContent = "—";
+      showHistErr(false);
+    }
+
+    function normRegInput(s){
+      return String(s||"").trim().replace(/\s+/g,"").replace(/\D+/g,"");
+    }
+
+    async function loadHist(){
+      clearHistTable();
+      showHistErr(false);
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setHistStatus("Sin internet.");
+        showHistErr(true,"Sin conexión a internet.");
+        return;
+      }
+
+      const desde = $("histDesde").value || addDaysIso(todayKey(), -14);
+      const hasta = $("histHasta").value || todayKey();
+      const regIn = normRegInput($("histReg").value);
+
+      setHistStatus("Cargando historial…");
+
+      try{
+        let docs = [];
+
+        // 1) Si REGISTRO/SECUENCIAL viene lleno: NO usamos orderBy para evitar índices compuestos
+        if(regIn){
+          if(regIn.length === 8){
+            const q1 = query(collection(db, COL_PCD), where("regNumber","==", regIn), limit(50));
+            const snap = await getDocs(q1);
+            docs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+          }else if(regIn.length === 4){
+            const secNum = Number(regIn);
+            const tries = [];
+            if(Number.isFinite(secNum)) tries.push(query(collection(db, COL_PCD), where("secuencial","==", secNum), limit(200)));
+            tries.push(query(collection(db, COL_PCD), where("secuencial","==", regIn), limit(200)));
+
+            for(const tq of tries){
+              const snap = await getDocs(tq);
+              if(!snap.empty){
+                docs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+                break;
+              }
+            }
+          }else{
+            // si meten algo raro, tratamos como regNumber
+            const q1 = query(collection(db, COL_PCD), where("regNumber","==", regIn.padStart(8,"0")), limit(50));
+            const snap = await getDocs(q1);
+            docs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+          }
+        }else{
+          // 2) Sin REGISTRO: usamos rango de FECHA + orderBy FECHA (NO requiere índice compuesto)
+          const qh = query(
+            collection(db, COL_PCD),
+            where("fecha", ">=", desde),
+            where("fecha", "<=", hasta),
+            orderBy("fecha","desc"),
+            limit(400)
+          );
+          const snap = await getDocs(qh);
+          docs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+        }
+
+        // orden local (por si el query no ordena)
+        docs.sort((a,b)=>String(b.fecha||"").localeCompare(String(a.fecha||"")));
+
+        renderHistRows(docs);
+
+        const sumMine = docs.reduce((acc,r)=>acc + (Number(r.totalPesoCola||0)||0), 0);
+        $("histSumMine").textContent = `Registros: ${docs.length} • Peso cola total: ${fmt0(sumMine)} lb`;
+
+        setHistStatus("Listo.");
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        setHistStatus("Error cargando historial.");
+        showHistErr(true, "Error cargando historial." + (code?(" ("+code+")"):""));
+        alert("No se pudo cargar el historial." + (code?("\n\nCódigo: "+code):""));
+      }
+    }
+
+    function renderHistRows(rows){
+      const tb = $("tbodyHist");
+      tb.innerHTML = "";
+      if(!rows.length){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="9" class="center" style="font-family:Arial,Helvetica,sans-serif;">Sin resultados</td>`;
+        tb.appendChild(tr);
+        return;
+      }
+
+      for(const r of rows){
+        const reg = String(r.regNumber || r.id || "").padStart(8,"0");
+        const sec = String(r.secuencial || "");
+        const prov = String(r.proveedor || "");
+        const pes = String(r.pesadorEmail || r.pesadorName || "");
+        const cola = Number(r.totalPesoCola ?? r.pesoColaTotal ?? 0) || 0;
+        const kvt  = Number(r.totalKvt ?? 0) || 0;
+
+        const canDel = isAdmin(); // solo admin elimina final
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="center">${esc(r.fecha||"")}</td>
+          <td class="center">${esc(reg)}</td>
+          <td class="center">${esc(sec)}</td>
+          <td>${esc(prov)}</td>
+          <td class="num">${fmt0(cola)}</td>
+          <td class="center">${fmt0(kvt)}</td>
+          <td>${esc(pes)}</td>
+          <td class="center"><span class="btn" data-open="${esc(reg)}">ABRIR</span></td>
+          <td class="center"><span class="btn ${canDel?"danger":"disabled"}" data-del="${esc(reg)}">ELIMINAR</span></td>
+        `;
+        tb.appendChild(tr);
+      }
+
+      tb.querySelectorAll("[data-open]").forEach(b=>{
+        b.addEventListener("click", async ()=>{
+          const reg = b.getAttribute("data-open");
+          await openByReg(reg);
+        });
+      });
+      tb.querySelectorAll("[data-del]").forEach(b=>{
+        b.addEventListener("click", async ()=>{
+          if(b.classList.contains("disabled")) return;
+          const reg = b.getAttribute("data-del");
+          await deleteByReg(reg);
+        });
+      });
+    }
+
+    async function openByReg(reg){
+      await refreshInternetStatus();
+      if(!hasInternet){ alert("Sin internet."); return; }
+      setHistStatus("Abriendo…");
+      try{
+        const snap = await getDoc(getFinalRef(reg));
+        if(!snap.exists()){
+          alert("No existe ese registro.");
+          setHistStatus("No encontrado.");
+          return;
+        }
+        loadFromDoc({ id:snap.id, ...snap.data() });
+        setHistStatus("Listo.");
+      }catch(err){
+        console.error(err);
+        alert("No se pudo abrir el registro.");
+        setHistStatus("Error.");
+      }
+    }
+
+    async function deleteByReg(reg){
+      const ok = confirm(`¿Eliminar el REGISTRO ${reg}?\n\nEsta acción no se puede deshacer.`);
+      if(!ok) return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){ alert("Sin internet."); return; }
+
+      setHistStatus("Eliminando…");
+      try{
+        await deleteDoc(getFinalRef(reg));
+        setHistStatus("Eliminado.");
+        await loadHist();
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        alert("No se pudo eliminar." + (code?("\n\nCódigo: "+code):""));
+        setHistStatus("Error.");
+      }
+    }
+
     // ========= INPUT HANDLERS =========
     function bindInputs(){
-      $("inpLote").addEventListener("input", ()=>{
-        if(!record) return;
-        record.lote = $("inpLote").value || "";
-        scheduleSave();
-      });
-      $("inpParcial").addEventListener("input", ()=>{
-        if(!record) return;
-        record.parcial = $("inpParcial").value || "";
-        scheduleSave();
-      });
-      $("inpPiscina").addEventListener("input", ()=>{
-        if(!record) return;
-        record.piscina = $("inpPiscina").value || "";
-        scheduleSave();
-      });
+      $("inpLote").addEventListener("input", ()=>{ if(!record) return; record.lote = $("inpLote").value || ""; scheduleSave(); });
+      $("inpParcial").addEventListener("input", ()=>{ if(!record) return; record.parcial = $("inpParcial").value || ""; scheduleSave(); });
+      $("inpPiscina").addEventListener("input", ()=>{ if(!record) return; record.piscina = $("inpPiscina").value || ""; scheduleSave(); });
 
       $("inpSecuencial").addEventListener("keydown", (e)=>{
-        if(e.key==="Enter"){
-          e.preventDefault();
-          resolveSPC();
-        }
+        if(e.key==="Enter"){ e.preventDefault(); resolveSPC(); }
       });
-      $("inpSecuencial").addEventListener("blur", ()=>{
-        resolveSPC();
-      });
+      $("inpSecuencial").addEventListener("blur", ()=>resolveSPC());
 
-      $("selSupervisor").addEventListener("change", ()=>{
-        if(!record) return;
-        record.supervisorEmail = $("selSupervisor").value || "";
-        scheduleSave();
-      });
-      $("selCircuito").addEventListener("change", ()=>{
-        if(!record) return;
-        record.circuito = Number($("selCircuito").value||1) || 1;
-        scheduleSave();
-      });
+      $("selSupervisor").addEventListener("change", ()=>{ if(!record) return; record.supervisorEmail = $("selSupervisor").value || ""; scheduleSave(); });
+      $("selCircuito").addEventListener("change", ()=>{ if(!record) return; record.circuito = Number($("selCircuito").value||1) || 1; scheduleSave(); });
 
       $("humNo").addEventListener("change", applyHumUI);
       $("humSi").addEventListener("change", applyHumUI);
       $("humPct").addEventListener("input", ()=>{
         if(!record) return;
-        record.humedad.enabled = $("humSi").checked;
-        record.humedad.pct = $("humSi").checked ? (Number($("humPct").value||0) || 0) : 0;
+        record.humedad.pct = Number($("humPct").value||0) || 0;
         scheduleSave();
       });
 
-      $("inpBasura").addEventListener("input", ()=>{
-        if(!record) return;
-        record.basuraLbs = Number.isFinite(parseEsNumber($("inpBasura").value)) ? parseEsNumber($("inpBasura").value) : 0;
-        scheduleSave();
+      $("inpBasura").addEventListener("input", ()=>scheduleSave());
+
+      $("btnNuevo").addEventListener("click", ()=>newRegistro());
+      $("btnLogout").addEventListener("click", ()=>signOut(auth));
+      $("btnGuardar").addEventListener("click", ()=>finalizeSaveWithSupervisor());
+
+      $("btnExcel").addEventListener("click", ()=>exportExcel());
+      $("btnPdf").addEventListener("click", ()=>exportPDF());
+
+      // BUSCAR -> abre historial y carga
+      $("btnBuscar").addEventListener("click", async ()=>{
+        showView("hist");
+        if(!$("histDesde").value || !$("histHasta").value) histDefaultDates();
+        await loadHist();
+      });
+
+      // historial botones
+      $("btnHistBack").addEventListener("click", ()=>showView("app"));
+      $("btnHistLogout").addEventListener("click", ()=>signOut(auth));
+      $("btnHistFiltrar").addEventListener("click", ()=>loadHist());
+
+      // Enter en input REGISTRO
+      $("histReg").addEventListener("keydown",(e)=>{
+        if(e.key==="Enter"){ e.preventDefault(); loadHist(); }
+      });
+
+      // cerrar sup modal tocando fondo
+      $("mSupBack").addEventListener("click",(e)=>{
+        if(e.target === $("mSupBack")) closeSupModal();
       });
     }
 
-    // ========= LOGIN =========
-    const bootMsgEl = $("bootMsg");
-    if(bootMsgEl) bootMsgEl.textContent = "Cargando Firebase…";
-
-    $("btnLogin").onclick = async ()=>{
+    // ========= LOGIN / AUTH =========
+    async function doLogin(){
+      const email = String($("loginEmail").value||"").trim().toLowerCase();
+      const pass = String($("loginPass").value||"");
       $("loginMsg").textContent = "";
-      const boot2 = safe("bootMsg");
-      if(boot2) boot2.textContent = "Intentando iniciar sesión…";
+
+      await refreshInternetStatus();
+      if(!hasInternet){ $("loginMsg").textContent = "Sin internet."; return; }
+
+      if(!email || !pass){ $("loginMsg").textContent = "Ingrese usuario y contraseña."; return; }
+
       try{
-        const email = $("loginEmail").value.trim().toLowerCase();
-        const pass  = $("loginPass").value;
-        if(!email || !pass){
-          $("loginMsg").textContent = "Ingrese usuario y contraseña.";
-          return;
-        }
         await signInWithEmailAndPassword(auth, email, pass);
-      }catch(e){
-        const code = (e && e.code) ? ` (${e.code})` : "";
-        $("loginMsg").textContent = "Error: usuario o contraseña incorrectos." + code;
-        console.error(e);
+      }catch(err){
+        console.error(err);
+        $("loginMsg").textContent = "Credenciales inválidas.";
       }
-    };
-    ["loginEmail","loginPass"].forEach(id=>{
-      $(id).addEventListener("keydown",(e)=>{ if(e.key==="Enter") $("btnLogin").click(); });
-    });
+    }
 
-    $("btnLogout").onclick = async ()=>{ await signOut(auth); };
-    $("btnNuevo").onclick = async ()=>{
-      if(!currentUserEmail) return;
-      if(!confirm("¿Crear un NUEVO registro?\n\nEsto iniciará un nuevo número de registro.")) return;
-      await newRegistro();
-    };
+    $("btnLogin").addEventListener("click", doLogin);
+    $("loginPass").addEventListener("keydown",(e)=>{ if(e.key==="Enter") doLogin(); });
+    $("loginEmail").addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ $("loginPass").focus(); } });
 
-    // ========= AUTH STATE =========
     onAuthStateChanged(auth, async (user)=>{
-      if(user){
-        currentUserEmail = (user.email||"").toLowerCase();
-        if(!ALLOWED.has(currentUserEmail)){
-          alert("Acceso no autorizado.");
-          await signOut(auth);
-          return;
-        }
+      await refreshInternetStatus();
 
-        currentUserName = (user.displayName || currentUserEmail.split("@")[0] || "").replaceAll("."," ");
-        $("userEmail").textContent = currentUserEmail;
-        $("userNameLabel").textContent = `(${currentUserName})`;
-
-        showView("app");
-        await refreshInternetStatus();
-        bindInputs();
-
-        // Crear registro automáticamente al entrar
-        record = blankRecord();
-        renderHeader();
-        renderBins();
-        setLockedUI(false);
-
-        await newRegistro();
-
-        if(bootMsgEl) bootMsgEl.textContent = "";
-      }else{
+      if(!user){
         currentUserEmail = "";
         currentUserName = "";
-        tmpDocId = "";
-        finalDocId = "";
-        currentReg = "";
-        record = null;
-        locked = false;
-        mode = "edit";
-        lastSavedHash = "";
-
-        hideNetBanner();
+        $("userEmail").textContent = "";
+        $("userNameLabel").textContent = "";
         showView("login");
-        $("loginPass").value = "";
-        if(bootMsgEl) bootMsgEl.textContent = "";
+        return;
+      }
+
+      currentUserEmail = String(user.email||"").toLowerCase();
+      currentUserName = (currentUserEmail.split("@")[0]||"").trim();
+
+      if(!ALLOWED.has(currentUserEmail)){
+        await signOut(auth);
+        alert("Usuario no autorizado para este módulo.");
+        return;
+      }
+
+      $("userEmail").textContent = currentUserEmail;
+      $("userNameLabel").textContent = "Sesión activa";
+      showView("app");
+
+      // arranca con NUEVO automáticamente si no hay record
+      if(!record){
+        await newRegistro();
+      }else{
+        renderHeader();
+        renderBins();
+        updateButtons();
       }
     });
 
-    // Inicial rango historial
-    $("histHasta").value = todayKey();
-    $("histDesde").value = dateAddDays(todayKey(), -14);
-
-  
-</script>
+    // boot
+    bindInputs();
+    refreshInternetStatus();
+    setStatus("—");
+    histDefaultDates();
+  </script>
 </body>
 </html>
