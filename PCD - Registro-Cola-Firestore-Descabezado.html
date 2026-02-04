@@ -552,7 +552,8 @@
         </div>
 
         <div class="mDet" id="mDet">DETALLE
-—</div>
+—
+</div>
 
         <div class="mBtns">
           <div class="btn primary" id="mOk">ACEPTAR</div>
@@ -589,6 +590,11 @@
     </div>
 
   </div>
+
+  <!-- ✅ Exportadores (Excel/PDF) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -1813,6 +1819,179 @@
         if(bootMsgEl) bootMsgEl.textContent = "";
       }
     });
+
+    // ==========================
+    // ✅ EXPORTAR EXCEL / PDF
+    // (Habilitado cuando el registro está GUARDADO y bloqueado)
+    // ==========================
+    function safeFilePart(s){
+      return String(s||"")
+        .replace(/[\\/:*?"<>|]/g, "-")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    function fileStamp(){
+      const d = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+    }
+    function exportBaseName(){
+      const rn = (record?.regNumber || currentReg || "SIN_REG").toString();
+      const f  = (record?.fecha || todayKey()).toString();
+      return `PCD_${safeFilePart(rn)}_${safeFilePart(f)}_${fileStamp()}`;
+    }
+    function ensureExportAllowed(){
+      const canEdit = (mode==="edit" && !locked);
+      if(canEdit){
+        alert("Primero debes GUARDAR + validar supervisor para habilitar EXCEL/PDF.");
+        return false;
+      }
+      if(!record){
+        alert("No hay registro cargado para exportar.");
+        return false;
+      }
+      if(String(record.estado||"") !== "GUARDADO"){
+        alert("EXCEL/PDF solo se habilita cuando el registro está GUARDADO.");
+        return false;
+      }
+      return true;
+    }
+
+    function rowsFromRecord(){
+      (record.bins||[]).forEach(calcBin);
+
+      const header = [
+        ["PCD | REGISTRO PESO COLA", ""],
+        ["Registro N°", record.regNumber || currentReg || ""],
+        ["Fecha", record.fecha || ""],
+        ["Hora inicio", record.horaInicio || ""],
+        ["Hora final", record.horaFinal || ""],
+        ["Pesador", `${record.pesadorName||""} (${record.pesadorEmail||""})`],
+        ["Supervisor", record.supervisorEmail || ""],
+        ["Circuito", String(record.circuito || 1)],
+        ["Lote", record.lote || ""],
+        ["Parcial", record.parcial || ""],
+        ["Secuencial", record.secuencial || ""],
+        ["Piscina", record.piscina || ""],
+        ["Proveedor", record.proveedor || ""],
+        ["Libras (Guía)", fmt2(record.librasGuia || 0)],
+        ["Humedad", record.humedad?.enabled ? `SI (${Number(record.humedad.pct||0)}%)` : "NO"],
+        ["Basura (lb)", fmt2(record.basuraLbs || 0)],
+        ["", ""],
+      ];
+
+      const tableHdr = [["BIN", "COLOR", "CERRADO", "LIBRAS", "KVT"]];
+      const tableRows = (record.bins||[]).map(b => ([
+        `BIN #${b.binNo || ""}`,
+        (b.color || ""),
+        b.closed ? "SI" : "NO",
+        Number(b.total||0),
+        Number(b.kvt||0)
+      ]));
+
+      const totals = [
+        ["", ""],
+        ["TOTAL PESO COLA (lb)", Number(totalPesoCola() || 0)],
+        ["TOTAL KVT", Number(totalKvt() || 0)]
+      ];
+
+      return { header, tableHdr, tableRows, totals };
+    }
+
+    async function exportExcel(){
+      if(!ensureExportAllowed()) return;
+
+      if(!window.XLSX){
+        alert("No se cargó XLSX (SheetJS). Revisa que el CDN esté antes del type=module.");
+        return;
+      }
+
+      const { header, tableHdr, tableRows, totals } = rowsFromRecord();
+      const aoa = [
+        ...header,
+        ...tableHdr,
+        ...tableRows,
+        ...totals
+      ];
+
+      const ws = window.XLSX.utils.aoa_to_sheet(aoa);
+
+      ws["!cols"] = [
+        { wch: 26 },
+        { wch: 56 },
+        { wch: 16 },
+        { wch: 14 },
+        { wch: 12 },
+      ];
+
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, "PCD");
+
+      const fname = exportBaseName() + ".xlsx";
+      window.XLSX.writeFile(wb, fname);
+    }
+
+    async function exportPDF(){
+      if(!ensureExportAllowed()) return;
+
+      if(!window.jspdf || !window.jspdf.jsPDF){
+        alert("No se cargó jsPDF. Revisa que el CDN esté antes del type=module.");
+        return;
+      }
+
+      const { header, tableRows } = rowsFromRecord();
+      const { jsPDF } = window.jspdf;
+
+      const doc = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+
+      doc.setFont("times", "bold");
+      doc.setFontSize(14);
+      doc.text("PCD | REGISTRO PESO COLA", 40, 34);
+
+      doc.setFont("times", "normal");
+      doc.setFontSize(10);
+
+      let y = 52;
+      const leftX = 40;
+      const rightX = 420;
+
+      const pairs = header.filter(r => r[0] && r[0] !== "PCD | REGISTRO PESO COLA");
+      for(let i=0; i<pairs.length; i++){
+        const [k,v] = pairs[i];
+        const col = (i % 2 === 0) ? leftX : rightX;
+        if(i % 2 === 0 && i > 0) y += 14;
+        doc.text(`${String(k)}: ${String(v)}`, col, y);
+      }
+
+      const startY = y + 26;
+
+      doc.autoTable({
+        startY,
+        head: [["BIN", "COLOR", "CERRADO", "LIBRAS", "KVT"]],
+        body: tableRows.map(r => ([
+          String(r[0]||""),
+          String(r[1]||""),
+          String(r[2]||""),
+          String(r[3]||0),
+          String(r[4]||0),
+        ])),
+        styles: { font:"times", fontSize:10 },
+        headStyles: { fontStyle:"bold" },
+        margin: { left:40, right:40 }
+      });
+
+      const endY = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 18 : startY + 18;
+      doc.setFont("times", "bold");
+      doc.text(`TOTAL PESO COLA (lb): ${fmt0(totalPesoCola() || 0)}`, 40, endY);
+      doc.text(`TOTAL KVT: ${fmt0(totalKvt() || 0)}`, 320, endY);
+
+      const fname = exportBaseName() + ".pdf";
+      doc.save(fname);
+    }
+
+    // ✅ Conectar botones (antes no tenían handler)
+    $("btnExcel").onclick = exportExcel;
+    $("btnPdf").onclick   = exportPDF;
 
   </script>
 </body>
