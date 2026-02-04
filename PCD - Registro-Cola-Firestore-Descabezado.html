@@ -153,7 +153,7 @@
     .totBox .v{
       padding:6px;border:1px solid #333;
       text-align:right;
-      display:flex;              /* ✅ FIX #2: centra el número verde */
+      display:flex;
       align-items:center;
       justify-content:center;
     }
@@ -162,7 +162,7 @@
       font-size:28px;
       font-weight:900;
       width:100%;
-      text-align:center;         /* ✅ FIX #2 */
+      text-align:center;
       display:block;
     }
 
@@ -707,7 +707,9 @@
     const COL_PCD_TMP = "pcd_registro_cola_tmp";
     const COL_PCD_COUNTER = "pcd_counters";
 
+    // ✅ CAMBIO: agrego "programacion" primero (colección real de tu SPC)
     const SPC_CANDIDATE_COLS = [
+      "programacion",
       "spc_programacion",
       "spc_programacion_diaria",
       "spc_programacion_planta",
@@ -974,7 +976,7 @@
       $("pesoColaTotal").textContent = fmt0(totalPesoCola());
     }
 
-    function bindBinsEvents(){   /* ✅ FIX #1: binding estable (delegación) */
+    function bindBinsEvents(){
       const tb = $("tbodyBins");
       tb.addEventListener("click", (e)=>{
         const btn = e.target.closest("[data-pesar],[data-tapar]");
@@ -1133,6 +1135,10 @@
       draftSaved = false;
       lastSavedHash = "";
 
+      // ✅ CAMBIO: reiniciar cache de secuencial SPC
+      lastSPCSec = "";
+      clearTimeout(spcTimer);
+
       record = blankRecord();
 
       setStatus("Creando borrador…");
@@ -1188,7 +1194,7 @@
     }
 
     // ==========================
-    // AUTOLLENADO DESDE SPC (igual que antes)
+    // AUTOLLENADO DESDE SPC
     // ==========================
     function pickField(obj, keys){
       for(const k of keys){
@@ -1206,7 +1212,14 @@
     function extractSPC(data){
       const proveedor = pickField(data, ["proveedor","Proveedor","proveedorNombre","nombreProveedor","proveedor_name","PROVEEDOR","productor","PRODUCTOR","razonSocial"]);
       const piscina   = pickField(data, ["piscina","PISCINA","pisc","PISC","piscNo","piscinaNo","piscina_n","numeroPiscina","pool","POOL"]);
-      const lbsGuia   = pickNumber(data, ["librasGuia","LibrasGuia","lbsGuia","LBS_GUIA","libras_guia","pesoGuia","PESO_GUIA","libras","Libras","lbGuia"]);
+
+      // ✅ CAMBIO: agrego "guiaLbs" porque tu SPC guarda así
+      const lbsGuia   = pickNumber(data, [
+        "guiaLbs","GuiaLbs","GUIALBS",
+        "librasGuia","LibrasGuia","lbsGuia","LBS_GUIA","libras_guia",
+        "pesoGuia","PESO_GUIA","libras","Libras","lbGuia"
+      ]);
+
       return { proveedor:String(proveedor||"").trim(), piscina:String(piscina||"").trim(), librasGuia: lbsGuia };
     }
 
@@ -1298,7 +1311,7 @@
     }
 
     // ==========================
-    // FOTOS (igual que antes)
+    // FOTOS
     // ==========================
     async function uploadPhoto(file, kind){
       if(!file) return;
@@ -1543,19 +1556,31 @@
       });
     });
 
+    // ✅ CAMBIO: sanitizo secuencial a solo números + disparo en Enter y blur
     $("inpSecuencial").addEventListener("input", ()=>{
       if(!record) return;
-      record.secuencial = ($("inpSecuencial").value || "").trim();
+      const only = ($("inpSecuencial").value || "").replace(/\D+/g,"");
+      $("inpSecuencial").value = only;
+      record.secuencial = only;
       scheduleSave();
       debounceSPC();
     });
+    $("inpSecuencial").addEventListener("blur", ()=>{
+      tryAutoFillFromSPC();
+    });
+    $("inpSecuencial").addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){
+        e.preventDefault();
+        tryAutoFillFromSPC();
+      }
+    });
 
-    // BUSCAR -> HISTORIAL (mantengo tal cual lo anterior)
+    // BUSCAR -> HISTORIAL
     $("btnBuscar").onclick = async ()=>{
       alert("Tu historial y export quedaron como en la versión anterior. Si lo necesitas aquí también, dime y te lo vuelvo a pegar completo con esas funciones.");
     };
 
-    // ✅ FIX #1: activar el binding de eventos UNA sola vez
+    // activar binding una sola vez
     bindBinsEvents();
 
     // LOGIN
