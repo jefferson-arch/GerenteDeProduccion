@@ -1,0 +1,2458 @@
+<!doctype html>
+<!-- PCD - Registro-Cola-Firestore-Descabezado.html -->
+<!-- BUILD_PCD_REGISTRO_COLA v1.1.3 2026-02-03 -->
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>PCD | Registro Cola</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" href="favicon.ico?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+
+  <style>
+    :root{
+      --navy:#0d2f4f;
+      --blue:#1e88e5;
+      --grid:#b9c3cf;
+      --hdr:#163a63;
+      --hdr2:#1b4b7a;
+      --white:#fff;
+      --text:#111;
+      --muted:#666;
+      --danger:#b00020;
+      --ok:#0b7a2a;
+      --cellH:28px;
+      --font: "Times New Roman", Times, serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;color:var(--text);font-family:var(--font)}
+    .wrap{max-width:1180px;margin:0 auto;padding:10px 12px 18px}
+
+    /* Banner conexión */
+    #netBanner{display:none; position:sticky; top:0; z-index:9999; padding:10px 12px; font-family:Arial,Helvetica,sans-serif; font-weight:800; font-size:13px;}
+    #netBanner.offline{background:#ffe5e5;color:#8a0016;border-bottom:1px solid #ffb3b3}
+    #netBanner.online{background:#e8fff0;color:#0b5a2a;border-bottom:1px solid #b8f0c9}
+    #netBanner .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle;}
+    #netBanner.offline .dot{background:#d4001a}
+    #netBanner.online .dot{background:#00a63a}
+
+    /* Views */
+    .view{display:none}
+    .view.active{display:block}
+
+    /* Login */
+    .loginBox{max-width:420px;margin:18px auto 0;border:1px solid #ddd;padding:14px}
+    .loginTitle{font-family:Arial,Helvetica,sans-serif;text-align:center;color:var(--blue);font-weight:900;margin:0 0 10px}
+    .brandCenter{text-align:center;margin:8px 0 12px}
+    .logo{width:96px;height:96px;object-fit:contain;display:block;margin:0 auto}
+    .brand{font-family:Arial,Helvetica,sans-serif;font-weight:900;margin:6px 0 0}
+    .tagline{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;margin:2px 0 0}
+
+    .row{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;margin:10px 0}
+    label{font-family:Arial,Helvetica,sans-serif;font-size:14px}
+    input[type="text"],input[type="password"],select,input[type="date"],input[type="number"],textarea{
+      width:100%;padding:8px 10px;border:1px solid #ccc;background:#eee;outline:none;font-size:14px;min-height:38px;font-family:Arial,Helvetica,sans-serif;
+    }
+    input[readonly]{background:#f3f3f3}
+    select{background:#fff}
+    textarea{min-height:56px;resize:vertical}
+
+    .btn{
+      display:inline-block;padding:8px 12px;border:1px solid #444;background:#efefef;cursor:pointer;
+      font-family:Arial,Helvetica,sans-serif;font-weight:800;text-align:center;user-select:none;
+    }
+    .btn:active{transform:scale(.99)}
+    .btn.primary{background:#cfefff;color:#0b5aa5;border-color:#2a2a2a}
+    .btn.danger{border-color:var(--danger);color:var(--danger)}
+    .btn.ok{border-color:#0b5a2a;color:#0b5a2a;background:#e8fff0}
+    .btn.disabled{opacity:.55;pointer-events:none;filter:grayscale(40%);}
+
+    /* Header */
+    .topline{font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 0 10px;border-bottom:1px solid #ddd}
+    .topline .email{color:var(--blue);text-decoration:underline}
+    .topActions{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+    .muted{color:#666;font-family:Arial,Helvetica,sans-serif;font-size:12px}
+
+    /* Sheet */
+    .sheet{margin:10px auto 0;border:1px solid #ddd;padding:10px;background:#fff;}
+    .title{
+      text-align:center;
+      font-family:var(--font);
+      font-size:20px;
+      font-weight:900;
+      margin:4px 0 10px;
+      letter-spacing:.4px;
+    }
+
+    .metaGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      align-items:start;
+    }
+
+    .panel{border:1px solid #333;font-family:var(--font);}
+    .panel table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:16px;}
+    .panel td{border:1px solid #333;padding:4px 6px;height:var(--cellH);vertical-align:middle;}
+    .panel .k{background:var(--hdr);color:#fff;font-weight:900}
+    .panel .v{background:#fff;text-align:left;font-weight:900}
+    .panel .vR{background:#fff;text-align:right;font-weight:900}
+    .panel .small{font-size:14px}
+
+    .headRow{
+      display:grid;
+      grid-template-columns: 140px 1fr 140px 1fr;
+      gap:8px;
+      align-items:center;
+      padding:6px;
+      border:1px solid #333;
+      margin-top:8px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .headRow b{font-weight:900}
+    .logoBar{
+      display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px
+    }
+    .logoSmall{width:120px;height:70px;object-fit:contain;display:block}
+    .humRow{
+      display:flex;gap:12px;align-items:center;justify-content:flex-start;
+      border:1px solid #333;padding:8px;margin-top:8px;font-family:Arial,Helvetica,sans-serif;
+    }
+    .humRow .pct{width:92px}
+    .humRow .pct input{min-height:34px}
+    .humRow .label{font-weight:900}
+    .humRow .radio{
+      display:flex;gap:10px;align-items:center;font-weight:900;
+    }
+
+    .actionsTop{
+      display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:8px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    /* Tabla bins */
+    .tblWrap{margin-top:10px;overflow:auto;border:1px solid #999}
+    table.bins{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      min-width:820px;
+      font-size:16px;
+      font-family:var(--font);
+    }
+    table.bins th, table.bins td{
+      border:1px solid #333;
+      padding:4px 6px;
+      height:var(--cellH);
+      vertical-align:middle;
+    }
+    table.bins th{
+      background:var(--hdr);
+      color:#fff;
+      font-weight:900;
+      text-align:center;
+    }
+    .cBin{width:120px}
+    .cColor{width:160px}
+    .cAct{width:160px}
+    .cLb{width:160px}
+    .cKvt{width:120px}
+    .center{text-align:center;font-weight:900}
+    .num{text-align:right;font-weight:900}
+    .bigGreen{
+      font-family:Arial,Helvetica,sans-serif;
+      font-size:26px;
+      font-weight:900;
+      color:var(--ok);
+      text-align:right;
+      padding-right:10px;
+    }
+
+    /* Fotos */
+    .fotoBox{
+      margin-top:10px;
+      border:1px solid #333;
+      padding:8px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .fotoRow{
+      border:1px solid #999;
+      padding:8px;
+      display:grid;
+      grid-template-columns: 60px 1fr 80px;
+      gap:8px;
+      align-items:center;
+    }
+    .fotoRow .tag{font-weight:900}
+    .fotoRow .name{font-size:12px;color:#333;word-break:break-word}
+    .fotoRow .btn{width:100%}
+
+    /* Footer buttons */
+    .footerBtns{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .footerBtns .btn{padding:10px 10px;font-size:14px}
+
+    /* Modals */
+    .modalBack{
+      position:fixed; inset:0; background:rgba(0,0,0,.35);
+      display:none; align-items:center; justify-content:center; z-index:9999;
+      padding:12px;
+    }
+    .modalBack.active{display:flex}
+    .modal{
+      width:min(520px, 96vw);
+      background:#fff;
+      border:1px solid #333;
+      padding:12px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .modal h3{margin:0 0 8px;font-size:16px;color:var(--hdr);font-weight:900}
+    .modal .sub{margin:0 0 10px;font-size:12px;color:#666}
+    .modal .line{height:1px;background:#ddd;margin:10px 0}
+    .modal .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .modal .miniRow{display:grid;grid-template-columns: 120px 1fr 44px 44px; gap:8px; align-items:center}
+    .miniBtn{
+      width:44px;height:40px;line-height:38px;
+      border:1px solid #333;background:#eaf3ff;color:#0b5aa5;
+      font-weight:900;font-size:20px;text-align:center;cursor:pointer; user-select:none;
+    }
+    .miniBtn:active{transform:scale(.99)}
+    .radioLine{display:flex;gap:12px;align-items:center;margin-top:6px;font-weight:900}
+    .detailBox{
+      border:1px solid #9bb8d8;
+      margin-top:10px;
+      padding:8px;
+      min-height:64px;
+      background:#fbfdff;
+    }
+    .detailBox .ttl{font-weight:900;color:#0b5aa5;margin-bottom:6px}
+    .detailBox .txt{white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif;font-size:13px}
+    .modalBtns{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    /* Historial view */
+    .histBox{max-width:1180px;margin:10px auto 0;border:1px solid #ddd;padding:12px;background:#fff;}
+    .histTitle{font-family:Arial,Helvetica,sans-serif;font-weight:900;color:#333;margin:0 0 10px}
+    .histFilters{
+      display:grid;
+      grid-template-columns: 120px 1fr 120px 1fr 120px 1fr;
+      gap:10px;
+      align-items:center;
+      margin:6px 0 10px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .histFilters .btn{width:100%}
+    .histTblWrap{border:1px solid #999;overflow:auto}
+    table.hist{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      min-width:1200px;
+      font-size:14px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    table.hist th, table.hist td{
+      border:1px solid #333;
+      padding:6px 6px;
+      vertical-align:middle;
+    }
+    table.hist th{
+      background:var(--hdr);
+      color:#fff;
+      font-weight:900;
+      text-align:center;
+    }
+    .hDate{width:120px}
+    .hNum{width:140px}
+    .hSec{width:120px}
+    .hProv{width:260px}
+    .hLbs{width:130px}
+    .hKvt{width:90px}
+    .hOpen{width:110px}
+
+    @media (max-width:980px){
+      .metaGrid{grid-template-columns:1fr}
+      .footerBtns{grid-template-columns:1fr 1fr}
+      .histFilters{grid-template-columns:1fr}
+    }
+  
+
+
+/* ====== MOBILE (mejor lectura en celular) ====== */
+@media (max-width: 640px){
+  .wrap{padding:10px}
+  .card{width:100%; padding:12px}
+  .headRow{
+    grid-template-columns: 110px 1fr;
+    column-gap: 8px;
+    row-gap: 8px;
+  }
+  .headRow .k{font-size:13px}
+  input[type="text"], input[type="number"], select{
+    font-size:16px;
+    min-height:40px;
+    min-width:0;
+  }
+  .tableWrap{overflow-x:auto}
+  table{min-width: 720px}
+}
+</style>
+</head>
+
+<body>
+  <!-- NET BANNER -->
+  <div id="netBanner"><span class="dot"></span><span id="netText"></span></div>
+
+  <div class="wrap">
+
+    <!-- LOGIN -->
+    <section id="vLogin" class="view active">
+      <div class="loginBox">
+        <div class="loginTitle">PCD | REGISTRO PESO COLA</div>
+        <div class="brandCenter">
+          <img class="logo" src="logo.png" alt="Oceantreasure" onerror="this.style.display='none'">
+          <p class="brand">OCEANTREASURE S.A.</p>
+          <p class="tagline">100% ECUADORIAN QUALITY</p>
+        </div>
+
+        <div class="row">
+          <label>Usuario:</label>
+          <input id="loginEmail" type="text" autocomplete="username" />
+        </div>
+        <div class="row">
+          <label>Contraseña:</label>
+          <input id="loginPass" type="password" autocomplete="current-password" />
+        </div>
+
+        <div class="btn primary" id="btnLogin">ACCEDER</div>
+        <div id="loginMsg" style="min-height:18px;margin-top:8px;color:#b00020;font-family:Arial,Helvetica,sans-serif;font-size:13px;"></div>
+        <div id="bootMsg" style="min-height:18px;color:#555;font-family:Arial,Helvetica,sans-serif;font-size:12px;"></div>
+
+        <div class="muted" style="margin-top:10px;line-height:1.35;">
+          Nota: Si aparece <b>permission-denied</b>, agrega los usuarios <b>pesadorcola1</b> y <b>pesadorcola2</b> en tu lista de editores de Firestore (reglas).
+        </div>
+      </div>
+    </section>
+
+    <!-- APP -->
+    <section id="vApp" class="view">
+
+      <div class="topline">
+        Usuario: <span class="email" id="userEmail"></span>
+        &nbsp; | &nbsp; <span class="muted" id="userNameLabel"></span>
+
+        <span class="topActions" style="float:right;">
+          <span class="btn" id="btnNuevo">NUEVO</span>
+          <span class="btn" id="btnLogout">CERRAR SESIÓN</span>
+        </span>
+      </div>
+
+      <div id="statusLine" class="muted" style="margin-top:8px;min-height:18px;">—</div>
+
+      <!-- Área imprimible -->
+      <div id="sheet" class="sheet">
+
+        <div class="logoBar">
+          <img class="logoSmall" src="logo.png" alt="Oceantreasure" onerror="this.style.display='none'">
+        </div>
+
+        <div class="title">REPORTE DE PESO COLA EN DESCABEZADO OCEANTREASURE</div>
+
+        <div class="metaGrid">
+          <div class="panel">
+            <table>
+              <tr>
+                <td class="k">Registro N°:</td>
+                <td class="vR" id="regNumero">—</td>
+              </tr>
+              <tr>
+                <td class="k">Fecha:</td>
+                <td class="vR" id="regFecha">—</td>
+              </tr>
+              <tr>
+                <td class="k">Hora inicio:</td>
+                <td class="vR" id="regInicio">—</td>
+              </tr>
+              <tr>
+                <td class="k">Hora final:</td>
+                <td class="vR" id="regFinal">—</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="panel">
+            <table>
+              <tr>
+                <td class="k">Pesador Cola:</td>
+                <td class="v" id="pesadorCola">—</td>
+              </tr>
+              <tr>
+                <td class="k">Supervisor:</td>
+                <td class="v">
+                  <select id="selSupervisor" style="width:100%;min-height:34px;font-weight:900">
+                    <option value=""></option>
+                    <option value="aracellytomala@oceantreasure.local">aracellytomala@oceantreasure.local</option>
+                    <option value="gingervaldiviezo@oceantreasure.local">gingervaldiviezo@oceantreasure.local</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td class="k">Circuito:</td>
+                <td class="v">
+                  <select id="selCircuito" style="width:100%;min-height:34px;font-weight:900">
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td class="k">Estado:</td>
+                <td class="v" id="regEstado">—</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="headRow" style="margin-top:10px;">
+          <b>Lote:</b>
+          <input id="inpLote" type="text" />
+          <b>Parcial:</b>
+          <input id="inpParcial" type="text" />
+        </div>
+
+        <div class="headRow">
+          <b>Secuencial:</b>
+          <input id="inpSecuencial" type="text" inputmode="numeric" />
+          <b>Piscina:</b>
+          <input id="inpPiscina" type="text" inputmode="numeric" />
+        </div>
+
+        <div class="headRow">
+          <b>Proveedor:</b>
+          <input id="inpProveedor" type="text" readonly />
+          <b>Libras (Guía):</b>
+          <input id="inpLbsGuia" type="text" readonly />
+        </div>
+
+        <div class="humRow">
+          <span class="label">HUMEDAD:</span>
+          <span class="radio">
+            <label style="display:flex;gap:8px;align-items:center;">
+              <input type="radio" name="hum" id="humNo" value="0" checked>
+              NO
+            </label>
+            <label style="display:flex;gap:8px;align-items:center;">
+              <input type="radio" name="hum" id="humSi" value="1">
+              SI
+            </label>
+          </span>
+          <span class="pct" style="display:flex;gap:8px;align-items:center;">
+            <input id="humPct" type="number" min="0" max="20" step="0.1" value="2" disabled>
+            <span class="label">%</span>
+          </span>
+
+          <span class="muted" id="humHint" style="margin-left:auto;">Descuento aplicado por gaveta pesada.</span>
+        </div>
+
+        <div class="actionsTop">
+          <span class="btn primary" id="btnAddBin">AGREGAR BIN</span>
+          <span class="muted" id="binHint">—</span>
+        </div>
+
+        <div class="tblWrap">
+          <table class="bins" id="tblBins">
+            <thead>
+              <tr>
+                <th class="cBin">ENVASE<br><span style="font-size:12px;">BIN #</span></th>
+                <th class="cColor">COLOR</th>
+                <th class="cAct">ACCIÓN</th>
+                <th class="cAct">ACCIÓN</th>
+                <th class="cLb">LIBRAS</th>
+                <th class="cKvt">KVT</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyBins"></tbody>
+          </table>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;align-items:start;">
+          <div class="panel">
+            <table>
+              <tr>
+                <td class="k">PESO COLA:</td>
+                <td class="bigGreen" id="pesoColaTotal">0</td>
+              </tr>
+              <tr>
+                <td class="k">BASURA (lb):</td>
+                <td class="vR"><input id="inpBasura" type="text" inputmode="decimal" style="width:100%;border:none;outline:none;text-align:right;font-weight:900;font-family:var(--font);font-size:16px;background:#fff"></td>
+              </tr>
+            <tr>
+          <td class="k">BINES:</td>
+          <td class="vR"><div id="binsCountLine" style="font-weight:700;">0 pesados / 0 tapados</div></td>
+        </tr>
+        </table>
+          </div>
+
+          <div class="fotoBox">
+            <div class="fotoRow">
+              <div class="tag">FOTO</div>
+              <div class="name" id="fotoProvName">—</div>
+              <div class="btn" id="btnFotoProv">ABRIR</div>
+            </div>
+            <div class="fotoRow">
+              <div class="tag">FOTO</div>
+              <div class="name" id="fotoBasName">—</div>
+              <div class="btn" id="btnFotoBas">ABRIR</div>
+            </div>
+
+            <div class="muted" style="grid-column:1/-1;line-height:1.35;">
+              Tip: Presiona <b>ABRIR</b> para ver la foto. Para tomar/reemplazar, presiona <b>FOTO PROVEEDOR</b> o <b>FOTO BASURA</b> (abajo).
+            </div>
+
+            <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="btn" id="btnTakeFotoProv">FOTO PROVEEDOR</div>
+              <div class="btn" id="btnTakeFotoBas">FOTO BASURA</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footerBtns">
+          <div class="btn primary" id="btnGuardar">GUARDAR</div>
+          <div class="btn" id="btnExcel">EXCEL</div>
+          <div class="btn" id="btnPdf">PDF</div>
+          <div class="btn" id="btnBuscar">BUSCAR</div>
+        </div>
+
+      </div>
+
+      <!-- inputs ocultos para cámara -->
+      <input id="fileFotoProv" type="file" accept="image/*" capture="environment" style="display:none">
+      <input id="fileFotoBas"  type="file" accept="image/*" capture="environment" style="display:none">
+
+    </section>
+
+    <!-- HISTORIAL -->
+    <section id="vHist" class="view">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px;font-family:Arial,Helvetica,sans-serif;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span class="btn" id="btnHistBack">VOLVER</span>
+          <span class="btn" id="btnHistLogout">CERRAR SESIÓN</span>
+        </div>
+        <div class="muted" id="histStatus">—</div>
+      </div>
+
+      <div class="histBox">
+        <div class="histTitle">HISTORIAL DE REGISTROS (PCD)</div>
+
+        <div class="histFilters">
+          <label style="font-weight:900;">DESDE</label>
+          <input id="histDesde" type="date" />
+          <label style="font-weight:900;">HASTA</label>
+          <input id="histHasta" type="date" />
+          <label style="font-weight:900;">REGISTRO</label>
+          <input id="histReg" type="text" inputmode="numeric" placeholder="8 dígitos (Registro) o 4 (Secuencial)" />
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin:8px 0;">
+          <div class="btn" id="btnHistFiltrar" style="width:160px;">APLICAR</div>
+        </div>
+
+        
+        <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin:8px 0;font-family:Arial,Helvetica,sans-serif;">
+          <div class="muted" id="histSumMine" style="font-weight:900;">—</div>
+          <div class="muted" id="histSumAll" style="font-weight:900;display:none;">—</div>
+        </div>
+<div class="histTblWrap">
+          <table class="hist" id="tblHist">
+            <thead>
+              <tr>
+                <th class="hDate">FECHA</th>
+                <th class="hNum">REGISTRO</th>
+                <th class="hSec">SECUENCIAL</th>
+                <th class="hProv">PROVEEDOR</th>
+                <th class="hLbs">PESO COLA</th>
+                <th class="hKvt">KVT</th>
+                <th class="hProv">PESADOR</th>
+                <th class="hOpen">ABRIR</th>
+                <th class="hOpen">ELIMINAR</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyHist"></tbody>
+          </table>
+        </div>
+
+        <div class="muted" style="margin-top:10px;line-height:1.35;">
+          Nota: Al abrir un registro, se mostrará en modo lectura y solo se habilitan <b>EXCEL</b> y <b>PDF</b>.
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL: PESAR -->
+  <div id="mPesarBack" class="modalBack">
+    <div class="modal">
+      <h3>CARGAR LIBRAS</h3>
+      <p class="sub" id="mPesarSub">HISTORIAL ACTIVO • v1.0</p>
+
+      <div class="miniRow">
+        <label style="font-weight:900;">LIBRAS</label>
+        <input id="mLbs" type="text" inputmode="decimal" placeholder="0,00" />
+        <div class="miniBtn" id="mPlus" title="Agregar (+)">+</div>
+        <div class="miniBtn" id="mMinus" title="Eliminar libras (-)">−</div>
+      </div>
+
+      <div class="radioLine">
+        <span style="font-weight:900;">GAVETAS:</span>
+        <label style="display:flex;gap:8px;align-items:center;">
+          <input type="radio" name="mGav" id="mGav1" value="1" checked>
+          1 gaveta
+        </label>
+        <label style="display:flex;gap:8px;align-items:center;">
+          <input type="radio" name="mGav" id="mGav2" value="2">
+          2 gavetas
+        </label>
+      </div>
+
+      <div class="line"></div>
+
+      <div style="border:1px solid #ddd;padding:10px;">
+        <div style="font-weight:900;font-size:12px;color:#333;">LIBRAS FINALES (descontando gavetas y humedad)</div>
+        <div class="bigGreen" id="mFinal">0</div>
+      </div>
+
+      <div class="detailBox">
+        <div class="ttl">DETALLE</div>
+        <div class="txt" id="mDetalle">—</div>
+      </div>
+
+      <div class="modalBtns">
+        <div class="btn primary" id="mAceptar">ACEPTAR</div>
+        <div class="btn" id="mCancelar">CANCELAR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMAR SUPERVISOR -->
+  <div id="mSupBack" class="modalBack">
+    <div class="modal">
+      <h3>CONFIRMACIÓN DE SUPERVISOR</h3>
+      <p class="sub">Antes de guardar, el Supervisor seleccionado debe validar con usuario y contraseña.</p>
+
+      <div class="row" style="grid-template-columns:120px 1fr;">
+        <label>Supervisor:</label>
+        <input id="mSupEmail" type="text" readonly />
+      </div>
+      <div class="row" style="grid-template-columns:120px 1fr;">
+        <label>Contraseña:</label>
+        <input id="mSupPass" type="password" autocomplete="current-password" />
+      </div>
+
+      <div class="modalBtns">
+        <div class="btn primary" id="mSupOk">VALIDAR Y GUARDAR</div>
+        <div class="btn" id="mSupCancel">CANCELAR</div>
+      </div>
+
+      <div class="muted" id="mSupMsg" style="min-height:18px;margin-top:8px;">—</div>
+    </div>
+  </div>
+
+  <!-- JS libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
+      setPersistence, browserLocalPersistence, inMemoryPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc,
+      runTransaction, serverTimestamp, orderBy, limit
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import {
+      getStorage, ref as sRef, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+    import {
+      getAuth as getAuth2, signInWithEmailAndPassword as signIn2, signOut as signOut2
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    // Helpers
+    const $ = (id)=>document.getElementById(id);
+    const safe = (id)=>document.getElementById(id) || null;
+
+
+    function uiError(msg){
+      const el = safe("loginMsg") || safe("bootMsg") || safe("statusLine");
+      if(el) el.textContent = msg;
+    }
+    window.addEventListener("error", (e)=>{
+      uiError("Error de la página. Abre F12 > Console para ver el detalle.");
+      console.error("JS Error:", e.error || e.message, e);
+    });
+    window.addEventListener("unhandledrejection", (e)=>{
+      uiError("Error inesperado. Abre F12 > Console para ver el detalle.");
+      console.error("Promise rejection:", e.reason, e);
+    });
+
+    function esc(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+    function fmt0(n){
+      const x = Number(n)||0;
+      return x.toLocaleString("es-EC",{minimumFractionDigits:0,maximumFractionDigits:0});
+    }
+    function fmt2(n){
+      const x = Number(n)||0;
+      return x.toLocaleString("es-EC",{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+    function parseEsNumber(s){
+      const raw = String(s||"").trim();
+      if(!raw) return NaN;
+      // Soporta: 6.070,00  / 6070,00 / 6070.00
+      const s1 = raw.replace(/\s+/g,"");
+      // si trae coma decimal, quita miles con punto
+      if(s1.includes(",")){
+        const noThousands = s1.replace(/\./g,"");
+        const norm = noThousands.replace(",",".");
+        const v = Number(norm);
+        return Number.isFinite(v) ? v : NaN;
+      }
+      // si no trae coma, intenta directo
+      const v = Number(s1);
+      return Number.isFinite(v) ? v : NaN;
+    }
+    function todayKey(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    function hhmm(){
+      const d = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function nowISO(){ return new Date().toISOString(); }
+
+    // Internet detector (igual estilo SID)
+    let hasInternet = true;
+    let lastInternetState = null;
+
+    function showNetBanner(state, msg){
+      const b = $("netBanner");
+      const t = $("netText");
+      if(!b || !t) return;
+      b.style.display = "block";
+      b.classList.toggle("offline", state==="offline");
+      b.classList.toggle("online", state==="online");
+      t.textContent = msg;
+    }
+    function hideNetBanner(){
+      const b = $("netBanner");
+      if(b) b.style.display = "none";
+    }
+    async function pingInternet(){
+      const url = `https://www.gstatic.com/generate_204?ts=${Date.now()}`;
+      try{
+        const controller = new AbortController();
+        const to = setTimeout(()=>controller.abort(), 3500);
+        await fetch(url, {method:"GET", mode:"no-cors", signal: controller.signal});
+        clearTimeout(to);
+        return true;
+      }catch(_){
+        return false;
+      }
+    }
+    async function refreshInternetStatus(){
+      const netUp = navigator.onLine;
+      if(!netUp) hasInternet = false;
+      else hasInternet = await pingInternet();
+
+      if(lastInternetState === hasInternet) return;
+      lastInternetState = hasInternet;
+
+      if(!hasInternet){
+        showNetBanner("offline","SIN CONEXIÓN A INTERNET.");
+      }else{
+        showNetBanner("online","CONEXIÓN RESTABLECIDA.");
+        setTimeout(()=>hideNetBanner(), 1800);
+      }
+      updateButtons();
+    }
+    window.addEventListener("offline", ()=>refreshInternetStatus());
+    window.addEventListener("online",  ()=>refreshInternetStatus());
+    setInterval(()=>refreshInternetStatus(), 8000);
+
+    function setStatus(msg){ $("statusLine").textContent = msg || "—"; }
+    function setHistStatus(msg){ $("histStatus").textContent = msg || "—"; }
+
+    // Views
+    const views = { login:$("vLogin"), app:$("vApp"), hist:$("vHist") };
+    function showView(name){
+      Object.values(views).forEach(v=>v.classList.remove("active"));
+      views[name].classList.add("active");
+    }
+
+    // Firebase init
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // Persistencia local (como tus otros sistemas)
+    // Persistencia local (si falla, no rompe el login)
+    setPersistence(auth, browserLocalPersistence).catch(()=>{});
+
+    // Auth secundario para validar Supervisor sin cambiar la sesión del pesador
+    const app2 = initializeApp(firebaseConfig, "pcd-supervisor-verify");
+    const authVerify = getAuth2(app2);
+    // Persistencia in-memory para validar Supervisor (si falla, no rompe el login)
+    setPersistence(authVerify, inMemoryPersistence).catch(()=>{});
+
+    // Collections
+    const COL_PCD = "pcd_registro_cola";          // ✅ finales (solo GUARDADO)
+    const COL_PCD_TMP = "pcd_registro_cola_tmp";    // ✅ borradores (no van al historial)
+    const COL_PCD_COUNTER = "pcd_counters";
+
+    // SPC lookup (misma dinámica SID)
+    const SPC_COLLECTIONS = [
+      "programacion",
+      "spc_programacion",
+      "spc_programacion_diario",
+      "spc_programacion_diaria",
+      "spc_programacion_planta",
+      "spc_programacion_2025",
+      "SPC",
+      "spc"
+    ];
+
+    // ✅ Acceso permitido (solo pesadores + admin)
+    const ADMIN = "jeffersonfigueroa@oceantreasure.local";
+    const ALLOWED = new Set([
+      "pesadorcola1@oceantreasure.local",
+      "pesadorcola2@oceantreasure.local",
+      ADMIN
+    ]);
+
+    // Supervisores válidos (para selector)
+    const SUPERVISORS = new Set([
+      "aracellytomala@oceantreasure.local",
+      "gingervaldiviezo@oceantreasure.local"
+    ]);
+
+    // Estado de registro
+    let currentUserEmail = "";
+    let currentUserName = "";
+
+    let tmpDocId = "";          // TMP_xxx
+    let finalDocId = "";        // PCD_00000001 (solo al GUARDAR)
+    let currentReg = "";        // mostrado en pantalla (provisional hasta GUARDAR)
+    let locked = false;         // bloqueado luego de GUARDAR
+    let draftSaved = false;     // borrador en BD (TMP)
+    let mode = "edit";          // edit | view
+
+    let record = null;          // objeto completo
+    let activeBinIdx = -1;      // bin que se está pesando
+
+    // Helpers de referencias (TMP vs FINAL)
+    function isAdmin(){ return currentUserEmail === ADMIN; }
+    function getDraftRef(){ return doc(db, COL_PCD_TMP, tmpDocId); }
+    function getFinalRef(id){ return doc(db, COL_PCD, id); }
+
+    // Debounce guardado
+    let saveTimer = null;
+    let lastSavedHash = "";
+
+    // ========= MODELOS =========
+    function blankRecord(){
+      const fecha = todayKey();
+      const start = hhmm();
+      return {
+        regNumber: "",
+        fecha,
+        horaInicio: start,
+        horaFinal: "",
+        createdAtIso: nowISO(),
+        updatedAtIso: nowISO(),
+
+        supervisorEmail: "",
+        pesadorEmail: currentUserEmail,
+        pesadorName: currentUserName,
+
+        circuito: 1,
+
+        lote: "",
+        parcial: "",
+        secuencial: "",
+        piscina: "",
+        proveedor: "",
+        librasGuia: 0,
+
+        humedad: { enabled:false, pct: 0 },
+
+        bins: [], // {binNo,color,closed,total,kvt,entries:[]}
+        basuraLbs: 0,
+
+        fotoProveedorUrl: "",
+        fotoProveedorName: "",
+        fotoBasuraUrl: "",
+        fotoBasuraName: "",
+
+        estado: "BORRADOR",
+        locked: false,
+
+        supervisorValidatedBy: "",
+        supervisorValidatedAtIso: ""
+      };
+    }
+
+    function calcBin(bin){
+      const adds = (bin.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
+      const dels = (bin.entries||[]).filter(e=>e.t==="del").map(e=>Number(e.val||0));
+      const sumAdd = adds.reduce((a,b)=>a+b,0);
+      const sumDel = dels.reduce((a,b)=>a+b,0);
+      const total = Math.max(0, Math.floor((sumAdd - sumDel) + 1e-9));
+      const kvt = Math.max(0, (adds.length - dels.length));
+      bin.total = total;
+      bin.kvt = kvt;
+      return bin;
+    }
+
+    function totalPesoCola(){
+      return (record?.bins||[]).reduce((a,b)=>a+(Number(b.total||0)),0);
+    }
+    function totalKvt(){
+      return (record?.bins||[]).reduce((a,b)=>a+(Number(b.kvt||0)),0);
+    }
+
+    function normalizeColor(c){
+      const x = String(c||"").trim().toUpperCase();
+      if(!x) return "";
+      return x;
+    }
+
+    // ========= UI =========
+    function setLockedUI(isLocked){
+      locked = !!isLocked;
+      const dis = locked || mode==="view";
+
+      // Inputs principales
+      ["inpLote","inpParcial","inpSecuencial","inpPiscina","inpBasura"].forEach(id=>{
+        const el = safe(id);
+        if(el) el.disabled = dis;
+      });
+      $("selSupervisor").disabled = dis;
+      $("selCircuito").disabled = dis;
+
+      // Humedad
+      $("humNo").disabled = dis;
+      $("humSi").disabled = dis;
+      $("humPct").disabled = dis || !$("humSi").checked;
+
+      // Bines
+      setBtnEnabled("btnAddBin", !dis);
+      renderBins();
+
+      // Fotos
+      setBtnEnabled("btnTakeFotoProv", !dis);
+      setBtnEnabled("btnTakeFotoBas", !dis);
+
+      // Footer
+      updateButtons();
+    }
+
+    function setBtnEnabled(id, enabled){
+      const el = safe(id);
+      if(!el) return;
+      el.classList.toggle("disabled", !enabled);
+    }
+
+    function updateButtons(){
+      const canEdit = (mode==="edit" && !locked);
+      setBtnEnabled("btnGuardar", canEdit && hasInternet);
+      setBtnEnabled("btnExcel", !canEdit); // en modo lectura o locked
+      setBtnEnabled("btnPdf", !canEdit);   // en modo lectura o locked
+      setBtnEnabled("btnBuscar", true);
+
+      // Abrir fotos
+      setBtnEnabled("btnFotoProv", !!record?.fotoProveedorUrl);
+      setBtnEnabled("btnFotoBas",  !!record?.fotoBasuraUrl);
+    }
+
+    function applyHumUI(){
+      const enabled = $("humSi").checked;
+      $("humPct").disabled = locked || mode==="view" || !enabled;
+      if(!enabled) $("humPct").value = "0";
+      if(record){
+        record.humedad.enabled = enabled;
+        record.humedad.pct = enabled ? (Number($("humPct").value||0) || 0) : 0;
+      }
+      scheduleSave();
+    }
+
+    function renderHeader(){
+      $("regNumero").textContent = record?.regNumber ? record.regNumber : (currentReg || "—");
+      $("regFecha").textContent  = record?.fecha || "—";
+      $("regInicio").textContent = record?.horaInicio || "—";
+      $("regFinal").textContent  = record?.horaFinal || "—";
+      $("regEstado").textContent = record?.estado || "—";
+      $("pesadorCola").textContent = record?.pesadorName ? `${record.pesadorName} (${record.pesadorEmail})` : (currentUserEmail||"—");
+
+      $("inpLote").value = record?.lote || "";
+      $("inpParcial").value = record?.parcial || "";
+      $("inpSecuencial").value = record?.secuencial || "";
+      $("inpPiscina").value = record?.piscina || "";
+      $("inpProveedor").value = record?.proveedor || "";
+      $("inpLbsGuia").value = record?.librasGuia ? fmt2(record.librasGuia) : "";
+      $("selSupervisor").value = record?.supervisorEmail || "";
+      $("selCircuito").value = String(record?.circuito || 1);
+
+      // Humedad
+      const en = !!record?.humedad?.enabled;
+      $("humSi").checked = en;
+      $("humNo").checked = !en;
+      $("humPct").value = String(record?.humedad?.pct ?? (en?2:0));
+      $("humPct").disabled = locked || mode==="view" || !en;
+
+      // Basura
+      $("inpBasura").value = (record?.basuraLbs ? fmt2(record.basuraLbs) : "");
+
+      // Fotos
+      $("fotoProvName").textContent = record?.fotoProveedorName || (record?.fotoProveedorUrl ? "foto_proveedor" : "—");
+      $("fotoBasName").textContent  = record?.fotoBasuraName || (record?.fotoBasuraUrl ? "foto_basura" : "—");
+
+      // Totales
+      $("pesoColaTotal").textContent = fmt0(totalPesoCola());
+
+
+      // Bines pesados / tapados
+      try{
+        const bins = record?.bins || [];
+        const pesados = bins.filter(b=>{
+          const n = (b.entries||[]).length;
+          const w = Number(b.weight||0) || 0;
+          return n>0 || w>0;
+        }).length;
+        const tapados = bins.filter(b=>!!b.closed).length;
+        const el = document.getElementById("binsCountLine");
+        if(el) el.textContent = `${pesados} pesados / ${tapados} tapados`;
+      }catch(e){}
+      updateButtons();
+    }
+
+    function currentOpenBinIndex(){
+      const bins = record?.bins || [];
+      return bins.findIndex(b=>!b.closed);
+    }
+
+    function setBinHint(){
+      const idx = currentOpenBinIndex();
+      if(idx >= 0){
+        $("binHint").textContent = `BIN activo: #${record.bins[idx].binNo}. Debe TAPAR para agregar otro.`;
+      }else{
+        $("binHint").textContent = "Listo para agregar BIN.";
+      }
+    }
+
+    function renderBins(){
+      const tb = $("tbodyBins");
+      tb.innerHTML = "";
+      if(!record) return;
+
+      const canEdit = (mode==="edit" && !locked);
+      const bins = record.bins || [];
+      const openIdx = currentOpenBinIndex();
+
+      setBtnEnabled("btnAddBin", canEdit && openIdx === -1);
+
+      bins.forEach((b, i)=>{
+        calcBin(b);
+        const tr = document.createElement("tr");
+
+        const canPesar = canEdit && !b.closed;
+        const canTapar = canEdit && !b.closed;
+
+        tr.innerHTML = `
+          <td class="cBin center">BIN #: ${esc(b.binNo)}</td>
+          <td class="cColor center">${esc(b.color || "")}</td>
+          <td class="cAct center">
+            <span class="btn ${canPesar ? "" : "disabled"}" data-pesar="${i}">PESAR</span>
+          </td>
+          <td class="cAct center">
+            <span class="btn ${canTapar ? "" : "disabled"}" data-tapar="${i}">TAPAR</span>
+          </td>
+          <td class="cLb num">${fmt0(b.total || 0)}</td>
+          <td class="cKvt center">${fmt0(b.kvt || 0)}</td>
+        `;
+        tb.appendChild(tr);
+      });
+
+      // Eventos
+      tb.querySelectorAll("[data-pesar]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          if(btn.classList.contains("disabled")) return;
+          const idx = Number(btn.getAttribute("data-pesar")||-1);
+          openPesar(idx);
+        });
+      });
+
+      tb.querySelectorAll("[data-tapar]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          if(btn.classList.contains("disabled")) return;
+          const idx = Number(btn.getAttribute("data-tapar")||-1);
+          doTapar(idx);
+        });
+      });
+
+      $("pesoColaTotal").textContent = fmt0(totalPesoCola());
+      setBinHint();
+    }
+
+    function buildDetalleText(entries){
+      if(!entries || !entries.length) return "—";
+      const parts = [];
+      for(const e of entries){
+        if(e.t==="add") parts.push(String(e.net||0));
+        else if(e.t==="del") parts.push(`-${String(e.val||0)}`);
+      }
+      const total = parts.join(" + ").replaceAll("+ -","- ");
+      return `${total} = ${fmt0(calcEntriesTotal(entries))}`;
+    }
+
+    function calcEntriesTotal(entries){
+      const adds = entries.filter(e=>e.t==="add").reduce((a,e)=>a+Number(e.net||0),0);
+      const dels = entries.filter(e=>e.t==="del").reduce((a,e)=>a+Number(e.val||0),0);
+      return Math.max(0, Math.floor((adds - dels) + 1e-9));
+    }
+
+    // ========= MODAL PESAR =========
+    let modalBinIdx = -1;
+    let modalEntries = [];
+    let baseEntries = [];
+
+    function modalOpen(){
+      $("mPesarBack").classList.add("active");
+      $("mLbs").focus();
+      $("mLbs").select?.();
+    }
+    function modalClose(){
+      $("mPesarBack").classList.remove("active");
+      modalBinIdx = -1;
+      modalEntries = [];
+      baseEntries = [];
+      $("mLbs").value = "";
+      $("mDetalle").textContent = "—";
+      $("mFinal").textContent = "0";
+    }
+
+    function updateModalUI(){
+      $("mDetalle").textContent = buildDetalleText(modalEntries);
+      $("mFinal").textContent = fmt0(calcEntriesTotal(modalEntries));
+    }
+
+    function getGavetas(){
+      return $("mGav2").checked ? 2 : 1;
+    }
+
+    function computeNet(raw){
+      const gav = getGavetas();
+      let x = raw - (gav * 5);
+
+      const humEn = !!record?.humedad?.enabled;
+      const humPct = humEn ? (Number(record?.humedad?.pct||0) || 0) : 0;
+
+      if(humEn && humPct > 0){
+        x = x * (1 - (humPct/100));
+      }
+
+      // según tu ejemplo: 63,7 => 63  (floor)
+      const net = Math.max(0, Math.floor(x + 1e-9));
+      return { net, gav, humPct };
+    }
+
+    function openPesar(idx){
+      if(!record) return;
+      const bin = record.bins[idx];
+      if(!bin || bin.closed) return;
+
+      modalBinIdx = idx;
+      baseEntries = JSON.parse(JSON.stringify(bin.entries || []));
+      modalEntries = JSON.parse(JSON.stringify(bin.entries || []));
+
+      $("mPesarSub").textContent = `HISTORIAL ACTIVO • BIN #${bin.binNo} • ${bin.color}`;
+      $("mLbs").value = "";
+      $("mGav1").checked = true;
+      $("mGav2").checked = false;
+
+      updateModalUI();
+      modalOpen();
+    }
+
+    $("mPlus").onclick = ()=>{
+      const raw = parseEsNumber($("mLbs").value);
+      if(!Number.isFinite(raw) || raw <= 0){
+        alert("Ingrese un valor válido de LIBRAS.");
+        return;
+      }
+      if(!record) return;
+
+      const { net, gav, humPct } = computeNet(raw);
+      modalEntries.push({
+        t:"add",
+        raw: Number(raw),
+        gavetas: gav,
+        humPct: Number(humPct||0),
+        net: Number(net),
+        atIso: nowISO()
+      });
+      $("mLbs").value = "";
+      updateModalUI();
+    };
+
+    $("mMinus").onclick = ()=>{
+      const val = parseEsNumber($("mLbs").value);
+      if(!Number.isFinite(val) || val <= 0){
+        alert("Ingrese el valor de LIBRAS a ELIMINAR.");
+        return;
+      }
+      if(!modalEntries.length){
+        alert("No hay detalle aún.");
+        return;
+      }
+      const ok = confirm(`¿Eliminar ${fmt0(val)} lb del BIN?\n\nEsto descontará y reducirá 1 KVT.`);
+      if(!ok) return;
+
+      modalEntries.push({
+        t:"del",
+        val: Number(Math.floor(val + 1e-9)),
+        atIso: nowISO()
+      });
+      $("mLbs").value = "";
+      updateModalUI();
+    };
+
+    $("mAceptar").onclick = ()=>{
+      if(modalBinIdx < 0) return;
+      const bin = record.bins[modalBinIdx];
+      bin.entries = JSON.parse(JSON.stringify(modalEntries));
+      calcBin(bin);
+      renderBins();
+      scheduleSave();
+      modalClose();
+    };
+
+    $("mCancelar").onclick = ()=>{
+      // revert
+      if(modalBinIdx >= 0 && record?.bins?.[modalBinIdx]){
+        record.bins[modalBinIdx].entries = JSON.parse(JSON.stringify(baseEntries));
+        calcBin(record.bins[modalBinIdx]);
+      }
+      modalClose();
+    };
+
+    $("mPesarBack").addEventListener("click",(e)=>{
+      if(e.target === $("mPesarBack")) $("mCancelar").click();
+    });
+
+    // ========= BIN FLOW =========
+    $("btnAddBin").onclick = ()=>{
+      if(!record) return;
+      if(locked || mode==="view") return;
+
+      const openIdx = currentOpenBinIndex();
+      if(openIdx !== -1){
+        alert("Debe presionar TAPAR para poder agregar un nuevo BIN.");
+        return;
+      }
+
+      const binNoRaw = prompt("Ingrese el NÚMERO de BIN:", "");
+      if(binNoRaw === null) return;
+      const binNo = String(binNoRaw||"").trim().replace(/\D+/g,"");
+      if(!binNo){
+        alert("Número de BIN inválido.");
+        return;
+      }
+
+      const colorRaw = prompt("Ingrese el COLOR del BIN (ej: GRIS):", "GRIS");
+      if(colorRaw === null) return;
+      const color = normalizeColor(colorRaw);
+      if(!color){
+        alert("Color inválido.");
+        return;
+      }
+
+      const bins = record.bins || [];
+      if(bins.some(b=>String(b.binNo)===String(binNo))){
+        const ok = confirm("Ese BIN ya existe en este registro.\n\n¿Desea agregarlo igual?");
+        if(!ok) return;
+      }
+
+      const bin = {
+        binNo: Number(binNo),
+        color,
+        closed: false,
+        total: 0,
+        kvt: 0,
+        entries: []
+      };
+
+      record.bins.push(bin);
+      renderBins();
+      scheduleSave();
+    };
+
+    function doTapar(idx){
+      if(!record) return;
+      if(locked || mode==="view") return;
+
+      const bin = record.bins[idx];
+      if(!bin || bin.closed) return;
+
+      const ok = confirm(`¿TAPAR BIN #${bin.binNo}?\n\nEsto bloqueará el BIN y permitirá agregar uno nuevo.`);
+      if(!ok) return;
+
+      bin.closed = true;
+      renderBins();
+      scheduleSave();
+    }
+
+    // ========= SPC LOOKUP =========
+    function sanitizeSecuencial(s){
+      const raw = String(s||"").trim();
+      if(!raw) return "";
+      const digits = raw.replace(/\D+/g,"");
+      return digits || raw;
+    }
+
+    function pickField(data, keys){
+      for(const k of keys){
+        if(data && Object.prototype.hasOwnProperty.call(data,k)){
+          const v = data[k];
+          if(v !== null && v !== undefined && String(v).trim()!=="") return v;
+        }
+      }
+      return null;
+    }
+
+    function toNumberAny(v){
+      if(v === null || v === undefined) return 0;
+      if(typeof v === "number") return Number.isFinite(v) ? v : 0;
+      const s = String(v).trim();
+      if(!s) return 0;
+      const p = parseEsNumber(s);
+      if(Number.isFinite(p)) return p;
+      const s2 = s.replace(/\s+/g, "").replace(/\./g, "").replace(",", ".");
+      const n = Number(s2);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function extractSPC(data){
+      const prov = pickField(data, [
+        "proveedor","Proveedor","PROVEEDOR",
+        "productor","Productor","PRODUCTOR",
+        "nombreProveedor","NOMBRE_PROVEEDOR","proveedorNombre"
+      ]);
+
+      const lbsRaw = pickField(data, [
+        "guiaLbs","guia_lbs","GUIALBS","GUIA_LBS",
+        "guiaLibras","guia_libras","GUIA_LIBRAS",
+        "librasGuia","LIBRAS_GUIA",
+        "libras","Libras","LIBRAS","peso","pesoLibras","PESO_LB","lb","lbs","LB"
+      ]);
+
+      const piscina = pickField(data, ["piscina","Piscina","PISCINA"]);
+      const proveedor = String(prov || "").trim();
+      const libras = toNumberAny(lbsRaw);
+
+      return { proveedor, libras, piscina: (piscina!==null? String(piscina).trim():"") };
+    }
+
+    async function lookupSPCBySecuencial(secInput){
+      const secRaw = sanitizeSecuencial(secInput);
+      const secStr = (secRaw.replace(/^0+/,"") || "0");
+      if(!secStr || secStr === "0") return null;
+
+      let permDenied = false;
+
+      // 1) docId
+      for(const colName of SPC_COLLECTIONS){
+        try{
+          const ref = doc(db, colName, secStr);
+          const snap = await getDoc(ref);
+          if(snap.exists()){
+            const out = extractSPC(snap.data());
+            if(out) return out;
+          }
+        }catch(e){
+          if(e?.code === "permission-denied") permDenied = true;
+        }
+      }
+
+      // 2) where secuencial
+      const secNum = Number(secStr);
+      for(const colName of SPC_COLLECTIONS){
+        try{
+          if(Number.isFinite(secNum)){
+            const qn = query(collection(db, colName), where("secuencial","==", secNum), limit(1));
+            const sn = await getDocs(qn);
+            if(!sn.empty) return extractSPC(sn.docs[0].data());
+          }
+          const qs = query(collection(db, colName), where("secuencial","==", secStr), limit(1));
+          const ss = await getDocs(qs);
+          if(!ss.empty) return extractSPC(ss.docs[0].data());
+        }catch(e){
+          if(e?.code === "permission-denied") permDenied = true;
+        }
+      }
+
+      if(permDenied) return { __error:"permission-denied" };
+      return null;
+    }
+
+    async function resolveSPC(){
+      if(!record) return;
+      const sec = sanitizeSecuencial($("inpSecuencial").value);
+      record.secuencial = sec;
+      if(!sec){
+        record.proveedor = "";
+        record.librasGuia = 0;
+        renderHeader();
+        scheduleSave();
+        return;
+      }
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setStatus("Sin internet: no se puede buscar SPC.");
+        return;
+      }
+
+      setStatus("Buscando en SPC…");
+      const found = await lookupSPCBySecuencial(sec);
+
+      if(found && found.__error === "permission-denied"){
+        record.proveedor = "";
+        record.librasGuia = 0;
+        setStatus("Sin permisos para leer SPC (programación). Revisa reglas Firestore.");
+        renderHeader();
+        scheduleSave();
+        return;
+      }
+
+      if(!found){
+        record.proveedor = "";
+        record.librasGuia = 0;
+        setStatus(`No encontrado en SPC: ${sec}`);
+        renderHeader();
+        scheduleSave();
+        return;
+      }
+
+      record.proveedor = found.proveedor || "";
+      record.librasGuia = Number(found.libras||0) || 0;
+
+      // Piscina: si está vacío y viene desde SPC, úsala
+      if(!(record.piscina && String(record.piscina).trim()) && found.piscina){
+        record.piscina = found.piscina;
+      }
+
+      setStatus("Listo.");
+      renderHeader();
+      scheduleSave();
+    }
+
+    // ========= GUARDADO DRAFT =========
+    function stableHash(obj){
+      try{
+        return JSON.stringify(obj);
+      }catch(_){
+        return String(Date.now());
+      }
+    }
+
+    function scheduleSave(){
+      if(!record) return;
+      if(locked || mode==="view") return;
+      if(!tmpDocId) return;
+
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async ()=>{
+        await saveDraft();
+      }, 650);
+    }
+
+    async function saveDraft(force=false){
+      if(!record) return;
+      if(locked || mode==="view") return;
+      if(!tmpDocId) return;
+
+      const payload = buildPayload();
+      const hash = stableHash(payload);
+      if(!force && hash === lastSavedHash) return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setStatus("Sin internet: cambios pendientes (no se guardan).");
+        return;
+      }
+
+      try{
+        record.updatedAtIso = nowISO();
+        payload.updatedAtIso = record.updatedAtIso;
+
+        await setDoc(getDraftRef(), payload, { merge:true });
+        lastSavedHash = hash;
+        draftSaved = true;
+        setStatus("Borrador guardado en Firestore.");
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        setStatus(`No se pudo guardar borrador.${code ? " ("+code+")" : ""}`);
+        if(code === "permission-denied"){
+          alert("permission-denied: agrega los usuarios pesadorcola1 y pesadorcola2 en tu lista de editores (reglas Firestore).");
+        }
+      }
+    }
+
+    function buildPayload(){
+      // Recalcular bins
+      (record.bins||[]).forEach(calcBin);
+
+      // Basura
+      const bas = parseEsNumber($("inpBasura").value);
+      record.basuraLbs = Number.isFinite(bas) ? bas : 0;
+
+      // Otros campos ya sincronizados en handlers
+
+      return {
+        ...record,
+        locked: !!locked,
+        docId: (finalDocId || tmpDocId),
+        tmpDocId: tmpDocId,
+        finalDocId: finalDocId,
+        totalPesoCola: totalPesoCola(),
+        totalKvt: totalKvt(),
+        updatedAt: serverTimestamp()
+      };
+    }
+
+    // ========= NÚMERO REGISTRO =========
+    async function getProvisionalRegNumber(){
+      // ✅ No incrementa contador: permite reutilizar si no se guarda
+      const ref = doc(db, COL_PCD_COUNTER, "global");
+      const snap = await getDoc(ref);
+      let lastFinal = 0;
+      if(snap.exists()){
+        lastFinal = Number((snap.data()||{}).lastFinal || 0);
+        if(!Number.isFinite(lastFinal)) lastFinal = 0;
+      }
+      const next = lastFinal + 1;
+      return String(next).padStart(8,"0");
+    }
+
+    async function allocateFinalRegNumber(){
+      // ✅ Incrementa contador SOLO al GUARDAR
+      const ref = doc(db, COL_PCD_COUNTER, "global");
+      const n = await runTransaction(db, async (tx)=>{
+        const snap = await tx.get(ref);
+        let lastFinal = 0;
+        if(snap.exists()){
+          lastFinal = Number((snap.data()||{}).lastFinal || 0);
+          if(!Number.isFinite(lastFinal)) lastFinal = 0;
+        }
+        const next = lastFinal + 1;
+        tx.set(ref, { lastFinal: next, updatedAt: serverTimestamp() }, { merge:true });
+        return next;
+      });
+      return String(n).padStart(8,"0");
+    }
+
+    // ========= NUEVO REGISTRO =========
+    async function newRegistro(){
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede crear un nuevo registro.");
+        return;
+      }
+      if(!currentUserEmail) return;
+
+      mode = "edit";
+      locked = false;
+      draftSaved = false;
+      lastSavedHash = "";
+
+      record = blankRecord();
+
+      // ✅ Número provisional (NO se guarda como final hasta validar supervisor)
+      setStatus("Creando borrador…");
+      try{
+        const regProv = await getProvisionalRegNumber();
+        currentReg = regProv;
+
+        tmpDocId = `PCD_TMP_${(currentUserEmail.split("@")[0]||"u").replaceAll(".","")}_${Date.now()}`;
+        finalDocId = "";
+
+        record.regNumber = regProv;
+        record.estado = "BORRADOR";
+        record.locked = false;
+
+        // defaults
+        record.supervisorEmail = $("selSupervisor").value || "";
+        record.circuito = Number($("selCircuito").value||1) || 1;
+
+        // ✅ crear doc TMP (borrador) de una vez
+        await setDoc(doc(db, COL_PCD_TMP, tmpDocId), {
+          ...record,
+          tmpDocId,
+          finalDocId: "",
+          totalPesoCola: 0,
+          totalKvt: 0,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge:false });
+
+        draftSaved = true;
+        setStatus("Borrador creado. Ingrese datos y pese bines.");
+        renderHeader();
+        renderBins();
+        setLockedUI(false);
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        setStatus(`No se pudo crear borrador.${code ? " ("+code+")" : ""}`);
+        if(code === "permission-denied"){
+          alert("permission-denied: revisa reglas Firestore (isEditor) para pesadores.");
+        }
+      }
+    }
+
+    // ========= CARGA DESDE BD =========
+    function loadFromDoc(d){
+      finalDocId = d.id || d.docId || "";
+      tmpDocId = d.tmpDocId || "";
+      currentReg = d.regNumber || "";
+      record = {
+        ...blankRecord(),
+        ...d
+      };
+      locked = true;
+      mode = "view";
+      setStatus("Registro cargado (solo lectura).");
+      renderHeader();
+      renderBins();
+      setLockedUI(true); // bloquea
+      updateButtons();
+      showView("app");
+    }
+
+    // ========= FOTO =========
+    async function uploadPhoto(file, kind){
+      if(!file) return;
+      if(!record || !tmpDocId) return;
+      if(locked || mode==="view") return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede subir la foto.");
+        return;
+      }
+
+      const maxMB = 6;
+      if(file.size > maxMB*1024*1024){
+        alert(`La imagen supera ${maxMB} MB. Toma una foto con menor resolución.`);
+        return;
+      }
+
+      const ext = (file.name||"").split(".").pop().toLowerCase();
+      const safeExt = (ext && ext.length<=5) ? ext : "jpg";
+
+      const path = `pcd/${tmpDocId}/${kind}.${safeExt}`;
+      setStatus("Subiendo foto…");
+
+      try{
+        const r = sRef(storage, path);
+        const buf = await file.arrayBuffer();
+        await uploadBytes(r, new Uint8Array(buf), { contentType: file.type || "image/jpeg" });
+        const url = await getDownloadURL(r);
+
+        if(kind==="proveedor"){
+          record.fotoProveedorUrl = url;
+          record.fotoProveedorName = file.name || "foto_proveedor";
+        }else{
+          record.fotoBasuraUrl = url;
+          record.fotoBasuraName = file.name || "foto_basura";
+        }
+
+
+        renderHeader();
+        // ✅ Persistir foto inmediatamente (para que se vea en historial y al abrir)
+        try{
+          const patch = (kind==="proveedor")
+            ? { fotoProveedorUrl: url, fotoProveedorName: record.fotoProveedorName, fotoUpdatedAt: serverTimestamp() }
+            : { fotoBasuraUrl: url, fotoBasuraName: record.fotoBasuraName, fotoUpdatedAt: serverTimestamp() };
+          await updateDoc(getDraftRef(), patch);
+        }catch(e){
+          // si no existe todavía, caerá al setDoc por autosave igualmente
+        }
+
+        scheduleSave();
+        setStatus("Foto subida.");
+
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        setStatus("No se pudo subir la foto." + (code?(" ("+code+")"):""));
+        alert("No se pudo subir la foto. Revisa permisos de Storage." + (code?("\n\nCódigo: "+code):""));
+      }
+    }
+
+    $("btnTakeFotoProv").onclick = ()=>{ if(locked||mode==="view") return; $("fileFotoProv").click(); };
+    $("btnTakeFotoBas").onclick  = ()=>{ if(locked||mode==="view") return; $("fileFotoBas").click(); };
+
+    $("fileFotoProv").addEventListener("change", async ()=>{
+      const f = $("fileFotoProv").files?.[0];
+      $("fileFotoProv").value = "";
+      await uploadPhoto(f, "proveedor");
+    });
+    $("fileFotoBas").addEventListener("change", async ()=>{
+      const f = $("fileFotoBas").files?.[0];
+      $("fileFotoBas").value = "";
+      await uploadPhoto(f, "basura");
+    });
+
+    $("btnFotoProv").onclick = ()=>{
+      const url = record?.fotoProveedorUrl || "";
+      if(!url) return;
+      window.open(url, "_blank", "noopener");
+    };
+    $("btnFotoBas").onclick = ()=>{
+      const url = record?.fotoBasuraUrl || "";
+      if(!url) return;
+      window.open(url, "_blank", "noopener");
+    };
+
+    // ========= EXCEL / PDF =========
+    function buildEntriesFlat(){
+      const out = [];
+      for(const b of (record?.bins||[])){
+        const entries = b.entries || [];
+        entries.forEach((e, idx)=>{
+          if(e.t==="add"){
+            out.push({
+              bin: b.binNo,
+              color: b.color,
+              tipo: "PESADA",
+              raw: Number(e.raw||0),
+              gavetas: Number(e.gavetas||0),
+              humedadPct: Number(e.humPct||0),
+              neto: Number(e.net||0),
+              fechaHora: e.atIso || ""
+            });
+          }else if(e.t==="del"){
+            out.push({
+              bin: b.binNo,
+              color: b.color,
+              tipo: "ELIMINAR",
+              raw: "",
+              gavetas: "",
+              humedadPct: "",
+              neto: -Number(e.val||0),
+              fechaHora: e.atIso || ""
+            });
+          }
+        });
+        // resumen por bin
+        out.push({
+          bin: b.binNo,
+          color: b.color,
+          tipo: "TOTAL BIN",
+          raw: "",
+          gavetas: "",
+          humedadPct: "",
+          neto: Number(b.total||0),
+          fechaHora: ""
+        });
+      }
+      return out;
+    }
+
+    $("btnExcel").onclick = ()=>{
+      if(mode!=="view" && !locked){
+        alert("Excel se habilita después de GUARDAR.");
+        return;
+      }
+      try{
+        const XLSX = window.XLSX;
+        if(!XLSX){ alert("No se pudo cargar la librería de Excel."); return; }
+
+        const aoa = [];
+        aoa.push(["PCD | REGISTRO PESO COLA"]);
+        aoa.push(["Registro", record.regNumber, "Fecha", record.fecha, "Inicio", record.horaInicio, "Final", record.horaFinal]);
+        aoa.push(["Lote", record.lote, "Parcial", record.parcial, "Secuencial", record.secuencial, "Piscina", record.piscina]);
+        aoa.push(["Proveedor", record.proveedor, "Libras guía", record.librasGuia, "Supervisor", record.supervisorEmail, "Pesador", record.pesadorEmail]);
+        aoa.push(["Humedad", record.humedad.enabled ? "SI" : "NO", "Pct", record.humedad.pct, "Basura", record.basuraLbs, "Circuito", record.circuito]);
+        aoa.push([]);
+        aoa.push(["BIN","COLOR","TIPO","RAW","GAVETAS","HUM%","NETO","FECHA/HORA"]);
+
+        const flat = buildEntriesFlat();
+        flat.forEach(r=>{
+          aoa.push([
+            r.bin, r.color, r.tipo, r.raw, r.gavetas, r.humedadPct, r.neto, r.fechaHora
+          ]);
+        });
+
+        aoa.push([]);
+        aoa.push(["TOTAL PESO COLA", totalPesoCola(), "TOTAL KVT", totalKvt()]);
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws["!cols"] = [{wch:8},{wch:10},{wch:12},{wch:10},{wch:10},{wch:8},{wch:10},{wch:22}];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "PCD");
+
+        const who = (currentUserEmail || "usuario").split("@")[0];
+        const fname = `PCD_${(record.regNumber||"SIN_NUMERO")}_${who}_${Date.now()}.xlsx`.replaceAll(" ","_");
+        XLSX.writeFile(wb, fname);
+      }catch(err){
+        console.error(err);
+        alert("No se pudo exportar Excel.");
+      }
+    };
+
+    $("btnPdf").onclick = async ()=>{
+      if(mode!=="view" && !locked){
+        alert("PDF se habilita después de GUARDAR.");
+        return;
+      }
+
+      const sheet = $("sheet");
+      if(!sheet){ alert("No se encontró el reporte."); return; }
+
+      const { jsPDF } = window.jspdf || {};
+      if(!jsPDF){ alert("No se pudo cargar PDF."); return; }
+
+      // Asegurar que los wrappers no recorten
+      const tblWrapEl = sheet.querySelector(".tblWrap");
+      const _old = tblWrapEl ? {overflow: tblWrapEl.style.overflow, maxHeight: tblWrapEl.style.maxHeight} : null;
+      if(tblWrapEl){ tblWrapEl.style.overflow = "visible"; tblWrapEl.style.maxHeight = "none"; }
+
+      const canvas = await html2canvas(sheet, {scale:2, useCORS:true, backgroundColor:"#ffffff"});
+
+      if(tblWrapEl && _old){ tblWrapEl.style.overflow = _old.overflow; tblWrapEl.style.maxHeight = _old.maxHeight; }
+
+      const pdf = new jsPDF({orientation:"portrait", unit:"pt", format:"a4"});
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+
+      const margin = 18;
+      const printableW = pageW - margin*2;
+      const printableH = pageH - margin*2;
+
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+
+      const ratio = printableW / imgW;
+      let sliceHpx = Math.floor(printableH / ratio);
+      if(!Number.isFinite(sliceHpx) || sliceHpx <= 0) sliceHpx = imgH;
+
+      let pageIndex = 0;
+      for(let y=0; y<imgH; y += sliceHpx){
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = imgW;
+        sliceCanvas.height = Math.min(sliceHpx, imgH - y);
+
+        const ctx = sliceCanvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
+        ctx.drawImage(canvas, 0, y, imgW, sliceCanvas.height, 0, 0, imgW, sliceCanvas.height);
+
+        const imgData = sliceCanvas.toDataURL("image/png");
+        const sliceHpt = sliceCanvas.height * ratio;
+
+        if(pageIndex > 0) pdf.addPage();
+        pdf.addImage(imgData, "PNG", margin, margin, printableW, sliceHpt);
+        pageIndex++;
+      }
+
+      const who = (currentUserEmail || "usuario").split("@")[0];
+      const fname = `PCD_${(record.regNumber||"SIN_NUMERO")}_${who}_${Date.now()}.pdf`.replaceAll(" ","_");
+      pdf.save(fname);
+    };
+
+    // ========= HISTORIAL =========
+    function dateAddDays(yyyyMmDd, deltaDays){
+      const [y,m,d] = String(yyyyMmDd).split("-").map(x=>Number(x||0));
+      const dt = new Date(y, (m||1)-1, d||1);
+      dt.setDate(dt.getDate() + deltaDays);
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+    }
+
+    async function fetchHistorial(){
+      const box = $('histList');
+      box.innerHTML = '<div class="hint">Cargando…</div>';
+
+      const from = String($('histFrom').value || '').trim();
+      const to   = String($('histTo').value || '').trim();
+      const termRaw = String($('histReg').value || '').trim();
+      const term = termRaw.replace(/\s+/g,'');
+      const userEmail = currentUserEmail || '';
+
+      try{
+        const col = collection(db, COL_PCD);
+        const clauses = [];
+
+        // Rango de fechas (si está definido)
+        if (from) clauses.push(where('fechaISO','>=', from));
+        if (to)   clauses.push(where('fechaISO','<=', to));
+
+        // Si NO es admin, solo ve sus propios registros
+        if (!isAdmin() && userEmail){
+          clauses.push(where('pesadorEmail','==', userEmail));
+        }
+
+        // Búsqueda por Registro (8) o Secuencial (4)
+        if (term){
+          const digits = term.replace(/\D/g,'');
+          if (digits.length === 8){
+            clauses.push(where('registroNumero','==', digits.padStart(8,'0')));
+          }else if (digits.length === 4){
+            clauses.push(where('secuencial','==', digits.padStart(4,'0')));
+          }else{
+            box.innerHTML = '<div class="hint">Escribe <b>8 dígitos</b> (Registro) o <b>4 dígitos</b> (Secuencial).</div>';
+            return;
+          }
+        }
+
+        // Orden
+        let q;
+        if (clauses.length){
+          q = query(col, ...clauses, orderBy('fechaISO','desc'), orderBy('updatedAt','desc'), limit(200));
+        }else{
+          q = query(col, orderBy('fechaISO','desc'), orderBy('updatedAt','desc'), limit(200));
+        }
+
+        const snap = await getDocs(q);
+        const items = [];
+        snap.forEach(d=>{
+          const x = d.data();
+          items.push({id:d.id, ...x});
+        });
+
+        renderHistorial(items);
+      }catch(err){
+        console.error(err);
+        box.innerHTML = '<div class="hint" style="color:#b91c1c">Error cargando historial. Si te pide índice, créalo en Firestore.</div>';
+      }
+    }
+        return items;
+      }
+
+      const qAll = query(
+        collection(db, COL_PCD),
+        where("fecha", ">=", desde),
+        where("fecha", "<=", hasta)
+      );
+
+      const snap = await getDocs(qAll);
+      snap.forEach(d=>{
+        const data = d.data() || {};
+        if(String(data.estado||"") !== "GUARDADO") return;
+        items.push({ id:d.id, ...data });
+      });
+
+      if(!isAdmin()){
+        return items.filter(x => String(x.pesadorEmail||"").toLowerCase() === currentUserEmail);
+      }
+      return items;
+    }
+
+    function renderHistorial(items){
+      const tb = $("tbodyHist");
+      tb.innerHTML = "";
+
+      items.sort((a,b)=>
+        String(b.fecha||"").localeCompare(String(a.fecha||"")) ||
+        (String(b.regNumber||"").localeCompare(String(a.regNumber||"")))
+      );
+
+      const totalMine = items
+        .filter(x=> String(x.pesadorEmail||"").toLowerCase() === currentUserEmail)
+        .reduce((a,x)=>a+Number(x.totalPesoCola||0),0);
+
+      const totalAll = items.reduce((a,x)=>a+Number(x.totalPesoCola||0),0);
+
+      const mineEl = safe("histSumMine");
+      const allEl  = safe("histSumAll");
+
+      if(mineEl) mineEl.textContent = `TOTAL COLA (mi usuario): ${fmt0(totalMine)} lb`;
+      if(allEl){
+        allEl.style.display = isAdmin() ? "" : "none";
+        allEl.textContent = `TOTAL COLA (todos): ${fmt0(totalAll)} lb`;
+      }
+
+      items.forEach(x=>{
+        const fecha = String(x.fecha||"");
+        const rn = String(x.regNumber||"");
+        const sec = String(x.secuencial||"");
+        const prov = String(x.proveedor||"");
+        const peso = Number(x.totalPesoCola||0);
+        const kvt = Number(x.totalKvt||0);
+        const pesador = String(x.pesadorEmail||"");
+
+        const tr = document.createElement("tr");
+
+        const tdPesador = isAdmin()
+          ? `<td class="hProv" style="text-align:left;font-weight:900;">${esc(pesador)}</td>`
+          : `<td class="hProv" style="text-align:center;color:#888;">—</td>`;
+
+        const delBtn = isAdmin()
+          ? `<span class="btn danger" data-del="${esc(x.id)}" style="padding:6px 10px;">ELIMINAR</span>`
+          : `—`;
+
+        tr.innerHTML = `
+          <td class="hDate" style="text-align:center;font-weight:900;">${esc(fecha)}</td>
+          <td class="hNum" style="text-align:center;font-weight:900;">${esc(rn)}</td>
+          <td class="hSec" style="text-align:center;font-weight:900;">${esc(sec)}</td>
+          <td class="hProv" style="text-align:left;font-weight:900;">${esc(prov)}</td>
+          <td class="hLbs" style="text-align:right;font-weight:900;">${fmt0(peso)}</td>
+          <td class="hKvt" style="text-align:center;font-weight:900;">${fmt0(kvt)}</td>
+          ${tdPesador}
+          <td class="hOpen" style="text-align:center;">
+            <span class="btn" data-open="${esc(x.id)}" style="padding:6px 10px;">ABRIR</span>
+          </td>
+          <td class="hOpen" style="text-align:center;">${delBtn}</td>
+        `;
+        tb.appendChild(tr);
+      });
+
+      tb.querySelectorAll("[data-open]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-open");
+          if(!id) return;
+
+          await refreshInternetStatus();
+          if(!hasInternet){
+            alert("Sin internet: no se puede abrir.");
+            return;
+          }
+
+          try{
+            const snap = await getDoc(doc(db, COL_PCD, id));
+            if(!snap.exists()){
+              alert("Ese registro ya no existe.");
+              return;
+            }
+            loadFromDoc({ id: snap.id, ...snap.data() });
+          }catch(err){
+            console.error(err);
+            alert("No se pudo abrir el registro.");
+          }
+        });
+      });
+
+      tb.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          if(!isAdmin()){
+            alert("Solo el administrador puede eliminar.");
+            return;
+          }
+          const id = btn.getAttribute("data-del");
+          if(!id) return;
+
+          const ok = confirm("¿Eliminar este registro?\n\nEsta acción NO se puede deshacer.");
+          if(!ok) return;
+
+          await refreshInternetStatus();
+          if(!hasInternet){
+            alert("Sin internet: no se puede eliminar.");
+            return;
+          }
+
+          try{
+            await deleteDoc(doc(db, COL_PCD, id));
+            btn.closest("tr")?.remove();
+            setHistStatus("Registro eliminado.");
+          }catch(err){
+            console.error(err);
+            alert("No se pudo eliminar. Revisa permisos.");
+          }
+        });
+      });
+    }
+
+    async function openHistorial(){
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede cargar historial.");
+        return;
+      }
+
+      const t = todayKey();
+      if(!$("histHasta").value) $("histHasta").value = t;
+      if(!$("histDesde").value) $("histDesde").value = dateAddDays(t, -14);
+
+      $("histReg").value = "";
+
+      showView("hist");
+      await loadHistorial();
+    }
+
+    async function loadHistorial(){
+      const desde = $("histDesde").value || todayKey();
+      const hasta = $("histHasta").value || todayKey();
+      const reg = ($("histReg").value || "").trim();
+
+      if(desde > hasta){
+        alert("Rango inválido: DESDE no puede ser mayor que HASTA.");
+        return;
+      }
+
+      setHistStatus("Cargando historial…");
+      try{
+        const items = await fetchHistorial(desde, hasta, reg);
+        renderHistorial(items);
+        setHistStatus(`Listo. Registros: ${items.length}`);
+      }catch(err){
+        console.error(err);
+        setHistStatus("Error cargando historial.");
+        alert("No se pudo cargar el historial.");
+      }
+    }
+
+    $("btnBuscar").onclick = openHistorial;
+    $("btnHistFiltrar").onclick = loadHistorial;
+    $("btnHistBack").onclick = ()=>{ showView("app"); };
+    $("btnHistLogout").onclick = async ()=>{ await signOut(auth); };
+
+    // ========= GUARDAR FINAL (con supervisor) =========
+    function openSupModal(){
+      const sup = ($("selSupervisor").value || "").trim().toLowerCase();
+      if(!sup){
+        alert("Seleccione un SUPERVISOR antes de guardar.");
+        return;
+      }
+      if(!SUPERVISORS.has(sup)){
+        alert("Supervisor inválido.");
+        return;
+      }
+      $("mSupEmail").value = sup;
+      $("mSupPass").value = "";
+      $("mSupMsg").textContent = "—";
+      $("mSupBack").classList.add("active");
+      $("mSupPass").focus();
+    }
+    function closeSupModal(){
+      $("mSupBack").classList.remove("active");
+      $("mSupPass").value = "";
+      $("mSupMsg").textContent = "—";
+    }
+    $("mSupBack").addEventListener("click",(e)=>{
+      if(e.target === $("mSupBack")) closeSupModal();
+    });
+    $("mSupCancel").onclick = closeSupModal;
+
+    async function validateSupervisor(email, pass){
+      // Login temporal en authVerify (inMemory)
+      try{
+        await signIn2(authVerify, email, pass);
+        await signOut2(authVerify);
+        return true;
+      }catch(err){
+        console.warn("Supervisor validate error:", err?.code||err);
+        try{ await signOut2(authVerify); }catch(_){}
+        return false;
+      }
+    }
+
+    async function finalizeSave(){
+      if(!record || !tmpDocId) return;
+      if(locked || mode==="view") return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede GUARDAR.");
+        return;
+      }
+
+      // Validaciones mínimas
+      const sup = ($("selSupervisor").value || "").trim().toLowerCase();
+      if(!sup){ alert("Seleccione un SUPERVISOR."); return; }
+      if(!SUPERVISORS.has(sup)){ alert("Supervisor inválido."); return; }
+
+      const sec = sanitizeSecuencial($("inpSecuencial").value);
+      if(!sec){ alert("Ingrese SECUENCIAL."); return; }
+
+      if(!(record.bins||[]).length){
+        alert("Agregue al menos 1 BIN y pese libras.");
+        return;
+      }
+      if(currentOpenBinIndex() !== -1){
+        alert("Debe TAPAR el BIN activo antes de guardar.");
+        return;
+      }
+
+      openSupModal();
+    }
+
+    $("btnGuardar").onclick = finalizeSave;
+
+    $("mSupOk").onclick = async ()=>{
+      const sup = ($("mSupEmail").value || "").trim().toLowerCase();
+      const pass = $("mSupPass").value || "";
+      if(!pass){
+        $("mSupMsg").textContent = "Ingrese la contraseña del supervisor.";
+        return;
+      }
+
+      $("mSupMsg").textContent = "Validando…";
+      const ok = await validateSupervisor(sup, pass);
+
+      if(!ok){
+        $("mSupMsg").textContent = "❌ Usuario o contraseña incorrectos.";
+        return;
+      }
+
+      $("mSupMsg").textContent = "✅ Validado. Guardando…";
+
+      if(!record || !tmpDocId){
+        $("mSupMsg").textContent = "No hay borrador activo.";
+        return;
+      }
+
+      // Actualizar datos desde UI
+      record.supervisorEmail = sup;
+      record.circuito = Number($("selCircuito").value||1) || 1;
+
+      record.lote = $("inpLote").value || "";
+      record.parcial = $("inpParcial").value || "";
+      record.secuencial = sanitizeSecuencial($("inpSecuencial").value);
+      record.piscina = $("inpPiscina").value || "";
+      record.basuraLbs = Number.isFinite(parseEsNumber($("inpBasura").value)) ? parseEsNumber($("inpBasura").value) : 0;
+
+      record.horaFinal = hhmm();
+      record.estado = "GUARDADO";
+      record.locked = true;
+      record.supervisorValidatedBy = sup;
+      record.supervisorValidatedAtIso = nowISO();
+
+      try{
+        // ✅ Asignar número FINAL SOLO aquí
+        const regFinal = await allocateFinalRegNumber();
+        currentReg = regFinal;
+        record.regNumber = regFinal;
+
+        finalDocId = `PCD_${regFinal}`;
+
+        const payload = buildPayload();
+        payload.regNumber = regFinal;
+        payload.estado = "GUARDADO";
+        payload.locked = true;
+        payload.tmpDocId = tmpDocId;
+        payload.finalDocId = finalDocId;
+
+        // ✅ Guardar final
+        await setDoc(doc(db, COL_PCD, finalDocId), {
+          ...payload,
+          supervisorEmail: sup,
+          horaFinal: record.horaFinal,
+          estado: "GUARDADO",
+          locked: true,
+          supervisorValidatedBy: sup,
+          supervisorValidatedAtIso: record.supervisorValidatedAtIso,
+          savedAt: serverTimestamp()
+        }, { merge:false });
+
+        // ✅ eliminar borrador TMP
+        try{ await deleteDoc(doc(db, COL_PCD_TMP, tmpDocId)); }catch(_){}
+
+        closeSupModal();
+
+        locked = true;
+        mode = "view";
+        setStatus("Guardado. Registro bloqueado.");
+        setLockedUI(true);
+        renderHeader();
+        renderBins();
+        alert(`Registro guardado y bloqueado correctamente.\n\nRegistro N°: ${regFinal}`);
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        $("mSupMsg").textContent = `No se pudo guardar.${code ? " ("+code+")" : ""}`;
+        if(code === "permission-denied"){
+          alert("permission-denied: revisa reglas Firestore (isEditor) y permisos del contador.");
+        }
+      }
+    };
+
+    // ========= INPUT HANDLERS =========
+    function bindInputs(){
+      $("inpLote").addEventListener("input", ()=>{
+        if(!record) return;
+        record.lote = $("inpLote").value || "";
+        scheduleSave();
+      });
+      $("inpParcial").addEventListener("input", ()=>{
+        if(!record) return;
+        record.parcial = $("inpParcial").value || "";
+        scheduleSave();
+      });
+      $("inpPiscina").addEventListener("input", ()=>{
+        if(!record) return;
+        record.piscina = $("inpPiscina").value || "";
+        scheduleSave();
+      });
+
+      $("inpSecuencial").addEventListener("keydown", (e)=>{
+        if(e.key==="Enter"){
+          e.preventDefault();
+          resolveSPC();
+        }
+      });
+      $("inpSecuencial").addEventListener("blur", ()=>{
+        resolveSPC();
+      });
+
+      $("selSupervisor").addEventListener("change", ()=>{
+        if(!record) return;
+        record.supervisorEmail = $("selSupervisor").value || "";
+        scheduleSave();
+      });
+      $("selCircuito").addEventListener("change", ()=>{
+        if(!record) return;
+        record.circuito = Number($("selCircuito").value||1) || 1;
+        scheduleSave();
+      });
+
+      $("humNo").addEventListener("change", applyHumUI);
+      $("humSi").addEventListener("change", applyHumUI);
+      $("humPct").addEventListener("input", ()=>{
+        if(!record) return;
+        record.humedad.enabled = $("humSi").checked;
+        record.humedad.pct = $("humSi").checked ? (Number($("humPct").value||0) || 0) : 0;
+        scheduleSave();
+      });
+
+      $("inpBasura").addEventListener("input", ()=>{
+        if(!record) return;
+        record.basuraLbs = Number.isFinite(parseEsNumber($("inpBasura").value)) ? parseEsNumber($("inpBasura").value) : 0;
+        scheduleSave();
+      });
+    }
+
+    // ========= LOGIN =========
+    const bootMsgEl = $("bootMsg");
+    if(bootMsgEl) bootMsgEl.textContent = "Cargando Firebase…";
+
+    $("btnLogin").onclick = async ()=>{
+      $("loginMsg").textContent = "";
+      const boot2 = safe("bootMsg");
+      if(boot2) boot2.textContent = "Intentando iniciar sesión…";
+      try{
+        const email = $("loginEmail").value.trim().toLowerCase();
+        const pass  = $("loginPass").value;
+        if(!email || !pass){
+          $("loginMsg").textContent = "Ingrese usuario y contraseña.";
+          return;
+        }
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){
+        const code = (e && e.code) ? ` (${e.code})` : "";
+        $("loginMsg").textContent = "Error: usuario o contraseña incorrectos." + code;
+        console.error(e);
+      }
+    };
+    ["loginEmail","loginPass"].forEach(id=>{
+      $(id).addEventListener("keydown",(e)=>{ if(e.key==="Enter") $("btnLogin").click(); });
+    });
+
+    $("btnLogout").onclick = async ()=>{ await signOut(auth); };
+    $("btnNuevo").onclick = async ()=>{
+      if(!currentUserEmail) return;
+      if(!confirm("¿Crear un NUEVO registro?\n\nEsto iniciará un nuevo número de registro.")) return;
+      await newRegistro();
+    };
+
+    // ========= AUTH STATE =========
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        currentUserEmail = (user.email||"").toLowerCase();
+        if(!ALLOWED.has(currentUserEmail)){
+          alert("Acceso no autorizado.");
+          await signOut(auth);
+          return;
+        }
+
+        currentUserName = (user.displayName || currentUserEmail.split("@")[0] || "").replaceAll("."," ");
+        $("userEmail").textContent = currentUserEmail;
+        $("userNameLabel").textContent = `(${currentUserName})`;
+
+        showView("app");
+        await refreshInternetStatus();
+        bindInputs();
+
+        // Crear registro automáticamente al entrar
+        record = blankRecord();
+        renderHeader();
+        renderBins();
+        setLockedUI(false);
+
+        await newRegistro();
+
+        if(bootMsgEl) bootMsgEl.textContent = "";
+      }else{
+        currentUserEmail = "";
+        currentUserName = "";
+        tmpDocId = "";
+        finalDocId = "";
+        currentReg = "";
+        record = null;
+        locked = false;
+        mode = "edit";
+        lastSavedHash = "";
+
+        hideNetBanner();
+        showView("login");
+        $("loginPass").value = "";
+        if(bootMsgEl) bootMsgEl.textContent = "";
+      }
+    });
+
+    // Inicial rango historial
+    $("histHasta").value = todayKey();
+    $("histDesde").value = dateAddDays(todayKey(), -14);
+
+  </script>
+</body>
+</html>
