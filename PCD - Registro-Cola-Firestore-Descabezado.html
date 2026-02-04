@@ -561,9 +561,8 @@
         </div>
 
         <div class="mOps">
-          <!-- ✅ CAMBIO: por defecto 1 gaveta -->
-          <label><input type="radio" name="mg" id="mG1" checked> 1 gaveta</label>
-          <label><input type="radio" name="mg" id="mG2"> 2 gavetas</label>
+          <label><input type="radio" name="mg" id="mG1"> 1 gaveta</label>
+          <label><input type="radio" name="mg" id="mG2" checked> 2 gavetas</label>
         </div>
 
         <div class="mFinal">
@@ -617,7 +616,7 @@
       setPersistence, browserLocalPersistence, inMemoryPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getFirestore, collection, query, where, orderBy, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc,
+      getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc,
       runTransaction, serverTimestamp, limit
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import {
@@ -692,6 +691,11 @@
       return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
     function nowISO(){ return new Date().toISOString(); }
+    function tsFile(){
+      const d = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+    }
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -708,6 +712,7 @@
     const COL_PCD_TMP = "pcd_registro_cola_tmp";
     const COL_PCD_COUNTER = "pcd_counters";
 
+    // ✅ CAMBIO: agrego "programacion" primero (colección real de tu SPC)
     const SPC_CANDIDATE_COLS = [
       "programacion",
       "spc_programacion",
@@ -782,20 +787,7 @@
         showNetBanner("online","CONEXIÓN RESTABLECIDA.");
         setTimeout(()=>hideNetBanner(), 1800);
       }
-      function updateButtons(){
-  const canEdit = (mode==="edit" && !locked);
-
-  setBtnEnabled("btnGuardar", canEdit && hasInternet);
-
-  // ✅ EXPORT SIEMPRE DISPONIBLE (no depende de internet)
-  setBtnEnabled("btnExcel", !!record);
-  setBtnEnabled("btnPdf",   !!record);
-
-  setBtnEnabled("btnBuscar", true);
-
-  setBtnEnabled("btnFotoProv", !!record?.fotoProveedorUrl);
-  setBtnEnabled("btnFotoBas",  !!record?.fotoBasuraUrl);
-}
+      updateButtons();
     }
     window.addEventListener("offline", ()=>refreshInternetStatus());
     window.addEventListener("online",  ()=>refreshInternetStatus());
@@ -898,8 +890,12 @@
     function updateButtons(){
       const canEdit = (mode==="edit" && !locked);
       setBtnEnabled("btnGuardar", canEdit && hasInternet);
+
+      // Puedes exportar también en edit, pero tu UI original solo permite en view.
+      // Si quieres habilitar export en edit, cambia a: setBtnEnabled("btnExcel", true); setBtnEnabled("btnPdf", true);
       setBtnEnabled("btnExcel", !canEdit);
       setBtnEnabled("btnPdf", !canEdit);
+
       setBtnEnabled("btnBuscar", true);
 
       setBtnEnabled("btnFotoProv", !!record?.fotoProveedorUrl);
@@ -1056,16 +1052,6 @@
       const lbs = parseEsNumber($("inpLbsGuia").value);
       record.librasGuia = Number.isFinite(lbs) ? lbs : (Number(record.librasGuia)||0);
 
-      // asegurar supervisor/circuito desde UI
-      record.supervisorEmail = ($("selSupervisor").value||"").trim().toLowerCase();
-      record.circuito = Number($("selCircuito").value||1) || 1;
-
-      // asegurar textos
-      record.lote = $("inpLote").value || record.lote || "";
-      record.parcial = $("inpParcial").value || record.parcial || "";
-      record.secuencial = $("inpSecuencial").value || record.secuencial || "";
-      record.piscina = $("inpPiscina").value || record.piscina || "";
-
       return {
         ...record,
         locked: !!locked,
@@ -1145,9 +1131,6 @@
       return String(n).padStart(8,"0");
     }
 
-    let spcTimer = null;
-    let lastSPCSec = "";
-
     async function newRegistro(){
       await refreshInternetStatus();
       if(!hasInternet){
@@ -1161,6 +1144,7 @@
       draftSaved = false;
       lastSavedHash = "";
 
+      // ✅ CAMBIO: reiniciar cache de secuencial SPC
       lastSPCSec = "";
       clearTimeout(spcTimer);
 
@@ -1237,11 +1221,14 @@
     function extractSPC(data){
       const proveedor = pickField(data, ["proveedor","Proveedor","proveedorNombre","nombreProveedor","proveedor_name","PROVEEDOR","productor","PRODUCTOR","razonSocial"]);
       const piscina   = pickField(data, ["piscina","PISCINA","pisc","PISC","piscNo","piscinaNo","piscina_n","numeroPiscina","pool","POOL"]);
+
+      // ✅ CAMBIO: agrego "guiaLbs" porque tu SPC guarda así
       const lbsGuia   = pickNumber(data, [
         "guiaLbs","GuiaLbs","GUIALBS",
         "librasGuia","LibrasGuia","lbsGuia","LBS_GUIA","libras_guia",
         "pesoGuia","PESO_GUIA","libras","Libras","lbGuia"
       ]);
+
       return { proveedor:String(proveedor||"").trim(), piscina:String(piscina||"").trim(), librasGuia: lbsGuia };
     }
 
@@ -1284,6 +1271,9 @@
       }
       return null;
     }
+
+    let spcTimer = null;
+    let lastSPCSec = "";
 
     async function tryAutoFillFromSPC(){
       if(!record) return;
@@ -1420,17 +1410,16 @@
     const mG1 = $("mG1");
     const mG2 = $("mG2");
 
+    let activeMode = "add";
     let mWorking = { adds:[], dels:[], sum:0, kvt:0 };
 
     function openPesar(binIdx){
       if(locked || mode==="view") return;
       activeBinIdx = binIdx;
 
+      activeMode = "add";
       mInput.value = "";
       mWorking = { adds:[], dels:[], sum:0, kvt:0 };
-
-      // ✅ por defecto 1 gaveta cada vez que abres
-      mG1.checked = true; mG2.checked = false;
 
       const bin = record.bins[binIdx];
       const adds = (bin.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
@@ -1576,18 +1565,7 @@
       });
     });
 
-    $("selSupervisor").addEventListener("change", ()=>{
-      if(!record) return;
-      record.supervisorEmail = ($("selSupervisor").value||"").trim().toLowerCase();
-      scheduleSave();
-    });
-    $("selCircuito").addEventListener("change", ()=>{
-      if(!record) return;
-      record.circuito = Number($("selCircuito").value||1) || 1;
-      scheduleSave();
-    });
-
-    // ✅ secuencial sanitizado + SPC
+    // ✅ CAMBIO: sanitizo secuencial a solo números + disparo en Enter y blur
     $("inpSecuencial").addEventListener("input", ()=>{
       if(!record) return;
       const only = ($("inpSecuencial").value || "").replace(/\D+/g,"");
@@ -1596,7 +1574,9 @@
       scheduleSave();
       debounceSPC();
     });
-    $("inpSecuencial").addEventListener("blur", ()=>{ tryAutoFillFromSPC(); });
+    $("inpSecuencial").addEventListener("blur", ()=>{
+      tryAutoFillFromSPC();
+    });
     $("inpSecuencial").addEventListener("keydown", (e)=>{
       if(e.key === "Enter"){
         e.preventDefault();
@@ -1604,508 +1584,270 @@
       }
     });
 
-    // ==========================
-    // ✅ HISTORIAL (BUSCAR)
-    // ==========================
-    function setHistDefaults(){
-      const t = todayKey();
-      if($("histDesde")) $("histDesde").value = t;
-      if($("histHasta")) $("histHasta").value = t;
-    }
-
-    function renderHistRows(items){
-      const tb = $("tbodyHist");
-      tb.innerHTML = "";
-      let sumMine = 0;
-      let countMine = 0;
-
-      items.forEach(it=>{
-        const isMine = (String(it.pesadorEmail||"").toLowerCase() === currentUserEmail);
-        if(isMine){
-          sumMine += Number(it.totalPesoCola || 0);
-          countMine += 1;
-        }
-
-        const delEnabled = isAdmin();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="hDate center">${esc(it.fecha||"")}</td>
-          <td class="hNum center">${esc(it.regNumber||"")}</td>
-          <td class="hSec center">${esc(it.secuencial||"")}</td>
-          <td class="hProv">${esc(it.proveedor||"")}</td>
-          <td class="hLbs num">${fmt0(it.totalPesoCola||0)}</td>
-          <td class="hKvt center">${fmt0(it.totalKvt||0)}</td>
-          <td class="hProv">${esc(it.pesadorName ? (it.pesadorName + " (" + (it.pesadorEmail||"") + ")") : (it.pesadorEmail||""))}</td>
-          <td class="hOpen center"><span class="btn" data-open="${esc(it.__id)}">ABRIR</span></td>
-          <td class="hOpen center"><span class="btn ${delEnabled ? "danger" : "disabled"}" data-del="${esc(it.__id)}">ELIMINAR</span></td>
-        `;
-        tb.appendChild(tr);
-      });
-
-      $("histSumMine").textContent = `Mis registros: ${countMine} | Total peso cola: ${fmt0(sumMine)}`;
-    }
-
-    async function loadHist(){
-      await refreshInternetStatus();
-      if(!hasInternet){
-        setHistStatus("Sin internet: no se puede cargar historial.");
-        return;
-      }
-
-      const desde = ($("histDesde").value || "").trim();
-      const hasta = ($("histHasta").value || "").trim();
-      if(!desde || !hasta){
-        setHistStatus("Seleccione DESDE y HASTA.");
-        return;
-      }
-      if(desde > hasta){
-        setHistStatus("Rango inválido: DESDE es mayor que HASTA.");
-        return;
-      }
-
-      setHistStatus("Cargando historial…");
-      try{
-        // ⚠️ Requiere campo "fecha" en formato YYYY-MM-DD (ya lo tienes)
-        const qh = query(
-          collection(db, COL_PCD),
-          where("fecha", ">=", desde),
-          where("fecha", "<=", hasta),
-          orderBy("fecha", "desc"),
-          limit(250)
-        );
-        const snap = await getDocs(qh);
-        const items = snap.docs.map(d=>({ __id:d.id, ...(d.data()||{}) }));
-
-        setHistStatus(`Registros: ${items.length}`);
-        renderHistRows(items);
-      }catch(err){
-        console.error(err);
-        const code = err?.code || "";
-        setHistStatus("No se pudo cargar historial." + (code?(" ("+code+")"):""));
-      }
-    }
-
+    // BUSCAR -> HISTORIAL (pendiente)
     $("btnBuscar").onclick = async ()=>{
-      showView("hist");
-      if(!$("histDesde").value || !$("histHasta").value) setHistDefaults();
-      await loadHist();
-    };
-
-    $("btnHistBack").onclick = ()=>{ showView("app"); };
-    $("btnHistLogout").onclick = async ()=>{ await signOut(auth); };
-    $("btnHistFiltrar").onclick = async ()=>{ await loadHist(); };
-
-    $("tblHist").addEventListener("click", async (e)=>{
-      const openBtn = e.target.closest("[data-open]");
-      const delBtn = e.target.closest("[data-del]");
-
-      if(openBtn){
-        const id = openBtn.getAttribute("data-open");
-        if(!id) return;
-
-        await refreshInternetStatus();
-        if(!hasInternet){
-          setHistStatus("Sin internet: no se puede abrir.");
-          return;
-        }
-
-        setHistStatus("Abriendo…");
-        try{
-          const s = await getDoc(doc(db, COL_PCD, id));
-          if(!s.exists()){
-            setHistStatus("No existe el registro.");
-            return;
-          }
-          loadFromDoc({ id: s.id, ...(s.data()||{}) });
-        }catch(err){
-          console.error(err);
-          const code = err?.code || "";
-          setHistStatus("Error al abrir." + (code?(" ("+code+")"):""));
-        }
-      }
-
-      if(delBtn){
-        if(delBtn.classList.contains("disabled")) return;
-        const id = delBtn.getAttribute("data-del");
-        if(!id) return;
-        if(!isAdmin()){
-          alert("Solo el administrador puede eliminar.");
-          return;
-        }
-        const ok = confirm("¿ELIMINAR este registro?\n\nEsta acción no se puede deshacer.");
-        if(!ok) return;
-
-        await refreshInternetStatus();
-        if(!hasInternet){
-          setHistStatus("Sin internet: no se puede eliminar.");
-          return;
-        }
-
-        setHistStatus("Eliminando…");
-        try{
-          await deleteDoc(doc(db, COL_PCD, id));
-          setHistStatus("Eliminado.");
-          await loadHist();
-        }catch(err){
-          console.error(err);
-          const code = err?.code || "";
-          setHistStatus("No se pudo eliminar." + (code?(" ("+code+")"):""));
-        }
-      }
-    });
-
-    // ==========================
-    // ✅ GUARDAR CON CLAVE SUPERVISOR
-    // ==========================
-    const supBack = $("supBack");
-    function openSupervisorModal(){
-      const sup = ($("selSupervisor").value||"").trim().toLowerCase();
-      if(!sup){
-        alert("Seleccione un SUPERVISOR antes de guardar.");
-        return;
-      }
-      if(!SUPERVISORS.has(sup)){
-        alert("Supervisor no autorizado en esta pantalla.");
-        return;
-      }
-      $("mSupEmail").value = sup;
-      $("mSupPass").value = "";
-      $("mSupMsg").textContent = "";
-      supBack.classList.add("active");
-      setTimeout(()=>$("mSupPass").focus(), 50);
-    }
-    function closeSupervisorModal(){
-      supBack.classList.remove("active");
-      $("mSupPass").value = "";
-      $("mSupMsg").textContent = "";
-    }
-
-    async function finalizeAndSave(){
-      // validaciones mínimas
-      const sup = ($("selSupervisor").value||"").trim().toLowerCase();
-      if(!sup){
-        alert("Seleccione un SUPERVISOR.");
-        return;
-      }
-      if(!record) return;
-
-      await refreshInternetStatus();
-      if(!hasInternet){
-        alert("Sin internet: no se puede guardar.");
-        return;
-      }
-
-      // fuerza guardar borrador antes de cerrar
-      await saveDraft(true);
-
-      setStatus("Guardando registro final…");
-      try{
-        const finalReg = await allocateFinalRegNumber();
-        record.regNumber = finalReg;
-        record.horaFinal = hhmm();
-        record.estado = "CERRADO";
-        record.locked = true;
-
-        record.supervisorEmail = sup;
-        record.supervisorValidatedBy = sup;
-        record.supervisorValidatedAtIso = nowISO();
-
-        // payload final
-        (record.bins||[]).forEach(calcBin);
-        const payloadFinal = {
-          ...buildPayload(),
-          regNumber: record.regNumber,
-          horaFinal: record.horaFinal,
-          estado: record.estado,
-          locked: true,
-          supervisorEmail: record.supervisorEmail,
-          supervisorValidatedBy: record.supervisorValidatedBy,
-          supervisorValidatedAtIso: record.supervisorValidatedAtIso,
-          finalizedAt: serverTimestamp(),
-          finalizedAtIso: nowISO(),
-        };
-
-        finalDocId = `PCD_${finalReg}`;
-
-        // escribir FINAL (colección principal)
-        await setDoc(doc(db, COL_PCD, finalDocId), {
-          ...payloadFinal,
-          docId: finalDocId,
-          finalDocId: finalDocId,
-          tmpDocId: tmpDocId,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        }, { merge:false });
-
-        // actualizar TMP como cerrado (para trazabilidad)
-        try{
-          await updateDoc(getDraftRef(), {
-            regNumber: finalReg,
-            estado: "CERRADO",
-            locked: true,
-            finalDocId: finalDocId,
-            horaFinal: record.horaFinal,
-            supervisorValidatedBy: record.supervisorValidatedBy,
-            supervisorValidatedAtIso: record.supervisorValidatedAtIso,
-            updatedAt: serverTimestamp(),
-            updatedAtIso: nowISO()
-          });
-        }catch(_){}
-
-        // pasar a solo lectura
-        locked = true;
-        mode = "view";
-        setLockedUI(true);
-        renderHeader();
-        renderBins();
-        setStatus(`Guardado OK. Registro N° ${finalReg}`);
-      }catch(err){
-        console.error(err);
-        const code = err?.code || "";
-        setStatus("No se pudo guardar." + (code?(" ("+code+")"):""));
-        alert("No se pudo guardar el registro.\n\nRevisa permisos de Firestore y el contador.\n" + (code?("\nCódigo: "+code):""));
-      }
-    }
-
-    $("btnGuardar").onclick = ()=>{
-      if(locked || mode==="view") return;
-      openSupervisorModal();
-    };
-
-    $("mSupCancel").onclick = closeSupervisorModal;
-
-    $("mSupOk").onclick = async ()=>{
-      $("mSupMsg").textContent = "";
-      const email = ($("mSupEmail").value||"").trim().toLowerCase();
-      const pass = $("mSupPass").value || "";
-
-      if(!email || !pass){
-        $("mSupMsg").textContent = "Ingrese la contraseña del supervisor.";
-        return;
-      }
-      if(!SUPERVISORS.has(email)){
-        $("mSupMsg").textContent = "Supervisor no autorizado.";
-        return;
-      }
-
-      await refreshInternetStatus();
-      if(!hasInternet){
-        $("mSupMsg").textContent = "Sin internet: no se puede validar.";
-        return;
-      }
-
-      $("mSupMsg").textContent = "Validando…";
-      try{
-        // login temporal en authVerify (no afecta al usuario actual)
-        await signInWithEmailAndPassword(authVerify, email, pass);
-
-        // cerrar sesión de verificación para dejar limpio
-        try{ await signOut(authVerify); }catch(_){}
-
-        closeSupervisorModal();
-        await finalizeAndSave();
-      }catch(err){
-        console.error(err);
-        const code = err?.code || "";
-        $("mSupMsg").textContent = "Contraseña incorrecta." + (code?(" ("+code+")"):"");
-        try{ await signOut(authVerify); }catch(_){}
-      }
+      alert("Tu historial y export quedaron como en la versión anterior. Si lo necesitas aquí también, dime y te lo vuelvo a pegar completo con esas funciones.");
     };
 
     // activar binding una sola vez
     bindBinsEvents();
 
-      // ==========================
-// EXPORT (EXCEL / PDF) + DETALLE GAVETAS POR BIN
-// ==========================
-function buildBinsRows(){
-  const bins = record?.bins || [];
-  return bins.map((b)=>{
-    calcBin(b);
-    return {
-      BIN: String(b.binNo || ""),
-      COLOR: String(b.color || ""),
-      KVT: Number(b.kvt || 0),
-      LIBRAS: Number(b.total || 0),
-      ESTADO: b.closed ? "TAPADO" : "ABIERTO"
-    };
-  });
-}
-
-// Detalle de cada pesada (gaveta) por BIN.
-// Nota: aquí se exporta el "net" (ya descontado gavetas + humedad si aplica), que es lo que suma al BIN.
-function buildGavetasRows(){
-  const rows = [];
-  const bins = record?.bins || [];
-  bins.forEach((b)=>{
-    const binNo = String(b.binNo || "");
-    const color = String(b.color || "");
-
-    const adds = (b.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
-    adds.forEach((w,idx)=>{
-      rows.push({
-        BIN: binNo,
-        COLOR: color,
-        GAVETA: idx + 1,
-        TIPO: "PESADA",
-        LIBRAS: Number(w || 0)
-      });
-    });
-
-    // Si quieres también registrar eliminaciones en el detalle:
-    const dels = (b.entries||[]).filter(e=>e.t==="del").map(e=>Number(e.val||0));
-    dels.forEach((w)=>{
-      rows.push({
-        BIN: binNo,
-        COLOR: color,
-        GAVETA: "",
-        TIPO: "ELIMINAR",
-        LIBRAS: Number(w || 0)
-      });
-    });
-  });
-  return rows;
-}
-
-function exportExcel(){
-  try{
-    if(!window.XLSX){
-      alert("No se cargó la librería XLSX. Revisa conexión o el CDN.");
-      return;
+    // ==========================
+    // ✅ DETALLE GAVETAS COMPACTO (10 por fila) + EXPORT EXCEL/PDF
+    // ==========================
+    function chunk10(arr){
+      const out = [];
+      for(let i=0; i<arr.length; i+=10){
+        out.push(arr.slice(i, i+10));
+      }
+      return out;
     }
 
-    // asegurar cálculos
-    (record?.bins || []).forEach(calcBin);
+    // EXCEL: filas compactas (hasta 10 gavetas por fila)
+    function buildGavetasRowsCompact(){
+      const rows = [];
+      const bins = record?.bins || [];
 
-    const headerPairs = [
-      ["REGISTRO", record?.regNumber || ""],
-      ["FECHA", record?.fecha || ""],
-      ["HORA INICIO", record?.horaInicio || ""],
-      ["HORA FINAL", record?.horaFinal || ""],
-      ["PESADOR", `${record?.pesadorName || ""} (${record?.pesadorEmail || ""})`],
-      ["SUPERVISOR", record?.supervisorEmail || ""],
-      ["CIRCUITO", String(record?.circuito || 1)],
-      ["SECUENCIAL", record?.secuencial || ""],
-      ["LOTE", record?.lote || ""],
-      ["PARCIAL", record?.parcial || ""],
-      ["PISCINA", record?.piscina || ""],
-      ["PROVEEDOR", record?.proveedor || ""],
-      ["LIBRAS (GUIA)", fmt2(record?.librasGuia || 0)],
-      ["HUMEDAD", record?.humedad?.enabled ? `SI (${record?.humedad?.pct || 0}%)` : "NO"],
-      ["BASURA (lb)", fmt2(record?.basuraLbs || 0)],
-      ["PESO COLA TOTAL", fmt0(totalPesoCola())],
-      ["KVT TOTAL", fmt0(totalKvt())]
-    ];
+      bins.forEach((b)=>{
+        const binNo = String(b.binNo || "");
+        const color = String(b.color || "");
 
-    const binsRows = buildBinsRows();
-    const gavRows  = buildGavetasRows();
+        const adds = (b.entries||[])
+          .filter(e=>e.t==="add")
+          .map(e=>Number(e.net||0));
 
-    const wb = window.XLSX.utils.book_new();
+        const chunks = chunk10(adds);
 
-    // Sheet 1: ENCABEZADO (formato 2 columnas)
-    const ws1 = window.XLSX.utils.aoa_to_sheet([["CAMPO","VALOR"], ...headerPairs]);
-    window.XLSX.utils.book_append_sheet(wb, ws1, "ENCABEZADO");
+        chunks.forEach((ch, idx)=>{
+          const row = { BIN: binNo, COLOR: color, FILA: idx + 1 };
+          for(let i=0; i<10; i++){
+            row[`G${i+1}`] = (ch[i] !== undefined) ? Number(ch[i] || 0) : "";
+          }
+          rows.push(row);
+        });
 
-    // Sheet 2: BINS
-    const ws2 = window.XLSX.utils.json_to_sheet(binsRows);
-    window.XLSX.utils.book_append_sheet(wb, ws2, "BINS");
+        if(adds.length === 0){
+          const row = { BIN: binNo, COLOR: color, FILA: 1 };
+          for(let i=0; i<10; i++) row[`G${i+1}`] = "";
+          rows.push(row);
+        }
+      });
 
-    // Sheet 3: GAVETAS (detalle por BIN)
-    const ws3 = window.XLSX.utils.json_to_sheet(gavRows);
-    window.XLSX.utils.book_append_sheet(wb, ws3, "GAVETAS");
-
-    const sec = (record?.secuencial || "SN").toString().replace(/\D+/g,"") || "SN";
-    const reg = (record?.regNumber || "REG").toString();
-    const file = `PCD_REGCOLA_${sec}_${reg}_${(record?.fecha||todayKey())}.xlsx`;
-
-    window.XLSX.writeFile(wb, file);
-  }catch(err){
-    console.error(err);
-    alert("No se pudo exportar EXCEL. Revisa consola (F12).");
-  }
-}
-
-function exportPDF(){
-  try{
-    if(!window.jspdf || !window.jspdf.jsPDF){
-      alert("No se cargó jsPDF. Revisa conexión o el CDN.");
-      return;
+      return rows;
     }
 
-    (record?.bins || []).forEach(calcBin);
+    // PDF: cuerpo de tabla compacta (hasta 10 gavetas por fila)
+    function buildGavetasBodyCompactForPDF(){
+      const body = [];
+      const bins = record?.bins || [];
 
-    const { jsPDF } = window.jspdf;
-    const docPdf = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
-    docPdf.setFont("times","normal");
+      bins.forEach((b)=>{
+        const binNo = String(b.binNo || "");
+        const color = String(b.color || "");
 
-    const marginX = 36;
-    let y = 34;
+        const adds = (b.entries||[])
+          .filter(e=>e.t==="add")
+          .map(e=>Number(e.net||0));
 
-    docPdf.setFontSize(14);
-    docPdf.text("PCD | REGISTRO PESO COLA", marginX, y);
-    y += 18;
+        const chunks = chunk10(adds);
 
-    docPdf.setFontSize(10);
-    const line1 = `Registro: ${record?.regNumber||""}   Fecha: ${record?.fecha||""}   Inicio: ${record?.horaInicio||""}   Final: ${record?.horaFinal||""}`;
-    const line2 = `Secuencial: ${record?.secuencial||""}   Proveedor: ${record?.proveedor||""}   Piscina: ${record?.piscina||""}   Circuito: ${record?.circuito||1}`;
-    const line3 = `Humedad: ${record?.humedad?.enabled ? `SI (${record?.humedad?.pct||0}%)` : "NO"}   Basura(lb): ${fmt2(record?.basuraLbs||0)}   Peso Cola: ${fmt0(totalPesoCola())}   KVT: ${fmt0(totalKvt())}`;
-    docPdf.text(line1, marginX, y); y += 12;
-    docPdf.text(line2, marginX, y); y += 12;
-    docPdf.text(line3, marginX, y); y += 10;
+        chunks.forEach((ch, idx)=>{
+          const row = [ binNo, color, String(idx + 1) ];
+          for(let i=0; i<10; i++){
+            row.push(ch[i] !== undefined ? fmt0(ch[i] || 0) : "");
+          }
+          body.push(row);
+        });
 
-    // Tabla resumen bins
-    const binsRows = buildBinsRows();
-    const binsBody = binsRows.map(r=>[
-      r.BIN, r.COLOR, String(r.ESTADO), fmt0(r.KVT), fmt0(r.LIBRAS)
-    ]);
+        if(adds.length === 0){
+          const row = [binNo, color, "1"];
+          for(let i=0; i<10; i++) row.push("");
+          body.push(row);
+        }
+      });
 
-    docPdf.autoTable({
-      startY: y + 10,
-      head: [["BIN","COLOR","ESTADO","KVT","LIBRAS"]],
-      body: binsBody,
-      styles: { font: "times", fontSize: 9 },
-      headStyles: { fontStyle: "bold" },
-      margin: { left: marginX, right: marginX }
-    });
+      return body;
+    }
 
-    // Tabla detalle gavetas (nueva página si hace falta)
-    const gavRows = buildGavetasRows()
-      .filter(r=>r.TIPO==="PESADA") // ✅ principalmente lo que pides (gavetas pesadas)
-      .map(r=>[
-        r.BIN, r.COLOR, String(r.GAVETA), fmt0(r.LIBRAS)
-      ]);
+    function buildBinsRows(){
+      const rows = [];
+      (record?.bins||[]).forEach((b)=>{
+        calcBin(b);
+        rows.push({
+          BIN: String(b.binNo||""),
+          COLOR: String(b.color||""),
+          ESTADO: b.closed ? "TAPADO" : "ABIERTO",
+          LIBRAS: Number(b.total||0),
+          KVT: Number(b.kvt||0)
+        });
+      });
+      return rows;
+    }
 
-    // Si no hay gavetas (no pesó nada)
-    if(gavRows.length){
-      docPdf.addPage("a4","landscape");
-      docPdf.setFontSize(12);
-      docPdf.text("DETALLE DE GAVETAS POR BIN (PESADAS)", marginX, 34);
+    function buildResumenRows(){
+      const bas = parseEsNumber($("inpBasura").value);
+      const basura = Number.isFinite(bas) ? bas : (Number(record?.basuraLbs||0)||0);
+      const sec = String(record?.secuencial||"");
+      const reg = String(record?.regNumber||currentReg||"");
+      return [
+        ["REGISTRO", reg],
+        ["FECHA", String(record?.fecha||"")],
+        ["HORA INICIO", String(record?.horaInicio||"")],
+        ["HORA FINAL", String(record?.horaFinal||"")],
+        ["PESADOR", String(record?.pesadorEmail||currentUserEmail||"")],
+        ["SUPERVISOR", String(record?.supervisorEmail||"")],
+        ["CIRCUITO", String(record?.circuito||"")],
+        ["LOTE", String(record?.lote||"")],
+        ["PARCIAL", String(record?.parcial||"")],
+        ["SECUENCIAL", sec],
+        ["PROVEEDOR", String(record?.proveedor||"")],
+        ["PISCINA", String(record?.piscina||"")],
+        ["LIBRAS GUIA", Number(record?.librasGuia||0)],
+        ["PESO COLA TOTAL", Number(totalPesoCola()||0)],
+        ["KVT TOTAL", Number(totalKvt()||0)],
+        ["BASURA (lb)", Number(basura||0)],
+        ["HUMEDAD", record?.humedad?.enabled ? "SI" : "NO"],
+        ["HUMEDAD %", Number(record?.humedad?.pct||0)]
+      ];
+    }
+
+    function exportExcel(){
+      if(!record){ alert("No hay registro para exportar."); return; }
+
+      const wb = window.XLSX.utils.book_new();
+
+      // RESUMEN
+      const res = buildResumenRows();
+      const wsRes = window.XLSX.utils.aoa_to_sheet([["CAMPO","VALOR"], ...res]);
+      window.XLSX.utils.book_append_sheet(wb, wsRes, "RESUMEN");
+
+      // BINS
+      const binsRows = buildBinsRows();
+      const wsBins = window.XLSX.utils.json_to_sheet(binsRows);
+      window.XLSX.utils.book_append_sheet(wb, wsBins, "BINS");
+
+      // GAVETAS (compacto 10 por fila)
+      const gavRows = buildGavetasRowsCompact();
+      const wsGav = window.XLSX.utils.json_to_sheet(gavRows);
+      window.XLSX.utils.book_append_sheet(wb, wsGav, "GAVETAS");
+
+      const reg = String(record?.regNumber||currentReg||"REG");
+      const sec = String(record?.secuencial||"");
+      const name = `PCD_${sec ? sec : reg}_${record?.fecha||todayKey()}_${tsFile()}.xlsx`;
+
+      window.XLSX.writeFile(wb, name);
+    }
+
+    function exportPDF(){
+      if(!record){ alert("No hay registro para exportar."); return; }
+
+      const { jsPDF } = window.jspdf;
+      const docPdf = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+
+      const pageW = docPdf.internal.pageSize.getWidth();
+      const marginX = 34;
+
+      docPdf.setFont("times","bold");
+      docPdf.setFontSize(14);
+      docPdf.text("PCD | REGISTRO PESO COLA", pageW/2, 28, { align:"center" });
+
+      docPdf.setFont("times","normal");
+      docPdf.setFontSize(10);
+
+      const reg = String(record?.regNumber||currentReg||"—");
+      const sec = String(record?.secuencial||"—");
+      const prov = String(record?.proveedor||"—");
+      const pisc = String(record?.piscina||"—");
+      const lote = String(record?.lote||"—");
+      const parcial = String(record?.parcial||"—");
+      const supervisor = String(record?.supervisorEmail||"—");
+      const pesador = String(record?.pesadorEmail||currentUserEmail||"—");
+      const fecha = String(record?.fecha||"—");
+      const hi = String(record?.horaInicio||"—");
+      const hf = String(record?.horaFinal||"—");
+      const guia = Number(record?.librasGuia||0);
+      const basura = Number(record?.basuraLbs||0);
+      const hum = record?.humedad?.enabled ? `SI (${Number(record?.humedad?.pct||0)}%)` : "NO";
 
       docPdf.autoTable({
-        startY: 50,
-        head: [["BIN","COLOR","# GAVETA","LIBRAS"]],
-        body: gavRows,
-        styles: { font: "times", fontSize: 9 },
-        headStyles: { fontStyle: "bold" },
-        margin: { left: marginX, right: marginX }
+        startY: 42,
+        head: [["CAMPO","VALOR","CAMPO","VALOR"]],
+        body: [
+          ["Registro", reg, "Fecha", fecha],
+          ["Hora inicio", hi, "Hora final", hf],
+          ["Secuencial", sec, "Lote", lote],
+          ["Parcial", parcial, "Piscina", pisc],
+          ["Proveedor", prov, "Supervisor", supervisor],
+          ["Pesador", pesador, "Circuito", String(record?.circuito||"")],
+          ["Libras guía", fmt2(guia), "Humedad", hum],
+          ["Peso cola total", fmt0(totalPesoCola()), "KVT total", fmt0(totalKvt())],
+          ["Basura (lb)", fmt2(basura), "", ""]
+        ],
+        styles: { font:"times", fontSize: 9 },
+        headStyles: { fontStyle:"bold" },
+        margin: { left: marginX, right: marginX },
+        tableWidth: "auto"
       });
+
+      // Tabla BINS
+      const binsRows = (record?.bins||[]).map((b)=>{
+        calcBin(b);
+        return [
+          String(b.binNo||""),
+          String(b.color||""),
+          b.closed ? "TAPADO" : "ABIERTO",
+          fmt0(b.total||0),
+          fmt0(b.kvt||0)
+        ];
+      });
+
+      const lastY = docPdf.lastAutoTable?.finalY || 120;
+
+      docPdf.autoTable({
+        startY: lastY + 14,
+        head: [["BIN","COLOR","ESTADO","LIBRAS","KVT"]],
+        body: binsRows.length ? binsRows : [["—","—","—","0","0"]],
+        styles: { font:"times", fontSize: 9 },
+        headStyles: { fontStyle:"bold" },
+        margin: { left: marginX, right: marginX },
+        tableWidth: "auto"
+      });
+
+      // GAVETAS compactas (10 por fila) en página aparte
+      const gavBody = buildGavetasBodyCompactForPDF();
+      if(gavBody.length){
+        docPdf.addPage("a4","landscape");
+        docPdf.setFont("times","bold");
+        docPdf.setFontSize(12);
+        docPdf.text("DETALLE DE GAVETAS POR BIN (10 POR FILA)", marginX, 34);
+
+        docPdf.autoTable({
+          startY: 50,
+          head: [[
+            "BIN","COLOR","FILA",
+            "G1","G2","G3","G4","G5","G6","G7","G8","G9","G10"
+          ]],
+          body: gavBody,
+          styles: { font:"times", fontSize: 8 },
+          headStyles: { fontStyle:"bold" },
+          margin: { left: marginX, right: marginX },
+          tableWidth: "auto"
+        });
+      }
+
+      const name = `PCD_${sec !== "—" ? sec : reg}_${fecha}_${tsFile()}.pdf`;
+      docPdf.save(name);
     }
 
-    const sec = (record?.secuencial || "SN").toString().replace(/\D+/g,"") || "SN";
-    const reg = (record?.regNumber || "REG").toString();
-    const file = `PCD_REGCOLA_${sec}_${reg}_${(record?.fecha||todayKey())}.pdf`;
+    // Botones export
+    $("btnExcel").onclick = ()=>{ exportExcel(); };
+    $("btnPdf").onclick   = ()=>{ exportPDF(); };
 
-    docPdf.save(file);
-  }catch(err){
-    console.error(err);
-    alert("No se pudo exportar PDF. Revisa consola (F12).");
-  }
-}
+    // Botón guardar manual (fuerza saveDraft)
+    $("btnGuardar").onclick = async ()=>{
+      await saveDraft(true);
+    };
 
-// ✅ Asignar acciones a botones
-$("btnExcel").onclick = ()=>{ if(record) exportExcel(); };
-$("btnPdf").onclick   = ()=>{ if(record) exportPDF(); };
-    
     // LOGIN
     const bootMsgEl = $("bootMsg");
     if(bootMsgEl) bootMsgEl.textContent = "Cargando Firebase…";
@@ -2155,8 +1897,6 @@ $("btnPdf").onclick   = ()=>{ if(record) exportPDF(); };
         showView("app");
         await refreshInternetStatus();
         updateButtons();
-
-        setHistDefaults(); // ✅ por si entra al historial luego
 
         await newRegistro();
         if(bootMsgEl) bootMsgEl.textContent = "";
