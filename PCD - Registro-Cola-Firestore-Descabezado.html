@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- PCD - Registro-Cola-Firestore-Descabezado.html -->
-<!-- BUILD_PCD_REGISTRO_COLA v1.3.0 2026-02-04 -->
+<!-- BUILD_PCD_REGISTRO_COLA v1.3.1 2026-02-04 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -299,7 +299,7 @@
     .mBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
     .mBtns .btn{width:100%}
 
-    /* Modal supervisor */
+    /* Modal supervisor (reservado si luego lo activas) */
     .supBox{max-width:520px;margin:0 auto;border:1px solid #ddd;padding:14px;background:#fff}
     .supTitle{font-family:Arial,Helvetica,sans-serif;font-weight:900;color:#0b5aa5;text-align:center;margin:0 0 10px}
     .supMsg{min-height:18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#b00020;margin-top:8px}
@@ -521,7 +521,7 @@
 
         <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin:8px 0;font-family:Arial,Helvetica,sans-serif;">
           <div class="muted" id="histSumMine" style="font-weight:900;">—</div>
-          <div class="muted" id="histSumAll" style="font-weight:900;display:none;">—</div>
+          <div class="muted" id="histSumAll" style="font-weight:900;">—</div>
         </div>
 
         <div class="histTblWrap">
@@ -584,7 +584,7 @@
       </div>
     </div>
 
-    <!-- MODAL SUPERVISOR -->
+    <!-- MODAL SUPERVISOR (reservado) -->
     <div class="modalBack" id="supBack">
       <div class="supBox">
         <div class="supTitle">VALIDACIÓN SUPERVISOR</div>
@@ -704,12 +704,13 @@
 
     setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
+    // (reservado si luego activas validación supervisor)
     const app2 = initializeApp(firebaseConfig, "pcd-supervisor-verify");
     const authVerify = getAuth(app2);
     setPersistence(authVerify, inMemoryPersistence).catch(()=>{});
 
-    const COL_PCD = "pcd_registro_cola";
-    const COL_PCD_TMP = "pcd_registro_cola_tmp";
+    const COL_PCD = "pcd_registro_cola";         // ✅ colección “principal” (para abrir desde cualquier PC)
+    const COL_PCD_TMP = "pcd_registro_cola_tmp"; // borrador (si lo quieres mantener)
     const COL_PCD_COUNTER = "pcd_counters";
 
     const SPC_CANDIDATE_COLS = [
@@ -730,11 +731,6 @@
       "pesadorcola1@oceantreasure.local",
       "pesadorcola2@oceantreasure.local",
       ADMIN
-    ]);
-
-    const SUPERVISORS = new Set([
-      "gingervaldiviezo@oceantreasure.local",
-      "aracellytomala@oceantreasure.local"
     ]);
 
     const views = { login:$("vLogin"), app:$("vApp"), hist:$("vHist") };
@@ -801,9 +797,7 @@
     let currentReg = "";
 
     let locked = false;
-    let draftSaved = false;
     let mode = "edit";
-
     let record = null;
 
     // modal state
@@ -811,6 +805,7 @@
 
     function isAdmin(){ return currentUserEmail === ADMIN; }
     function getDraftRef(){ return doc(db, COL_PCD_TMP, tmpDocId); }
+    function getFinalRef(){ return doc(db, COL_PCD, finalDocId || tmpDocId); } // ✅ clave: espejo en colección principal
 
     // Debounce autosave
     let saveTimer = null;
@@ -854,10 +849,7 @@
         fotoBasuraName: "",
 
         estado: "BORRADOR",
-        locked: false,
-
-        supervisorValidatedBy: "",
-        supervisorValidatedAtIso: ""
+        locked: false
       };
     }
 
@@ -890,11 +882,11 @@
       const canEdit = (mode==="edit" && !locked);
       setBtnEnabled("btnGuardar", canEdit && hasInternet);
 
+      // Export permitido también en edit si quieres; por tu lógica original: solo lectura.
       setBtnEnabled("btnExcel", !canEdit);
       setBtnEnabled("btnPdf", !canEdit);
 
       setBtnEnabled("btnBuscar", true);
-
       setBtnEnabled("btnFotoProv", !!record?.fotoProveedorUrl);
       setBtnEnabled("btnFotoBas",  !!record?.fotoBasuraUrl);
     }
@@ -905,7 +897,9 @@
       $("regInicio").textContent = record?.horaInicio || "—";
       $("regFinal").textContent  = record?.horaFinal || "—";
       $("regEstado").textContent = record?.estado || "—";
-      $("pesadorCola").textContent = record?.pesadorName ? `${record.pesadorName} (${record.pesadorEmail})` : (currentUserEmail||"—");
+      $("pesadorCola").textContent = record?.pesadorName
+        ? `${record.pesadorName} (${record.pesadorEmail})`
+        : (currentUserEmail||"—");
 
       $("inpLote").value = record?.lote || "";
       $("inpParcial").value = record?.parcial || "";
@@ -959,19 +953,14 @@
       bins.forEach((b, i)=>{
         calcBin(b);
         const tr = document.createElement("tr");
-
         const canPesar = canEdit && !b.closed;
         const canTapar = canEdit && !b.closed;
 
         tr.innerHTML = `
           <td class="cBin center">BIN #: ${esc(b.binNo)}</td>
           <td class="cColor center">${esc(b.color || "")}</td>
-          <td class="cAct center">
-            <span class="btn ${canPesar ? "" : "disabled"}" data-pesar="${i}">PESAR</span>
-          </td>
-          <td class="cAct center">
-            <span class="btn ${canTapar ? "" : "disabled"}" data-tapar="${i}">TAPAR</span>
-          </td>
+          <td class="cAct center"><span class="btn ${canPesar ? "" : "disabled"}" data-pesar="${i}">PESAR</span></td>
+          <td class="cAct center"><span class="btn ${canTapar ? "" : "disabled"}" data-tapar="${i}">TAPAR</span></td>
           <td class="cLb num">${fmt0(b.total || 0)}</td>
           <td class="cKvt center">${fmt0(b.kvt || 0)}</td>
         `;
@@ -1045,23 +1034,24 @@
       record.basuraLbs = Number.isFinite(bas) ? bas : 0;
 
       record.proveedor = $("inpProveedor").value || record.proveedor || "";
-      record.piscina = $("inpPiscina").value || record.piscina || "";
+      record.piscina   = $("inpPiscina").value || record.piscina || "";
       const lbs = parseEsNumber($("inpLbsGuia").value);
       record.librasGuia = Number.isFinite(lbs) ? lbs : (Number(record.librasGuia)||0);
 
-      return {
+      record.supervisorEmail = $("selSupervisor").value || "";
+      record.circuito = Number($("selCircuito").value||1) || 1;
+
+      const payload = {
         ...record,
         locked: !!locked,
         docId: (finalDocId || tmpDocId),
         tmpDocId: tmpDocId,
-        finalDocId: finalDocId,
-
-        // ✅ IMPORTANTES PARA HISTORIAL Y OTROS PCS (persistencia real)
+        finalDocId: (finalDocId || tmpDocId),
         totalPesoCola: totalPesoCola(),
         totalKvt: totalKvt(),
-
         updatedAt: serverTimestamp()
       };
+      return payload;
     }
 
     function scheduleSave(){
@@ -1073,6 +1063,8 @@
       saveTimer = setTimeout(async ()=>{ await saveDraft(); }, 650);
     }
 
+    // ✅ GUARDADO REAL EN FIRESTORE (TMP + PRINCIPAL)
+    // Esto resuelve: “se queda en caché pero al abrir en otro PC no aparece”
     async function saveDraft(force=false){
       if(!record) return;
       if(locked || mode==="view") return;
@@ -1092,14 +1084,22 @@
         record.updatedAtIso = nowISO();
         payload.updatedAtIso = record.updatedAtIso;
 
+        // 1) Borrador (tmp)
         await setDoc(getDraftRef(), payload, { merge:true });
+
+        // 2) Colección principal (para historial/apertura en otras PCs)
+        await setDoc(getFinalRef(), {
+          ...payload,
+          createdAt: payload.createdAt || serverTimestamp(), // si no existe
+          createdAtIso: payload.createdAtIso || nowISO()
+        }, { merge:true });
+
         lastSavedHash = hash;
-        draftSaved = true;
-        setStatus("Borrador guardado en Firestore.");
+        setStatus("Guardado OK en Firestore (BD).");
       }catch(err){
         console.error(err);
         const code = err?.code || "";
-        setStatus(`No se pudo guardar borrador.${code ? " ("+code+")" : ""}`);
+        setStatus(`No se pudo guardar.${code ? " ("+code+")" : ""}`);
       }
     }
 
@@ -1125,12 +1125,7 @@
 
       mode = "edit";
       locked = false;
-      draftSaved = false;
       lastSavedHash = "";
-
-      // reiniciar cache SPC
-      lastSPCSec = "";
-      clearTimeout(spcTimer);
 
       record = blankRecord();
 
@@ -1139,8 +1134,8 @@
         const regProv = await getProvisionalRegNumber();
         currentReg = regProv;
 
-        tmpDocId = `PCD_TMP_${(currentUserEmail.split("@")[0]||"u").replaceAll(".","")}_${Date.now()}`;
-        finalDocId = "";
+        tmpDocId = `PCD_${(currentUserEmail.split("@")[0]||"u").replaceAll(".","")}_${Date.now()}`;
+        finalDocId = tmpDocId; // ✅ usamos el mismo id para la colección principal
 
         record.regNumber = regProv;
         record.estado = "BORRADOR";
@@ -1149,17 +1144,28 @@
         record.supervisorEmail = $("selSupervisor").value || "";
         record.circuito = Number($("selCircuito").value||1) || 1;
 
+        // crea en TMP
         await setDoc(doc(db, COL_PCD_TMP, tmpDocId), {
           ...record,
           tmpDocId,
-          finalDocId: "",
+          finalDocId,
           totalPesoCola: 0,
           totalKvt: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         }, { merge:false });
 
-        draftSaved = true;
+        // crea espejo en PRINCIPAL (vacío pero existente)
+        await setDoc(doc(db, COL_PCD, finalDocId), {
+          ...record,
+          tmpDocId,
+          finalDocId,
+          totalPesoCola: 0,
+          totalKvt: 0,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge:true });
+
         setStatus("Borrador creado. Ingrese datos y pese bines.");
         renderHeader();
         renderBins();
@@ -1172,12 +1178,14 @@
     }
 
     function loadFromDoc(d){
-      finalDocId = d.id || d.docId || "";
-      tmpDocId = d.tmpDocId || "";
+      finalDocId = d.finalDocId || d.id || d.docId || d.tmpDocId || "";
+      tmpDocId = d.tmpDocId || finalDocId || "";
       currentReg = d.regNumber || "";
+
       record = { ...blankRecord(), ...d };
       locked = true;
       mode = "view";
+
       setStatus("Registro cargado (solo lectura).");
       renderHeader();
       renderBins();
@@ -1341,12 +1349,14 @@
         }
 
         renderHeader();
-        try{
-          const patch = (kind==="proveedor")
-            ? { fotoProveedorUrl: url, fotoProveedorName: record.fotoProveedorName, fotoUpdatedAt: serverTimestamp() }
-            : { fotoBasuraUrl: url, fotoBasuraName: record.fotoBasuraName, fotoUpdatedAt: serverTimestamp() };
-          await updateDoc(getDraftRef(), patch);
-        }catch(e){}
+
+        // actualiza tmp y principal
+        const patch = (kind==="proveedor")
+          ? { fotoProveedorUrl: url, fotoProveedorName: record.fotoProveedorName, fotoUpdatedAt: serverTimestamp() }
+          : { fotoBasuraUrl: url, fotoBasuraName: record.fotoBasuraName, fotoUpdatedAt: serverTimestamp() };
+
+        try{ await updateDoc(getDraftRef(), patch); }catch(_){}
+        try{ await updateDoc(getFinalRef(), patch); }catch(_){}
 
         scheduleSave();
         setStatus("Foto subida.");
@@ -1544,7 +1554,7 @@
       });
     });
 
-    // Sanitizo secuencial + autollenado SPC
+    // secuencial: solo números + Enter + blur
     $("inpSecuencial").addEventListener("input", ()=>{
       if(!record) return;
       const only = ($("inpSecuencial").value || "").replace(/\D+/g,"");
@@ -1561,8 +1571,166 @@
       }
     });
 
-    // activar binding una sola vez
-    bindBinsEvents();
+    // ==========================
+    // HISTORIAL / BUSCAR
+    // ==========================
+    function isoToDateOnly(iso){
+      try{
+        const d = new Date(iso);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        return `${yyyy}-${mm}-${dd}`;
+      }catch(_){
+        return "";
+      }
+    }
+
+    function ensureHistDefaults(){
+      const hD = $("histDesde");
+      const hH = $("histHasta");
+      if(!hH.value) hH.value = todayKey();
+      if(!hD.value){
+        const d = new Date();
+        d.setDate(d.getDate()-7);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        hD.value = `${yyyy}-${mm}-${dd}`;
+      }
+    }
+
+    function showHist(){
+      ensureHistDefaults();
+      showView("hist");
+      loadHist();
+    }
+
+    async function loadHist(){
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setHistStatus("Sin internet: no se puede cargar historial.");
+        return;
+      }
+
+      const desde = $("histDesde").value;
+      const hasta = $("histHasta").value;
+      if(!desde || !hasta){
+        setHistStatus("Seleccione DESDE y HASTA.");
+        return;
+      }
+
+      setHistStatus("Cargando historial…");
+
+      // Query por campo "fecha" (YYYY-MM-DD)
+      let docs = [];
+      try{
+        const qh = query(
+          collection(db, COL_PCD),
+          where("fecha", ">=", desde),
+          where("fecha", "<=", hasta),
+          orderBy("fecha", "desc"),
+          limit(250)
+        );
+        const snap = await getDocs(qh);
+        docs = snap.docs.map(d=>({ id:d.id, ...(d.data()||{}) }));
+      }catch(err){
+        console.error(err);
+        // Fallback: sin orderBy (por si falta índice) -> trae últimos y filtra
+        try{
+          const q2 = query(collection(db, COL_PCD), limit(250));
+          const snap2 = await getDocs(q2);
+          docs = snap2.docs.map(d=>({ id:d.id, ...(d.data()||{}) }))
+            .filter(x => (x.fecha||"") >= desde && (x.fecha||"") <= hasta)
+            .sort((a,b)=>String(b.fecha||"").localeCompare(String(a.fecha||"")));
+        }catch(e2){
+          console.error(e2);
+          setHistStatus("No se pudo cargar historial (revisa índices).");
+          return;
+        }
+      }
+
+      const tb = $("tbodyHist");
+      tb.innerHTML = "";
+
+      let sumAll = 0;
+      let sumMine = 0;
+
+      docs.forEach((d)=>{
+        const fecha = d.fecha || isoToDateOnly(d.createdAtIso) || "—";
+        const reg   = d.regNumber || "—";
+        const sec   = d.secuencial || "—";
+        const prov  = d.proveedor || "—";
+        const peso  = Number(d.totalPesoCola ?? d.totalPeso ?? 0) || 0;
+        const kvt   = Number(d.totalKvt ?? 0) || 0;
+        const pes   = d.pesadorEmail || "—";
+
+        sumAll += peso;
+        if(String(pes).toLowerCase() === String(currentUserEmail).toLowerCase()){
+          sumMine += peso;
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="hDate center">${esc(fecha)}</td>
+          <td class="hNum center">${esc(reg)}</td>
+          <td class="hSec center">${esc(sec)}</td>
+          <td class="hProv">${esc(prov)}</td>
+          <td class="hLbs num">${fmt0(peso)}</td>
+          <td class="hKvt center">${fmt0(kvt)}</td>
+          <td class="hProv">${esc(pes)}</td>
+          <td class="hOpen center"><span class="btn" data-open="${esc(d.id)}">ABRIR</span></td>
+          <td class="hOpen center"><span class="btn ${isAdmin() ? "" : "disabled"} danger" data-del="${esc(d.id)}">ELIMINAR</span></td>
+        `;
+        tb.appendChild(tr);
+      });
+
+      $("histSumAll").textContent  = `TOTAL (Rango): ${fmt0(sumAll)} lb`;
+      $("histSumMine").textContent = `MIS REGISTROS: ${fmt0(sumMine)} lb`;
+
+      setHistStatus(`Registros: ${docs.length}`);
+    }
+
+    $("btnHistFiltrar").onclick = ()=>loadHist();
+
+    $("tbodyHist").addEventListener("click", async (e)=>{
+      const openBtn = e.target.closest("[data-open]");
+      const delBtn  = e.target.closest("[data-del]");
+      if(openBtn){
+        const id = openBtn.getAttribute("data-open");
+        try{
+          setHistStatus("Abriendo…");
+          const snap = await getDoc(doc(db, COL_PCD, id));
+          if(!snap.exists()){
+            setHistStatus("No existe el registro.");
+            return;
+          }
+          loadFromDoc({ id:snap.id, ...(snap.data()||{}) });
+        }catch(err){
+          console.error(err);
+          setHistStatus("No se pudo abrir.");
+        }
+      }
+      if(delBtn){
+        if(delBtn.classList.contains("disabled")) return;
+        const id = delBtn.getAttribute("data-del");
+        const ok = confirm("¿Eliminar este registro?\n\nEsto lo borra de Firestore.");
+        if(!ok) return;
+        try{
+          await deleteDoc(doc(db, COL_PCD, id));
+          // intenta borrar tmp si coincide
+          try{ await deleteDoc(doc(db, COL_PCD_TMP, id)); }catch(_){}
+          setHistStatus("Eliminado.");
+          loadHist();
+        }catch(err){
+          console.error(err);
+          setHistStatus("No se pudo eliminar.");
+        }
+      }
+    });
+
+    $("btnHistBack").onclick = ()=>{ showView("app"); };
+    $("btnHistLogout").onclick = async ()=>{ await signOut(auth); };
 
     // ==========================
     // ✅ DETALLE GAVETAS COMPACTO (10 por fila) + EXPORT EXCEL/PDF
@@ -1576,7 +1744,6 @@
     function buildGavetasRowsCompact(){
       const rows = [];
       const bins = record?.bins || [];
-
       bins.forEach((b)=>{
         const binNo = String(b.binNo || "");
         const color = String(b.color || "");
@@ -1585,7 +1752,9 @@
 
         chunks.forEach((ch, idx)=>{
           const row = { BIN: binNo, COLOR: color, FILA: idx + 1 };
-          for(let i=0; i<10; i++) row[`G${i+1}`] = (ch[i] !== undefined) ? Number(ch[i] || 0) : "";
+          for(let i=0; i<10; i++){
+            row[`G${i+1}`] = (ch[i] !== undefined) ? Number(ch[i] || 0) : "";
+          }
           rows.push(row);
         });
 
@@ -1595,14 +1764,12 @@
           rows.push(row);
         }
       });
-
       return rows;
     }
 
     function buildGavetasBodyCompactForPDF(){
       const body = [];
       const bins = record?.bins || [];
-
       bins.forEach((b)=>{
         const binNo = String(b.binNo || "");
         const color = String(b.color || "");
@@ -1611,7 +1778,9 @@
 
         chunks.forEach((ch, idx)=>{
           const row = [ binNo, color, String(idx + 1) ];
-          for(let i=0; i<10; i++) row.push(ch[i] !== undefined ? fmt0(ch[i] || 0) : "");
+          for(let i=0; i<10; i++){
+            row.push(ch[i] !== undefined ? fmt0(ch[i] || 0) : "");
+          }
           body.push(row);
         });
 
@@ -1621,7 +1790,6 @@
           body.push(row);
         }
       });
-
       return body;
     }
 
@@ -1669,7 +1837,6 @@
 
     function exportExcel(){
       if(!record){ alert("No hay registro para exportar."); return; }
-
       const wb = window.XLSX.utils.book_new();
 
       const res = buildResumenRows();
@@ -1687,13 +1854,11 @@
       const reg = String(record?.regNumber||currentReg||"REG");
       const sec = String(record?.secuencial||"");
       const name = `PCD_${sec ? sec : reg}_${record?.fecha||todayKey()}_${tsFile()}.xlsx`;
-
       window.XLSX.writeFile(wb, name);
     }
 
     function exportPDF(){
       if(!record){ alert("No hay registro para exportar."); return; }
-
       const { jsPDF } = window.jspdf;
       const docPdf = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
 
@@ -1744,7 +1909,13 @@
 
       const binsRows = (record?.bins||[]).map((b)=>{
         calcBin(b);
-        return [ String(b.binNo||""), String(b.color||""), b.closed ? "TAPADO" : "ABIERTO", fmt0(b.total||0), fmt0(b.kvt||0) ];
+        return [
+          String(b.binNo||""),
+          String(b.color||""),
+          b.closed ? "TAPADO" : "ABIERTO",
+          fmt0(b.total||0),
+          fmt0(b.kvt||0)
+        ];
       });
 
       const lastY = docPdf.lastAutoTable?.finalY || 120;
@@ -1768,7 +1939,10 @@
 
         docPdf.autoTable({
           startY: 50,
-          head: [[ "BIN","COLOR","FILA","G1","G2","G3","G4","G5","G6","G7","G8","G9","G10" ]],
+          head: [[
+            "BIN","COLOR","FILA",
+            "G1","G2","G3","G4","G5","G6","G7","G8","G9","G10"
+          ]],
           body: gavBody,
           styles: { font:"times", fontSize: 8 },
           headStyles: { fontStyle:"bold" },
@@ -1784,237 +1958,23 @@
     $("btnExcel").onclick = ()=>{ exportExcel(); };
     $("btnPdf").onclick   = ()=>{ exportPDF(); };
 
-    // Guardar manual (fuerza guardar borrador en BD)
-    $("btnGuardar").onclick = async ()=>{ await saveDraft(true); };
-
-    // ==========================
-    // ✅ HISTORIAL (BUSCAR)
-    // ==========================
-    function toDateInputValue(d){
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      return `${yyyy}-${mm}-${dd}`;
-    }
-    function startOfDay(dateStr){
-      // dateStr: YYYY-MM-DD
-      return new Date(`${dateStr}T00:00:00`);
-    }
-    function endOfDay(dateStr){
-      return new Date(`${dateStr}T23:59:59`);
-    }
-
-    function renderHistRows(rows){
-      const tb = $("tbodyHist");
-      tb.innerHTML = "";
-
-      if(!rows.length){
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="9" class="center">Sin registros en este rango.</td>`;
-        tb.appendChild(tr);
-        return;
-      }
-
-      rows.forEach((r)=>{
-        const tr = document.createElement("tr");
-
-        const fecha = esc(r.fecha || "");
-        const reg   = esc(r.regNumber || "");
-        const sec   = esc(r.secuencial || "");
-        const prov  = esc(r.proveedor || "");
-        const cola  = fmt0(r.totalPesoCola || 0);
-        const kvt   = fmt0(r.totalKvt || 0);
-        const pes   = esc(r.pesadorEmail || "");
-
-        const canDel = isAdmin();
-
-        tr.innerHTML = `
-          <td class="hDate center">${fecha}</td>
-          <td class="hNum center">${reg}</td>
-          <td class="hSec center">${sec}</td>
-          <td class="hProv">${prov}</td>
-          <td class="hLbs num">${cola}</td>
-          <td class="hKvt center">${kvt}</td>
-          <td class="hProv">${pes}</td>
-          <td class="hOpen center"><span class="btn" data-open="${esc(r.__id)}" data-col="${esc(r.__col)}">ABRIR</span></td>
-          <td class="hOpen center"><span class="btn danger ${canDel ? "" : "disabled"}" data-del="${esc(r.__id)}" data-col="${esc(r.__col)}">ELIMINAR</span></td>
-        `;
-        tb.appendChild(tr);
-      });
-    }
-
-    async function fetchHist(desdeStr, hastaStr){
-      await refreshInternetStatus();
-      if(!hasInternet){
-        setHistStatus("Sin internet: no se puede cargar historial.");
-        return [];
-      }
-
-      // rango de fechas (inclusivo)
-      const d0 = startOfDay(desdeStr);
-      const d1 = endOfDay(hastaStr);
-
-      // Firestore: usamos "fecha" (string YYYY-MM-DD) porque está en el documento
-      // Como es string y mantiene orden, podemos filtrar con >= <=
-      const qMine = query(
-        collection(db, COL_PCD_TMP),
-        where("pesadorEmail","==",currentUserEmail),
-        where("fecha", ">=", desdeStr),
-        where("fecha", "<=", hastaStr),
-        orderBy("fecha","desc"),
-        limit(200)
-      );
-
-      try{
-        setHistStatus("Cargando historial…");
-        const snap = await getDocs(qMine);
-
-        const out = [];
-        snap.forEach((docu)=>{
-          const d = docu.data() || {};
-          // ✅ compat: si por alguna razón no existe totalPesoCola, lo calculo desde bins
-          let totalCola = Number(d.totalPesoCola);
-          if(!Number.isFinite(totalCola)){
-            const bins = Array.isArray(d.bins) ? d.bins : [];
-            totalCola = bins.reduce((a,b)=>a+(Number(b?.total)||0),0);
-          }
-
-          let totalK = Number(d.totalKvt);
-          if(!Number.isFinite(totalK)){
-            const bins = Array.isArray(d.bins) ? d.bins : [];
-            totalK = bins.reduce((a,b)=>a+(Number(b?.kvt)||0),0);
-          }
-
-          out.push({
-            __col: COL_PCD_TMP,
-            __id: docu.id,
-            fecha: d.fecha || "",
-            regNumber: d.regNumber || "",
-            secuencial: d.secuencial || "",
-            proveedor: d.proveedor || "",
-            pesadorEmail: d.pesadorEmail || "",
-            totalPesoCola: totalCola || 0,
-            totalKvt: totalK || 0
-          });
-        });
-
-        // Sumatorias
-        const sumCola = out.reduce((a,b)=>a+(Number(b.totalPesoCola)||0),0);
-        const sumKvt  = out.reduce((a,b)=>a+(Number(b.totalKvt)||0),0);
-        $("histSumMine").textContent = `MIS REGISTROS: ${out.length} | PESO COLA: ${fmt0(sumCola)} | KVT: ${fmt0(sumKvt)}`;
-
-        setHistStatus(`OK: ${out.length} registros.`);
-        return out;
-      }catch(err){
-        console.error(err);
-        setHistStatus("No se pudo cargar historial. (revisa índices/reglas)");
-        return [];
-      }
-    }
-
-    async function openHistDoc(col, id){
-      await refreshInternetStatus();
-      if(!hasInternet){
-        alert("Sin internet: no se puede abrir el registro.");
-        return;
-      }
-      try{
-        const s = await getDoc(doc(db, col, id));
-        if(!s.exists()){
-          alert("No existe ese registro.");
-          return;
-        }
-        const d = s.data() || {};
-        loadFromDoc({ __col: col, __id: id, id: id, ...d });
-      }catch(err){
-        console.error(err);
-        alert("No se pudo abrir el registro. Revisa permisos.");
-      }
-    }
-
-    async function deleteHistDoc(col, id){
-      if(!isAdmin()) return;
-      const ok = confirm("¿ELIMINAR este registro?\n\nEsta acción no se puede deshacer.");
-      if(!ok) return;
-
-      await refreshInternetStatus();
-      if(!hasInternet){
-        alert("Sin internet: no se puede eliminar.");
-        return;
-      }
-
-      try{
-        await deleteDoc(doc(db, col, id));
-        alert("Eliminado.");
-        // recargar la tabla con el mismo rango
-        const desde = $("histDesde").value;
-        const hasta = $("histHasta").value;
-        const rows = await fetchHist(desde, hasta);
-        renderHistRows(rows);
-      }catch(err){
-        console.error(err);
-        alert("No se pudo eliminar. Revisa permisos/reglas.");
-      }
-    }
-
-    // Clicks tabla historial
-    $("tbodyHist").addEventListener("click", async (e)=>{
-      const openBtn = e.target.closest("[data-open]");
-      const delBtn  = e.target.closest("[data-del]");
-      if(openBtn){
-        const id = openBtn.getAttribute("data-open");
-        const col = openBtn.getAttribute("data-col");
-        await openHistDoc(col, id);
-      }
-      if(delBtn){
-        if(delBtn.classList.contains("disabled")) return;
-        const id = delBtn.getAttribute("data-del");
-        const col = delBtn.getAttribute("data-col");
-        await deleteHistDoc(col, id);
-      }
-    });
-
-    // BUSCAR (abre historial)
-    $("btnBuscar").onclick = async ()=>{
-      // rango por defecto: últimos 7 días
-      const now = new Date();
-      const d7 = new Date(now.getTime() - 6*24*60*60*1000);
-      if(!$("histHasta").value) $("histHasta").value = toDateInputValue(now);
-      if(!$("histDesde").value) $("histDesde").value = toDateInputValue(d7);
-
-      showView("hist");
-      const rows = await fetchHist($("histDesde").value, $("histHasta").value);
-      renderHistRows(rows);
+    $("btnGuardar").onclick = async ()=>{
+      await saveDraft(true);
     };
 
-    $("btnHistFiltrar").onclick = async ()=>{
-      const desde = $("histDesde").value;
-      const hasta = $("histHasta").value;
-      if(!desde || !hasta){
-        alert("Seleccione DESDE y HASTA.");
-        return;
-      }
-      if(desde > hasta){
-        alert("DESDE no puede ser mayor que HASTA.");
-        return;
-      }
-      const rows = await fetchHist(desde, hasta);
-      renderHistRows(rows);
-    };
+    // BUSCAR -> HISTORIAL
+    $("btnBuscar").onclick = ()=>{ showHist(); };
 
-    $("btnHistBack").onclick = ()=>{ showView("app"); };
-    $("btnHistLogout").onclick = async ()=>{ await signOut(auth); };
+    // activar binding una sola vez
+    bindBinsEvents();
 
-    // ==========================
     // LOGIN
-    // ==========================
     const bootMsgEl = $("bootMsg");
     if(bootMsgEl) bootMsgEl.textContent = "Cargando Firebase…";
 
     $("btnLogin").onclick = async ()=>{
       $("loginMsg").textContent = "";
-      const boot2 = safe("bootMsg");
-      if(boot2) boot2.textContent = "Intentando iniciar sesión…";
+      if(bootMsgEl) bootMsgEl.textContent = "Intentando iniciar sesión…";
       try{
         const email = $("loginEmail").value.trim();
         const pass  = $("loginPass").value;
@@ -2071,7 +2031,7 @@
 
     $("btnLogoutTop").onclick = async ()=>{ await signOut(auth); };
     $("btnNuevo").onclick = async ()=>{
-      const ok = confirm("¿Crear un NUEVO registro?\n\nSe perderán cambios no guardados si no se guardó el borrador.");
+      const ok = confirm("¿Crear un NUEVO registro?\n\nSe perderán cambios no guardados si no se guardó.");
       if(!ok) return;
       await newRegistro();
     };
