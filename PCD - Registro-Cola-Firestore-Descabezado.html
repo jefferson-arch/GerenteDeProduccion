@@ -1,1 +1,2081 @@
+<!doctype html>
+<!-- PCD - Registro-Cola-Firestore-Descabezado.html -->
+<!-- BUILD_PCD_REGISTRO_COLA v1.3.0 2026-02-04 -->
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>PCD | Registro Peso Cola</title>
 
+  <link rel="icon" href="favicon.ico?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+
+  <!-- LIBRERÍAS EXPORT -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    :root{
+      --navy:#0d2f4f;
+      --blue:#1e88e5;
+      --grid:#b9c3cf;
+      --hdr:#163a63;
+      --hdr2:#1b4b7a;
+      --white:#fff;
+      --text:#111;
+      --muted:#666;
+      --danger:#b00020;
+      --ok:#0b7a2a;
+      --cellH:28px;
+      --font: "Times New Roman", Times, serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;color:var(--text);font-family:var(--font)}
+    .wrap{max-width:1180px;margin:0 auto;padding:10px 12px 18px}
+
+    .view{display:none}
+    .view.active{display:block}
+
+    .topline{font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:6px 0 10px;border-bottom:1px solid #ddd}
+    .topline .email{color:var(--blue);text-decoration:underline}
+    .topBtns{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:-2px}
+    .topBtns .btn{padding:6px 10px}
+
+    /* Banner conexión */
+    #netBanner{display:none; position:sticky; top:0; z-index:9999; padding:10px 12px; font-family:Arial,Helvetica,sans-serif; font-weight:800; font-size:13px;}
+    #netBanner.offline{background:#ffe5e5;color:#8a0016;border-bottom:1px solid #ffb3b3}
+    #netBanner.online{background:#e8fff0;color:#0b5a2a;border-bottom:1px solid #b8f0c9}
+    #netBanner .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle;}
+    #netBanner.offline .dot{background:#d4001a}
+    #netBanner.online .dot{background:#00a63a}
+
+    /* Login */
+    .loginBox{max-width:420px;margin:18px auto 0;border:1px solid #ddd;padding:14px}
+    .loginTitle{font-family:Arial,Helvetica,sans-serif;text-align:center;color:var(--blue);font-weight:900;margin:0 0 10px}
+    .brandCenter{text-align:center;margin:8px 0 12px}
+    .logo{width:96px;height:96px;object-fit:contain;display:block;margin:0 auto}
+    .brand{font-family:Arial,Helvetica,sans-serif;font-weight:900;margin:6px 0 0}
+    .tagline{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;margin:2px 0 0}
+    .row{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;margin:10px 0}
+    label{font-family:Arial,Helvetica,sans-serif;font-size:14px}
+    input[type="text"],input[type="password"],select{
+      width:100%;padding:8px 10px;border:1px solid #ccc;background:#eee;outline:none;font-size:14px;min-height:38px;font-family:Arial,Helvetica,sans-serif;
+    }
+    select{background:#fff}
+    .btn{
+      display:inline-block;padding:8px 12px;border:1px solid #444;background:#efefef;cursor:pointer;
+      font-family:Arial,Helvetica,sans-serif;font-weight:800;text-align:center;user-select:none;
+    }
+    .btn:active{transform:scale(.99)}
+    .btn.primary{background:#cfefff;color:#0b5aa5;border-color:#2a2a2a}
+    .btn.danger{border-color:var(--danger);color:var(--danger)}
+    .btn.disabled{opacity:.55;pointer-events:none;filter:grayscale(40%);}
+
+    /* Sheet */
+    .sheet{margin:10px auto 0;border:1px solid #ddd;padding:10px;background:#fff;}
+    .reportTitle{font-weight:900;text-align:center;margin:4px 0 10px;font-family:Arial,Helvetica,sans-serif;color:#0b5aa5;letter-spacing:.5px}
+    .logoMini{width:110px;height:55px;object-fit:contain;display:block;margin:0 auto}
+    .hdrGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .panel{border:1px solid #333;font-family:var(--font);}
+    .panel table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:16px;}
+    .panel td{border:1px solid #333;padding:4px 6px;height:var(--cellH);vertical-align:middle;}
+    .panel .k{background:var(--hdr);color:#fff;font-weight:900}
+    .panel .v{background:#fff;text-align:left;font-weight:900}
+    .panel .vRight{background:#fff;text-align:right;font-weight:900}
+    .panel .small{font-size:14px}
+
+    .split3{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    /* Humedad */
+    .humBox{
+      border:1px solid #333;
+      padding:8px;
+      margin-top:8px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-family:Arial,Helvetica,sans-serif;
+      font-weight:900;
+      font-size:13px;
+    }
+    .humBox input[type="radio"]{transform:scale(1.1)}
+    .humBox input[type="number"]{
+      width:70px;padding:6px;border:1px solid #999;background:#fff;font-weight:900;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .humHint{margin-left:auto;font-weight:800;color:#444}
+
+    /* Tabla Bins */
+    .tblWrap{margin-top:10px;overflow:auto;border:1px solid #999}
+    table.bins{width:100%;border-collapse:collapse;table-layout:fixed;min-width:900px;font-size:16px;}
+    table.bins th, table.bins td{border:1px solid #333;padding:4px 6px;height:var(--cellH);vertical-align:middle;}
+    table.bins th{background:var(--hdr);color:#fff;font-weight:900;text-align:center}
+    .cBin{width:210px}
+    .cColor{width:110px}
+    .cAct{width:120px}
+    .cLb{width:140px}
+    .cKvt{width:90px}
+    .num{text-align:right;font-weight:900}
+    .center{text-align:center;font-weight:900}
+
+    /* Totales + fotos */
+    .bottomGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+      align-items:start;
+    }
+    .totBox{
+      border:1px solid #333;
+      padding:8px;
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap:8px;
+      align-items:center;
+      font-family:var(--font);
+      font-size:18px;
+      font-weight:900;
+    }
+    .totBox .k{background:var(--hdr);color:#fff;padding:6px;border:1px solid #333}
+    .totBox .v{
+      padding:6px;border:1px solid #333;
+      text-align:right;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .bigGreen{
+      color:var(--ok);
+      font-size:28px;
+      font-weight:900;
+      width:100%;
+      text-align:center;
+      display:block;
+    }
+
+    .photoBox{
+      border:1px solid #333;
+      padding:8px;
+      font-family:Arial,Helvetica,sans-serif;
+      font-size:13px;
+      font-weight:900;
+    }
+    .photoRow{display:grid;grid-template-columns: 60px 1fr 70px;gap:8px;align-items:center;margin:6px 0}
+    .photoRow .tag{border:1px solid #333;background:#f2f2f2;text-align:center;padding:6px}
+    .photoRow .name{border:1px solid #333;background:#fff;padding:6px;min-height:34px;display:flex;align-items:center}
+    .photoRow .btn{padding:6px 8px}
+
+    .photoBtns{display:grid;grid-template-columns: 1fr 1fr;gap:8px;margin-top:8px}
+    .hintSmall{font-size:12px;color:#666;font-weight:800;line-height:1.35;margin-top:6px}
+
+    /* Footer buttons */
+    .footerBtns{margin-top:10px;display:grid;grid-template-columns: 1fr 1fr;gap:10px}
+    .footerBtns .btn{width:100%}
+
+    .statusLine{margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#333;min-height:18px}
+
+    /* Historial */
+    .histBox{max-width:1180px;margin:10px auto 0;border:1px solid #ddd;padding:12px;background:#fff;}
+    .histTitle{font-family:Arial,Helvetica,sans-serif;font-weight:900;color:#333;margin:0 0 10px}
+    .histFilters{
+      display:grid;
+      grid-template-columns: 120px 1fr 120px 1fr 120px;
+      gap:10px;
+      align-items:center;
+      margin:6px 0 10px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .histFilters .btn{width:100%}
+
+    .histTblWrap{border:1px solid #999;overflow:auto}
+    table.hist{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      min-width:1200px;
+      font-size:14px;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    table.hist th, table.hist td{
+      border:1px solid #333;
+      padding:6px 6px;
+      vertical-align:middle;
+    }
+    table.hist th{
+      background:var(--hdr);
+      color:#fff;
+      font-weight:900;
+      text-align:center;
+    }
+    .hDate{width:110px}
+    .hNum{width:120px}
+    .hSec{width:140px}
+    .hProv{width:280px}
+    .hLbs{width:140px}
+    .hKvt{width:90px}
+    .hOpen{width:110px}
+
+    /* Modal pesar */
+    .modalBack{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      z-index:9999;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+    }
+    .modalBack.active{display:flex}
+    .modal{
+      width:min(520px, 96vw);
+      background:#fff;
+      border:2px solid #000;
+      padding:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .modal h3{
+      margin:0 0 6px;
+      text-align:center;
+      color:#0b5aa5;
+      font-size:18px;
+      font-weight:900;
+    }
+    .modal .sub{font-size:12px;text-align:center;color:#666;font-weight:800;margin-bottom:10px}
+    .mRow{display:grid;grid-template-columns:1fr 44px;gap:8px;align-items:center}
+    .mRow input{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #999;
+      background:#eee;
+      font-size:18px;
+      font-weight:900;
+    }
+    .mPlus{
+      width:44px;height:44px;
+      border:1px solid #000;
+      background:#cfefff;
+      color:#0b5aa5;
+      display:flex;align-items:center;justify-content:center;
+      font-size:26px;font-weight:900;
+      cursor:pointer;
+      user-select:none;
+    }
+    .mOps{display:flex;gap:12px;justify-content:center;align-items:center;margin:10px 0}
+    .mOps label{font-size:13px;font-weight:900}
+    .mOps input{transform:scale(1.1)}
+    .mFinal{
+      border:1px solid #bbb;
+      padding:10px 12px;
+      text-align:center;
+      font-weight:900;
+      margin:10px 0;
+    }
+    .mFinal .lbl{font-size:12px;color:#444;font-weight:900}
+    .mFinal .val{font-size:30px;color:var(--ok);font-weight:900}
+    .mDet{
+      border:1px solid #1e88e5;
+      padding:10px 12px;
+      min-height:70px;
+      white-space:pre-wrap;
+      font-size:13px;
+      font-weight:900;
+      margin:10px 0;
+    }
+    .mBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .mBtns .btn{width:100%}
+
+    /* Modal supervisor */
+    .supBox{max-width:520px;margin:0 auto;border:1px solid #ddd;padding:14px;background:#fff}
+    .supTitle{font-family:Arial,Helvetica,sans-serif;font-weight:900;color:#0b5aa5;text-align:center;margin:0 0 10px}
+    .supMsg{min-height:18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#b00020;margin-top:8px}
+
+    @media (max-width:720px){
+      .hdrGrid{grid-template-columns:1fr}
+      .split3{grid-template-columns:1fr}
+      .bottomGrid{grid-template-columns:1fr}
+      table.bins{min-width:880px}
+      table.hist{min-width:1300px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <!-- LOGIN -->
+    <section id="vLogin" class="view active">
+      <div class="loginBox">
+        <div class="loginTitle">PCD | REGISTRO PESO COLA</div>
+        <div class="brandCenter">
+          <img class="logo" src="logo.png" alt="Oceantreasure" onerror="this.style.display='none'">
+          <p class="brand">OCEANTREASURE S.A.</p>
+          <p class="tagline">100% ECUADORIAN QUALITY</p>
+        </div>
+
+        <div class="row">
+          <label>Usuario:</label>
+          <input id="loginEmail" type="text" autocomplete="username" />
+        </div>
+        <div class="row">
+          <label>Contraseña:</label>
+          <input id="loginPass" type="password" autocomplete="current-password" />
+        </div>
+
+        <div class="btn primary" id="btnLogin">ACCEDER</div>
+        <div id="loginMsg" style="min-height:18px;margin-top:8px;color:#b00020;font-family:Arial,Helvetica,sans-serif;font-size:13px;"></div>
+        <div id="bootMsg" style="min-height:18px;color:#555;font-family:Arial,Helvetica,sans-serif;font-size:12px;"></div>
+
+        <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#555;line-height:1.35;">
+          Nota: Si aparece <b>permission-denied</b>, agrega los usuarios pesadorcola1 y pesadorcola2 en tu lista de editores de Firestore (reglas).
+        </div>
+      </div>
+    </section>
+
+    <!-- HEADER -->
+    <div id="authHeader" style="display:none;">
+      <div class="topline" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+        <div>
+          Usuario: <span class="email" id="userEmail"></span>
+          &nbsp; | &nbsp; <span class="muted" id="userNameLabel"></span>
+        </div>
+        <div class="topBtns">
+          <span class="btn" id="btnNuevo">NUEVO</span>
+          <span class="btn" id="btnLogoutTop">CERRAR SESIÓN</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NET BANNER -->
+    <div id="netBanner"><span class="dot"></span><span id="netText"></span></div>
+
+    <!-- APP -->
+    <section id="vApp" class="view">
+      <div class="sheet" id="sheet">
+        <div class="reportTitle">PCD | REGISTRO PESO COLA</div>
+        <img class="logoMini" src="logo.png" alt="Oceantreasure" onerror="this.style.display='none'">
+
+        <div class="hdrGrid">
+          <div class="panel">
+            <table>
+              <tr><td class="k">Registro N°:</td><td class="vRight" id="regNumero">—</td></tr>
+              <tr><td class="k">Fecha:</td><td class="vRight" id="regFecha">—</td></tr>
+              <tr><td class="k">Hora inicio:</td><td class="vRight" id="regInicio">—</td></tr>
+              <tr><td class="k">Hora final:</td><td class="vRight" id="regFinal">—</td></tr>
+            </table>
+          </div>
+
+          <div class="panel">
+            <table>
+              <tr><td class="k">Pesador Cola:</td><td class="v" id="pesadorCola">—</td></tr>
+              <tr>
+                <td class="k">Supervisor:</td>
+                <td class="v">
+                  <select id="selSupervisor">
+                    <option value=""></option>
+                    <option>aracellytomala@oceantreasure.local</option>
+                    <option>gingervaldiviezo@oceantreasure.local</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td class="k">Circuito:</td>
+                <td class="v">
+                  <select id="selCircuito">
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                  </select>
+                </td>
+              </tr>
+              <tr><td class="k">Estado:</td><td class="v" id="regEstado">BORRADOR</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="split3">
+          <div class="panel">
+            <table>
+              <tr><td class="k">Lote:</td><td class="v"><input id="inpLote" type="text" style="width:100%;border:none;outline:none;background:#eee;font-weight:900;font-family:Arial,Helvetica,sans-serif;padding:8px"></td></tr>
+              <tr><td class="k">Secuencial:</td><td class="v"><input id="inpSecuencial" type="text" inputmode="numeric" style="width:100%;border:none;outline:none;background:#eee;font-weight:900;font-family:Arial,Helvetica,sans-serif;padding:8px"></td></tr>
+              <tr><td class="k">Proveedor:</td><td class="v"><input id="inpProveedor" type="text" readonly style="width:100%;border:none;outline:none;background:#f3f3f3;font-weight:900;font-family:Arial,Helvetica,sans-serif;padding:8px"></td></tr>
+            </table>
+          </div>
+
+          <div class="panel">
+            <table>
+              <tr><td class="k">Parcial:</td><td class="v"><input id="inpParcial" type="text" style="width:100%;border:none;outline:none;background:#eee;font-weight:900;font-family:Arial,Helvetica,sans-serif;padding:8px"></td></tr>
+              <tr><td class="k">Piscina:</td><td class="v"><input id="inpPiscina" type="text" style="width:100%;border:none;outline:none;background:#eee;font-weight:900;font-family:Arial,Helvetica,sans-serif;padding:8px"></td></tr>
+              <tr><td class="k">Libras (Guía):</td><td class="v"><input id="inpLbsGuia" type="text" readonly style="width:100%;border:none;outline:none;background:#f3f3f3;font-weight:900;font-family:Arial,Helvetica,sans-serif;padding:8px;text-align:right"></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="humBox">
+          HUMEDAD:
+          <label><input type="radio" name="hum" id="humNo" checked> NO</label>
+          <label><input type="radio" name="hum" id="humSi"> SI</label>
+          <input type="number" id="humPct" value="0" min="0" max="10" step="0.1" disabled> %
+          <span class="humHint">Descuento aplicado por gaveta pesada.</span>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+          <span class="btn" id="btnAddBin">AGREGAR BIN</span>
+          <span class="muted" id="binHint" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:900;">Listo para agregar BIN.</span>
+        </div>
+
+        <div class="tblWrap">
+          <table class="bins" id="tblBins">
+            <thead>
+              <tr>
+                <th class="cBin">ENVASE</th>
+                <th class="cColor">COLOR</th>
+                <th class="cAct">ACCIÓN</th>
+                <th class="cAct">ACCIÓN</th>
+                <th class="cLb">LIBRAS</th>
+                <th class="cKvt">KVT</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyBins"></tbody>
+          </table>
+        </div>
+
+        <div class="bottomGrid">
+          <div class="totBox">
+            <div class="k">PESO COLA:</div>
+            <div class="v bigGreen" id="pesoColaTotal">0</div>
+            <div class="k">BASURA (lb):</div>
+            <div class="v"><input id="inpBasura" type="text" style="width:100%;border:none;outline:none;text-align:right;font-weight:900;font-family:Arial,Helvetica,sans-serif;background:#fff" value=""></div>
+          </div>
+
+          <div class="photoBox">
+            <div class="photoRow">
+              <div class="tag">FOTO</div>
+              <div class="name" id="fotoProvName">—</div>
+              <div class="btn disabled" id="btnFotoProv">ABRIR</div>
+            </div>
+            <div class="photoRow">
+              <div class="tag">FOTO</div>
+              <div class="name" id="fotoBasName">—</div>
+              <div class="btn disabled" id="btnFotoBas">ABRIR</div>
+            </div>
+
+            <div class="hintSmall">
+              Tip: Presiona <b>ABRIR</b> para ver la foto. Para tomar/reemplazar, presiona <b>FOTO PROVEEDOR</b> / <b>FOTO BASURA</b>.
+            </div>
+
+            <div class="photoBtns">
+              <div class="btn" id="btnTakeFotoProv">FOTO PROVEEDOR</div>
+              <div class="btn" id="btnTakeFotoBas">FOTO BASURA</div>
+            </div>
+
+            <input id="fileFotoProv" type="file" accept="image/*" capture="environment" style="display:none">
+            <input id="fileFotoBas"  type="file" accept="image/*" capture="environment" style="display:none">
+          </div>
+        </div>
+
+        <div class="footerBtns">
+          <div class="btn primary" id="btnGuardar">GUARDAR</div>
+          <div class="btn" id="btnExcel">EXCEL</div>
+          <div class="btn" id="btnPdf">PDF</div>
+          <div class="btn" id="btnBuscar">BUSCAR</div>
+        </div>
+
+        <div class="statusLine" id="statusLine">—</div>
+      </div>
+    </section>
+
+    <!-- HISTORIAL -->
+    <section id="vHist" class="view">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px;font-family:Arial,Helvetica,sans-serif;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span class="btn" id="btnHistBack">VOLVER</span>
+          <span class="btn" id="btnHistLogout">CERRAR SESIÓN</span>
+        </div>
+        <div class="muted" id="histStatus">—</div>
+      </div>
+
+      <div class="histBox">
+        <div class="histTitle">HISTORIAL DE REGISTROS</div>
+
+        <div class="histFilters">
+          <label style="font-weight:900;">DESDE</label>
+          <input id="histDesde" type="date" style="width:100%;padding:8px 10px;border:1px solid #ccc;background:#eee;outline:none;font-size:14px;min-height:38px;font-family:Arial,Helvetica,sans-serif;" />
+          <label style="font-weight:900;">HASTA</label>
+          <input id="histHasta" type="date" style="width:100%;padding:8px 10px;border:1px solid #ccc;background:#eee;outline:none;font-size:14px;min-height:38px;font-family:Arial,Helvetica,sans-serif;" />
+          <div class="btn" id="btnHistFiltrar">APLICAR</div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin:8px 0;font-family:Arial,Helvetica,sans-serif;">
+          <div class="muted" id="histSumMine" style="font-weight:900;">—</div>
+          <div class="muted" id="histSumAll" style="font-weight:900;display:none;">—</div>
+        </div>
+
+        <div class="histTblWrap">
+          <table class="hist" id="tblHist">
+            <thead>
+              <tr>
+                <th class="hDate">FECHA</th>
+                <th class="hNum">REGISTRO</th>
+                <th class="hSec">SECUENCIAL</th>
+                <th class="hProv">PROVEEDOR</th>
+                <th class="hLbs">PESO COLA</th>
+                <th class="hKvt">KVT</th>
+                <th class="hProv">PESADOR</th>
+                <th class="hOpen">ABRIR</th>
+                <th class="hOpen">ELIMINAR</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyHist"></tbody>
+          </table>
+        </div>
+
+        <div class="muted" style="margin-top:10px;line-height:1.35;font-family:Arial,Helvetica,sans-serif;">
+          Nota: “ELIMINAR” solo está disponible para el administrador.
+        </div>
+      </div>
+    </section>
+
+    <!-- MODAL PESAR -->
+    <div class="modalBack" id="mBack">
+      <div class="modal">
+        <h3>CARGAR LIBRAS</h3>
+        <div class="sub" id="mSub">HISTORIAL ACTIVO</div>
+
+        <div class="mRow">
+          <input id="mInput" type="text" inputmode="decimal" placeholder="0,00">
+          <div class="mPlus" id="mPlus">+</div>
+        </div>
+
+        <div class="mOps">
+          <label><input type="radio" name="mg" id="mG1"> 1 gaveta</label>
+          <label><input type="radio" name="mg" id="mG2" checked> 2 gavetas</label>
+        </div>
+
+        <div class="mFinal">
+          <div class="lbl">LIBRAS FINALES (descontando gavetas)</div>
+          <div class="val" id="mFinalVal">0,00</div>
+        </div>
+
+        <div class="mDet" id="mDet">DETALLE
+—</div>
+
+        <div class="mBtns">
+          <div class="btn primary" id="mOk">ACEPTAR</div>
+          <div class="btn" id="mCancel">CANCELAR</div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <div class="btn danger" id="mDelete" style="width:100%;">ELIMINAR LIBRAS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL SUPERVISOR -->
+    <div class="modalBack" id="supBack">
+      <div class="supBox">
+        <div class="supTitle">VALIDACIÓN SUPERVISOR</div>
+
+        <div class="row" style="grid-template-columns:120px 1fr;">
+          <label>Supervisor:</label>
+          <input id="mSupEmail" type="text" readonly />
+        </div>
+        <div class="row" style="grid-template-columns:120px 1fr;">
+          <label>Contraseña:</label>
+          <input id="mSupPass" type="password" autocomplete="current-password" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <div class="btn primary" id="mSupOk">VALIDAR</div>
+          <div class="btn" id="mSupCancel">CANCELAR</div>
+        </div>
+
+        <div class="supMsg" id="mSupMsg"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
+      setPersistence, browserLocalPersistence, inMemoryPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc,
+      runTransaction, serverTimestamp, limit, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import {
+      getStorage, ref as sRef, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const $ = (id)=>document.getElementById(id);
+    const safe = (id)=>document.getElementById(id) || null;
+
+    function uiError(msg){
+      const el = safe("loginMsg") || safe("bootMsg") || safe("statusLine");
+      if(el) el.textContent = msg;
+    }
+    window.addEventListener("error", (e)=>{
+      uiError("Error de la página. Abre F12 > Console para ver el detalle.");
+      console.error("JS Error:", e.error || e.message, e);
+    });
+    window.addEventListener("unhandledrejection", (e)=>{
+      uiError("Error inesperado. Abre F12 > Console para ver el detalle.");
+      console.error("Promise rejection:", e.reason, e);
+    });
+
+    function esc(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+    function fmt0(n){
+      const x = Number(n)||0;
+      return x.toLocaleString("es-EC",{minimumFractionDigits:0,maximumFractionDigits:0});
+    }
+    function fmt2(n){
+      const x = Number(n)||0;
+      return x.toLocaleString("es-EC",{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+    function parseEsNumber(s){
+      const raw = String(s||"").trim();
+      if(!raw) return NaN;
+      const s1 = raw.replace(/\s+/g,"");
+      if(s1.includes(",")){
+        const noThousands = s1.replace(/\./g,"");
+        const norm = noThousands.replace(",",".");
+        const v = Number(norm);
+        return Number.isFinite(v) ? v : NaN;
+      }
+      const v = Number(s1);
+      return Number.isFinite(v) ? v : NaN;
+    }
+    function todayKey(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    function hhmm(){
+      const d = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function nowISO(){ return new Date().toISOString(); }
+    function tsFile(){
+      const d = new Date();
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    setPersistence(auth, browserLocalPersistence).catch(()=>{});
+
+    const app2 = initializeApp(firebaseConfig, "pcd-supervisor-verify");
+    const authVerify = getAuth(app2);
+    setPersistence(authVerify, inMemoryPersistence).catch(()=>{});
+
+    const COL_PCD = "pcd_registro_cola";
+    const COL_PCD_TMP = "pcd_registro_cola_tmp";
+    const COL_PCD_COUNTER = "pcd_counters";
+
+    const SPC_CANDIDATE_COLS = [
+      "programacion",
+      "spc_programacion",
+      "spc_programacion_diaria",
+      "spc_programacion_planta",
+      "spc_programacion_firestore",
+      "spc_programacion_yanela",
+      "spc_programacion_only",
+      "spc_programacion_diario",
+      "spc_programacion_daily",
+      "spc_programacion_v2"
+    ];
+
+    const ADMIN = "jeffersonfigueroa@oceantreasure.local";
+    const ALLOWED = new Set([
+      "pesadorcola1@oceantreasure.local",
+      "pesadorcola2@oceantreasure.local",
+      ADMIN
+    ]);
+
+    const SUPERVISORS = new Set([
+      "gingervaldiviezo@oceantreasure.local",
+      "aracellytomala@oceantreasure.local"
+    ]);
+
+    const views = { login:$("vLogin"), app:$("vApp"), hist:$("vHist") };
+    function showView(name){
+      Object.values(views).forEach(v=>v.classList.remove("active"));
+      views[name].classList.add("active");
+    }
+
+    // Internet detector
+    let hasInternet = true;
+    let lastInternetState = null;
+
+    function showNetBanner(state, msg){
+      const b = $("netBanner");
+      const t = $("netText");
+      if(!b || !t) return;
+      b.style.display = "block";
+      b.classList.toggle("offline", state==="offline");
+      b.classList.toggle("online", state==="online");
+      t.textContent = msg;
+    }
+    function hideNetBanner(){
+      const b = $("netBanner");
+      if(b) b.style.display = "none";
+    }
+    async function pingInternet(){
+      const url = `https://www.gstatic.com/generate_204?ts=${Date.now()}`;
+      try{
+        const controller = new AbortController();
+        const to = setTimeout(()=>controller.abort(), 3500);
+        await fetch(url, {method:"GET", mode:"no-cors", signal: controller.signal});
+        clearTimeout(to);
+        return true;
+      }catch(_){
+        return false;
+      }
+    }
+    async function refreshInternetStatus(){
+      const netUp = navigator.onLine;
+      if(!netUp) hasInternet = false;
+      else hasInternet = await pingInternet();
+
+      if(lastInternetState === hasInternet) return;
+      lastInternetState = hasInternet;
+
+      if(!hasInternet){
+        showNetBanner("offline","SIN CONEXIÓN A INTERNET.");
+      }else{
+        showNetBanner("online","CONEXIÓN RESTABLECIDA.");
+        setTimeout(()=>hideNetBanner(), 1800);
+      }
+      updateButtons();
+    }
+    window.addEventListener("offline", ()=>refreshInternetStatus());
+    window.addEventListener("online",  ()=>refreshInternetStatus());
+    setInterval(()=>refreshInternetStatus(), 8000);
+
+    // Estado
+    let currentUserEmail = "";
+    let currentUserName = "";
+
+    let tmpDocId = "";
+    let finalDocId = "";
+    let currentReg = "";
+
+    let locked = false;
+    let draftSaved = false;
+    let mode = "edit";
+
+    let record = null;
+
+    // modal state
+    let activeBinIdx = -1;
+
+    function isAdmin(){ return currentUserEmail === ADMIN; }
+    function getDraftRef(){ return doc(db, COL_PCD_TMP, tmpDocId); }
+
+    // Debounce autosave
+    let saveTimer = null;
+    let lastSavedHash = "";
+
+    function setStatus(msg){ $("statusLine").textContent = msg || "—"; }
+    function setHistStatus(msg){ $("histStatus").textContent = msg || "—"; }
+
+    function blankRecord(){
+      const fecha = todayKey();
+      const start = hhmm();
+      return {
+        regNumber: "",
+        fecha,
+        horaInicio: start,
+        horaFinal: "",
+        createdAtIso: nowISO(),
+        updatedAtIso: nowISO(),
+
+        supervisorEmail: "",
+        pesadorEmail: currentUserEmail,
+        pesadorName: currentUserName,
+
+        circuito: 1,
+
+        lote: "",
+        parcial: "",
+        secuencial: "",
+        piscina: "",
+        proveedor: "",
+        librasGuia: 0,
+
+        humedad: { enabled:false, pct: 0 },
+
+        bins: [],
+        basuraLbs: 0,
+
+        fotoProveedorUrl: "",
+        fotoProveedorName: "",
+        fotoBasuraUrl: "",
+        fotoBasuraName: "",
+
+        estado: "BORRADOR",
+        locked: false,
+
+        supervisorValidatedBy: "",
+        supervisorValidatedAtIso: ""
+      };
+    }
+
+    function calcBin(bin){
+      const adds = (bin.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
+      const dels = (bin.entries||[]).filter(e=>e.t==="del").map(e=>Number(e.val||0));
+      const sumAdd = adds.reduce((a,b)=>a+b,0);
+      const sumDel = dels.reduce((a,b)=>a+b,0);
+      const total = Math.max(0, Math.floor((sumAdd - sumDel) + 1e-9));
+      const kvt = Math.max(0, (adds.length - dels.length));
+      bin.total = total;
+      bin.kvt = kvt;
+      return bin;
+    }
+
+    function totalPesoCola(){
+      return (record?.bins||[]).reduce((a,b)=>a+(Number(b.total||0)),0);
+    }
+    function totalKvt(){
+      return (record?.bins||[]).reduce((a,b)=>a+(Number(b.kvt||0)),0);
+    }
+
+    function setBtnEnabled(id, enabled){
+      const el = safe(id);
+      if(!el) return;
+      el.classList.toggle("disabled", !enabled);
+    }
+
+    function updateButtons(){
+      const canEdit = (mode==="edit" && !locked);
+      setBtnEnabled("btnGuardar", canEdit && hasInternet);
+
+      setBtnEnabled("btnExcel", !canEdit);
+      setBtnEnabled("btnPdf", !canEdit);
+
+      setBtnEnabled("btnBuscar", true);
+
+      setBtnEnabled("btnFotoProv", !!record?.fotoProveedorUrl);
+      setBtnEnabled("btnFotoBas",  !!record?.fotoBasuraUrl);
+    }
+
+    function renderHeader(){
+      $("regNumero").textContent = record?.regNumber ? record.regNumber : (currentReg || "—");
+      $("regFecha").textContent  = record?.fecha || "—";
+      $("regInicio").textContent = record?.horaInicio || "—";
+      $("regFinal").textContent  = record?.horaFinal || "—";
+      $("regEstado").textContent = record?.estado || "—";
+      $("pesadorCola").textContent = record?.pesadorName ? `${record.pesadorName} (${record.pesadorEmail})` : (currentUserEmail||"—");
+
+      $("inpLote").value = record?.lote || "";
+      $("inpParcial").value = record?.parcial || "";
+      $("inpSecuencial").value = record?.secuencial || "";
+      $("inpPiscina").value = record?.piscina || "";
+      $("inpProveedor").value = record?.proveedor || "";
+      $("inpLbsGuia").value = record?.librasGuia ? fmt2(record.librasGuia) : "";
+      $("selSupervisor").value = record?.supervisorEmail || "";
+      $("selCircuito").value = String(record?.circuito || 1);
+
+      const en = !!record?.humedad?.enabled;
+      $("humSi").checked = en;
+      $("humNo").checked = !en;
+      $("humPct").value = String(record?.humedad?.pct ?? (en?2:0));
+      $("humPct").disabled = locked || mode==="view" || !en;
+
+      $("inpBasura").value = (record?.basuraLbs ? fmt2(record.basuraLbs) : "");
+
+      $("fotoProvName").textContent = record?.fotoProveedorName || (record?.fotoProveedorUrl ? "foto_proveedor" : "—");
+      $("fotoBasName").textContent  = record?.fotoBasuraName || (record?.fotoBasuraUrl ? "foto_basura" : "—");
+
+      $("pesoColaTotal").textContent = fmt0(totalPesoCola());
+      updateButtons();
+    }
+
+    function currentOpenBinIndex(){
+      const bins = record?.bins || [];
+      return bins.findIndex(b=>!b.closed);
+    }
+
+    function setBinHint(){
+      const idx = currentOpenBinIndex();
+      if(idx >= 0){
+        $("binHint").textContent = `BIN activo: #${record.bins[idx].binNo}. Debe TAPAR para agregar otro.`;
+      }else{
+        $("binHint").textContent = "Listo para agregar BIN.";
+      }
+    }
+
+    function renderBins(){
+      const tb = $("tbodyBins");
+      tb.innerHTML = "";
+      if(!record) return;
+
+      const canEdit = (mode==="edit" && !locked);
+      const bins = record.bins || [];
+      const openIdx = currentOpenBinIndex();
+
+      setBtnEnabled("btnAddBin", canEdit && openIdx === -1);
+
+      bins.forEach((b, i)=>{
+        calcBin(b);
+        const tr = document.createElement("tr");
+
+        const canPesar = canEdit && !b.closed;
+        const canTapar = canEdit && !b.closed;
+
+        tr.innerHTML = `
+          <td class="cBin center">BIN #: ${esc(b.binNo)}</td>
+          <td class="cColor center">${esc(b.color || "")}</td>
+          <td class="cAct center">
+            <span class="btn ${canPesar ? "" : "disabled"}" data-pesar="${i}">PESAR</span>
+          </td>
+          <td class="cAct center">
+            <span class="btn ${canTapar ? "" : "disabled"}" data-tapar="${i}">TAPAR</span>
+          </td>
+          <td class="cLb num">${fmt0(b.total || 0)}</td>
+          <td class="cKvt center">${fmt0(b.kvt || 0)}</td>
+        `;
+        tb.appendChild(tr);
+      });
+
+      setBinHint();
+      $("pesoColaTotal").textContent = fmt0(totalPesoCola());
+    }
+
+    function bindBinsEvents(){
+      const tb = $("tbodyBins");
+      tb.addEventListener("click", (e)=>{
+        const btn = e.target.closest("[data-pesar],[data-tapar]");
+        if(!btn) return;
+        if(btn.classList.contains("disabled")) return;
+
+        if(btn.hasAttribute("data-pesar")){
+          const idx = Number(btn.getAttribute("data-pesar")||-1);
+          if(idx >= 0) openPesar(idx);
+        }else if(btn.hasAttribute("data-tapar")){
+          const idx = Number(btn.getAttribute("data-tapar")||-1);
+          if(idx >= 0) doTapar(idx);
+        }
+      });
+    }
+
+    function setLockedUI(isLocked){
+      locked = !!isLocked;
+      const dis = locked || mode==="view";
+
+      ["inpLote","inpParcial","inpSecuencial","inpPiscina","inpBasura"].forEach(id=>{
+        const el = safe(id);
+        if(el) el.disabled = dis;
+      });
+      $("selSupervisor").disabled = dis;
+      $("selCircuito").disabled = dis;
+
+      $("humNo").disabled = dis;
+      $("humSi").disabled = dis;
+      $("humPct").disabled = dis || !$("humSi").checked;
+
+      setBtnEnabled("btnAddBin", !dis);
+      renderBins();
+
+      setBtnEnabled("btnTakeFotoProv", !dis);
+      setBtnEnabled("btnTakeFotoBas", !dis);
+
+      updateButtons();
+    }
+
+    function applyHumUI(){
+      const enabled = $("humSi").checked;
+      $("humPct").disabled = locked || mode==="view" || !enabled;
+      if(!enabled) $("humPct").value = "0";
+      if(record){
+        record.humedad.enabled = enabled;
+        record.humedad.pct = enabled ? (Number($("humPct").value||0) || 0) : 0;
+      }
+      scheduleSave();
+    }
+
+    function stableHash(obj){
+      try{ return JSON.stringify(obj); }catch(_){ return String(Date.now()); }
+    }
+
+    function buildPayload(){
+      (record.bins||[]).forEach(calcBin);
+
+      const bas = parseEsNumber($("inpBasura").value);
+      record.basuraLbs = Number.isFinite(bas) ? bas : 0;
+
+      record.proveedor = $("inpProveedor").value || record.proveedor || "";
+      record.piscina = $("inpPiscina").value || record.piscina || "";
+      const lbs = parseEsNumber($("inpLbsGuia").value);
+      record.librasGuia = Number.isFinite(lbs) ? lbs : (Number(record.librasGuia)||0);
+
+      return {
+        ...record,
+        locked: !!locked,
+        docId: (finalDocId || tmpDocId),
+        tmpDocId: tmpDocId,
+        finalDocId: finalDocId,
+
+        // ✅ IMPORTANTES PARA HISTORIAL Y OTROS PCS (persistencia real)
+        totalPesoCola: totalPesoCola(),
+        totalKvt: totalKvt(),
+
+        updatedAt: serverTimestamp()
+      };
+    }
+
+    function scheduleSave(){
+      if(!record) return;
+      if(locked || mode==="view") return;
+      if(!tmpDocId) return;
+
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async ()=>{ await saveDraft(); }, 650);
+    }
+
+    async function saveDraft(force=false){
+      if(!record) return;
+      if(locked || mode==="view") return;
+      if(!tmpDocId) return;
+
+      const payload = buildPayload();
+      const hash = stableHash(payload);
+      if(!force && hash === lastSavedHash) return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setStatus("Sin internet: cambios pendientes (no se guardan).");
+        return;
+      }
+
+      try{
+        record.updatedAtIso = nowISO();
+        payload.updatedAtIso = record.updatedAtIso;
+
+        await setDoc(getDraftRef(), payload, { merge:true });
+        lastSavedHash = hash;
+        draftSaved = true;
+        setStatus("Borrador guardado en Firestore.");
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        setStatus(`No se pudo guardar borrador.${code ? " ("+code+")" : ""}`);
+      }
+    }
+
+    async function getProvisionalRegNumber(){
+      const ref = doc(db, COL_PCD_COUNTER, "global");
+      const snap = await getDoc(ref);
+      let lastFinal = 0;
+      if(snap.exists()){
+        lastFinal = Number((snap.data()||{}).lastFinal || 0);
+        if(!Number.isFinite(lastFinal)) lastFinal = 0;
+      }
+      const next = lastFinal + 1;
+      return String(next).padStart(8,"0");
+    }
+
+    async function newRegistro(){
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede crear un nuevo registro.");
+        return;
+      }
+      if(!currentUserEmail) return;
+
+      mode = "edit";
+      locked = false;
+      draftSaved = false;
+      lastSavedHash = "";
+
+      // reiniciar cache SPC
+      lastSPCSec = "";
+      clearTimeout(spcTimer);
+
+      record = blankRecord();
+
+      setStatus("Creando borrador…");
+      try{
+        const regProv = await getProvisionalRegNumber();
+        currentReg = regProv;
+
+        tmpDocId = `PCD_TMP_${(currentUserEmail.split("@")[0]||"u").replaceAll(".","")}_${Date.now()}`;
+        finalDocId = "";
+
+        record.regNumber = regProv;
+        record.estado = "BORRADOR";
+        record.locked = false;
+
+        record.supervisorEmail = $("selSupervisor").value || "";
+        record.circuito = Number($("selCircuito").value||1) || 1;
+
+        await setDoc(doc(db, COL_PCD_TMP, tmpDocId), {
+          ...record,
+          tmpDocId,
+          finalDocId: "",
+          totalPesoCola: 0,
+          totalKvt: 0,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge:false });
+
+        draftSaved = true;
+        setStatus("Borrador creado. Ingrese datos y pese bines.");
+        renderHeader();
+        renderBins();
+        setLockedUI(false);
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        setStatus(`No se pudo crear borrador.${code ? " ("+code+")" : ""}`);
+      }
+    }
+
+    function loadFromDoc(d){
+      finalDocId = d.id || d.docId || "";
+      tmpDocId = d.tmpDocId || "";
+      currentReg = d.regNumber || "";
+      record = { ...blankRecord(), ...d };
+      locked = true;
+      mode = "view";
+      setStatus("Registro cargado (solo lectura).");
+      renderHeader();
+      renderBins();
+      setLockedUI(true);
+      updateButtons();
+      showView("app");
+    }
+
+    // ==========================
+    // AUTOLLENADO DESDE SPC
+    // ==========================
+    function pickField(obj, keys){
+      for(const k of keys){
+        if(obj && obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== ""){
+          return obj[k];
+        }
+      }
+      return "";
+    }
+    function pickNumber(obj, keys){
+      const v = pickField(obj, keys);
+      const n = typeof v === "number" ? v : parseEsNumber(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function extractSPC(data){
+      const proveedor = pickField(data, ["proveedor","Proveedor","proveedorNombre","nombreProveedor","proveedor_name","PROVEEDOR","productor","PRODUCTOR","razonSocial"]);
+      const piscina   = pickField(data, ["piscina","PISCINA","pisc","PISC","piscNo","piscinaNo","piscina_n","numeroPiscina","pool","POOL"]);
+      const lbsGuia   = pickNumber(data, [
+        "guiaLbs","GuiaLbs","GUIALBS",
+        "librasGuia","LibrasGuia","lbsGuia","LBS_GUIA","libras_guia",
+        "pesoGuia","PESO_GUIA","libras","Libras","lbGuia"
+      ]);
+      return { proveedor:String(proveedor||"").trim(), piscina:String(piscina||"").trim(), librasGuia: lbsGuia };
+    }
+
+    async function fetchSPCBySecuencial(secuencialRaw){
+      const sec = String(secuencialRaw||"").trim().replace(/\D+/g,"");
+      if(!sec) return null;
+
+      const sec8 = sec.padStart(8,"0");
+      const docIdCandidates = [sec, sec8, `SPC_${sec}`, `SPC_${sec8}`, `spc_${sec}`, `spc_${sec8}`, `PROG_${sec}`, `PROG_${sec8}`];
+
+      for(const col of SPC_CANDIDATE_COLS){
+        for(const id of docIdCandidates){
+          try{
+            const s = await getDoc(doc(db, col, id));
+            if(s.exists()){
+              const d = s.data() || {};
+              return { __col: col, __id: s.id, ...d };
+            }
+          }catch(_){}
+        }
+      }
+
+      for(const col of SPC_CANDIDATE_COLS){
+        try{
+          const q1 = query(collection(db, col), where("secuencial","==",sec), limit(1));
+          const snap = await getDocs(q1);
+          if(!snap.empty){
+            const d = snap.docs[0];
+            return { __col: col, __id: d.id, ...(d.data()||{}) };
+          }
+        }catch(_){}
+        try{
+          const q2 = query(collection(db, col), where("secuencial","==",Number(sec)), limit(1));
+          const snap2 = await getDocs(q2);
+          if(!snap2.empty){
+            const d = snap2.docs[0];
+            return { __col: col, __id: d.id, ...(d.data()||{}) };
+          }
+        }catch(_){}
+      }
+      return null;
+    }
+
+    let spcTimer = null;
+    let lastSPCSec = "";
+
+    async function tryAutoFillFromSPC(){
+      if(!record) return;
+      if(locked || mode==="view") return;
+
+      const raw = ($("inpSecuencial").value || "").trim();
+      const sec = raw.replace(/\D+/g,"");
+      if(!sec || sec.length < 3) return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setStatus("Sin internet: no se puede consultar SPC.");
+        return;
+      }
+
+      if(sec === lastSPCSec) return;
+      lastSPCSec = sec;
+
+      setStatus("Consultando SPC por Secuencial…");
+      const data = await fetchSPCBySecuencial(sec);
+
+      if(!data){
+        setStatus("No se encontró el Secuencial en SPC (verifica colección/campos).");
+        return;
+      }
+
+      const ex = extractSPC(data);
+
+      if(ex.proveedor) $("inpProveedor").value = ex.proveedor;
+      if(ex.piscina) $("inpPiscina").value = ex.piscina;
+      if(ex.librasGuia > 0) $("inpLbsGuia").value = fmt2(ex.librasGuia);
+
+      record.proveedor = ex.proveedor || record.proveedor || "";
+      record.piscina = ex.piscina || record.piscina || "";
+      record.librasGuia = ex.librasGuia || record.librasGuia || 0;
+
+      scheduleSave();
+      setStatus(`SPC OK: ${ex.proveedor || "—"} | Pisc: ${ex.piscina || "—"} | Guía: ${fmt2(ex.librasGuia||0)}`);
+    }
+
+    function debounceSPC(){
+      clearTimeout(spcTimer);
+      spcTimer = setTimeout(()=>{ tryAutoFillFromSPC(); }, 550);
+    }
+
+    // ==========================
+    // FOTOS
+    // ==========================
+    async function uploadPhoto(file, kind){
+      if(!file) return;
+      if(!record || !tmpDocId) return;
+      if(locked || mode==="view") return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede subir la foto.");
+        return;
+      }
+
+      const maxMB = 6;
+      if(file.size > maxMB*1024*1024){
+        alert(`La imagen supera ${maxMB} MB. Toma una foto con menor resolución.`);
+        return;
+      }
+
+      const ext = (file.name||"").split(".").pop().toLowerCase();
+      const safeExt = (ext && ext.length<=5) ? ext : "jpg";
+
+      const path = `pcd/${tmpDocId}/${kind}.${safeExt}`;
+      setStatus("Subiendo foto…");
+
+      try{
+        const r = sRef(storage, path);
+        const buf = await file.arrayBuffer();
+        await uploadBytes(r, new Uint8Array(buf), { contentType: file.type || "image/jpeg" });
+        const url = await getDownloadURL(r);
+
+        if(kind==="proveedor"){
+          record.fotoProveedorUrl = url;
+          record.fotoProveedorName = file.name || "foto_proveedor";
+        }else{
+          record.fotoBasuraUrl = url;
+          record.fotoBasuraName = file.name || "foto_basura";
+        }
+
+        renderHeader();
+        try{
+          const patch = (kind==="proveedor")
+            ? { fotoProveedorUrl: url, fotoProveedorName: record.fotoProveedorName, fotoUpdatedAt: serverTimestamp() }
+            : { fotoBasuraUrl: url, fotoBasuraName: record.fotoBasuraName, fotoUpdatedAt: serverTimestamp() };
+          await updateDoc(getDraftRef(), patch);
+        }catch(e){}
+
+        scheduleSave();
+        setStatus("Foto subida.");
+      }catch(err){
+        console.error(err);
+        const code = err?.code || "";
+        setStatus("No se pudo subir la foto." + (code?(" ("+code+")"):""));
+        alert("No se pudo subir la foto. Revisa permisos de Storage." + (code?("\n\nCódigo: "+code):""));
+      }
+    }
+
+    $("btnTakeFotoProv").onclick = ()=>{ if(locked||mode==="view") return; $("fileFotoProv").click(); };
+    $("btnTakeFotoBas").onclick  = ()=>{ if(locked||mode==="view") return; $("fileFotoBas").click(); };
+
+    $("fileFotoProv").addEventListener("change", async ()=>{
+      const f = $("fileFotoProv").files?.[0];
+      $("fileFotoProv").value = "";
+      await uploadPhoto(f, "proveedor");
+    });
+    $("fileFotoBas").addEventListener("change", async ()=>{
+      const f = $("fileFotoBas").files?.[0];
+      $("fileFotoBas").value = "";
+      await uploadPhoto(f, "basura");
+    });
+
+    $("btnFotoProv").onclick = ()=>{
+      const url = record?.fotoProveedorUrl || "";
+      if(!url) return;
+      window.open(url, "_blank", "noopener");
+    };
+    $("btnFotoBas").onclick = ()=>{
+      const url = record?.fotoBasuraUrl || "";
+      if(!url) return;
+      window.open(url, "_blank", "noopener");
+    };
+
+    // ===== Modal PESAR =====
+    const mBack = $("mBack");
+    const mInput = $("mInput");
+    const mFinalVal = $("mFinalVal");
+    const mDet = $("mDet");
+    const mG1 = $("mG1");
+    const mG2 = $("mG2");
+
+    let mWorking = { adds:[], dels:[], sum:0, kvt:0 };
+
+    function openPesar(binIdx){
+      if(locked || mode==="view") return;
+      activeBinIdx = binIdx;
+
+      mInput.value = "";
+      mWorking = { adds:[], dels:[], sum:0, kvt:0 };
+
+      const bin = record.bins[binIdx];
+      const adds = (bin.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
+      const dels = (bin.entries||[]).filter(e=>e.t==="del").map(e=>Number(e.val||0));
+      mWorking.adds = adds.slice();
+      mWorking.dels = dels.slice();
+      mWorking.sum = Math.max(0, Math.floor((adds.reduce((a,b)=>a+b,0) - dels.reduce((a,b)=>a+b,0)) + 1e-9));
+      mWorking.kvt = Math.max(0, adds.length - dels.length);
+
+      mFinalVal.textContent = fmt2(mWorking.sum);
+      mDet.textContent = `DETALLE\n${formatDetalle(mWorking.adds, mWorking.dels)}\n= ${mWorking.sum}`;
+      mBack.classList.add("active");
+      mInput.focus();
+    }
+
+    function closePesar(){
+      mBack.classList.remove("active");
+      activeBinIdx = -1;
+      mInput.value = "";
+    }
+
+    function formatDetalle(adds, dels){
+      const parts = [];
+      adds.forEach(v=>parts.push(`${Math.floor(v)}`));
+      dels.forEach(v=>parts.push(`- ${Math.floor(v)}`));
+      return parts.join(" + ");
+    }
+
+    function computeNet(raw, gav){
+      let v = Number(raw)||0;
+      const discount = gav * 5;
+      v = v - discount;
+      if(v < 0) v = 0;
+
+      const humOn = !!record.humedad.enabled;
+      const pct = humOn ? (Number(record.humedad.pct||0) || 0) : 0;
+      if(humOn && pct > 0){
+        v = v - (v * (pct/100));
+      }
+      v = Math.max(0, Math.floor(v + 1e-9));
+      return v;
+    }
+
+    $("mPlus").onclick = ()=>{
+      const raw = parseEsNumber(mInput.value);
+      if(!Number.isFinite(raw) || raw <= 0){
+        alert("Ingrese un valor válido.");
+        return;
+      }
+      const gav = mG2.checked ? 2 : 1;
+      const net = computeNet(raw, gav);
+
+      mWorking.adds.push(net);
+      mWorking.sum = Math.max(0, Math.floor((mWorking.adds.reduce((a,b)=>a+b,0) - mWorking.dels.reduce((a,b)=>a+b,0)) + 1e-9));
+      mWorking.kvt = Math.max(0, mWorking.adds.length - mWorking.dels.length);
+
+      mFinalVal.textContent = fmt2(mWorking.sum);
+      mDet.textContent = `DETALLE\n${formatDetalle(mWorking.adds, mWorking.dels)}\n= ${mWorking.sum}`;
+      mInput.value = "";
+      mInput.focus();
+    };
+
+    $("mDelete").onclick = ()=>{
+      const val = prompt("Ingrese libras a ELIMINAR (se restará al bin).", "");
+      if(val === null) return;
+      const v = parseEsNumber(val);
+      if(!Number.isFinite(v) || v <= 0){
+        alert("Valor inválido.");
+        return;
+      }
+      mWorking.dels.push(Math.floor(v));
+      mWorking.sum = Math.max(0, Math.floor((mWorking.adds.reduce((a,b)=>a+b,0) - mWorking.dels.reduce((a,b)=>a+b,0)) + 1e-9));
+      mWorking.kvt = Math.max(0, mWorking.adds.length - mWorking.dels.length);
+
+      mFinalVal.textContent = fmt2(mWorking.sum);
+      mDet.textContent = `DETALLE\n${formatDetalle(mWorking.adds, mWorking.dels)}\n= ${mWorking.sum}`;
+      mInput.focus();
+    };
+
+    $("mOk").onclick = ()=>{
+      if(activeBinIdx < 0) return;
+      const bin = record.bins[activeBinIdx];
+      bin.entries = [];
+      mWorking.adds.forEach(v=>bin.entries.push({t:"add", net:Number(v)||0}));
+      mWorking.dels.forEach(v=>bin.entries.push({t:"del", val:Number(v)||0}));
+      calcBin(bin);
+
+      renderBins();
+      renderHeader();
+      scheduleSave();
+      closePesar();
+    };
+    $("mCancel").onclick = closePesar;
+
+    function doTapar(idx){
+      const bin = record.bins[idx];
+      if(bin.closed) return;
+      const ok = confirm("¿TAPAR este BIN?\n\nNo se podrá volver a pesar en este BIN.");
+      if(!ok) return;
+      bin.closed = true;
+      renderBins();
+      renderHeader();
+      scheduleSave();
+    }
+
+    $("btnAddBin").onclick = ()=>{
+      if(locked || mode==="view") return;
+      if(currentOpenBinIndex() !== -1){
+        alert("No se puede agregar un nuevo BIN sin TAPAR el actual.");
+        return;
+      }
+      const binNo = prompt("Ingrese número de BIN:", "");
+      if(!binNo) return;
+      const color = prompt("Ingrese color del BIN:", "");
+      record.bins.push({
+        binNo: String(binNo).trim(),
+        color: String(color||"").trim().toUpperCase(),
+        closed:false,
+        entries:[],
+        total:0,
+        kvt:0
+      });
+      renderBins();
+      renderHeader();
+      scheduleSave();
+    };
+
+    $("humNo").addEventListener("change", applyHumUI);
+    $("humSi").addEventListener("change", applyHumUI);
+    $("humPct").addEventListener("input", ()=>{
+      if(!record) return;
+      record.humedad.pct = Number($("humPct").value||0) || 0;
+      scheduleSave();
+    });
+
+    ["inpLote","inpParcial","inpPiscina","inpBasura"].forEach(id=>{
+      $(id).addEventListener("input", ()=>{
+        if(!record) return;
+        record.lote = $("inpLote").value || "";
+        record.parcial = $("inpParcial").value || "";
+        record.piscina = $("inpPiscina").value || "";
+        scheduleSave();
+      });
+    });
+
+    // Sanitizo secuencial + autollenado SPC
+    $("inpSecuencial").addEventListener("input", ()=>{
+      if(!record) return;
+      const only = ($("inpSecuencial").value || "").replace(/\D+/g,"");
+      $("inpSecuencial").value = only;
+      record.secuencial = only;
+      scheduleSave();
+      debounceSPC();
+    });
+    $("inpSecuencial").addEventListener("blur", ()=>{ tryAutoFillFromSPC(); });
+    $("inpSecuencial").addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){
+        e.preventDefault();
+        tryAutoFillFromSPC();
+      }
+    });
+
+    // activar binding una sola vez
+    bindBinsEvents();
+
+    // ==========================
+    // ✅ DETALLE GAVETAS COMPACTO (10 por fila) + EXPORT EXCEL/PDF
+    // ==========================
+    function chunk10(arr){
+      const out = [];
+      for(let i=0; i<arr.length; i+=10) out.push(arr.slice(i, i+10));
+      return out;
+    }
+
+    function buildGavetasRowsCompact(){
+      const rows = [];
+      const bins = record?.bins || [];
+
+      bins.forEach((b)=>{
+        const binNo = String(b.binNo || "");
+        const color = String(b.color || "");
+        const adds = (b.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
+        const chunks = chunk10(adds);
+
+        chunks.forEach((ch, idx)=>{
+          const row = { BIN: binNo, COLOR: color, FILA: idx + 1 };
+          for(let i=0; i<10; i++) row[`G${i+1}`] = (ch[i] !== undefined) ? Number(ch[i] || 0) : "";
+          rows.push(row);
+        });
+
+        if(adds.length === 0){
+          const row = { BIN: binNo, COLOR: color, FILA: 1 };
+          for(let i=0; i<10; i++) row[`G${i+1}`] = "";
+          rows.push(row);
+        }
+      });
+
+      return rows;
+    }
+
+    function buildGavetasBodyCompactForPDF(){
+      const body = [];
+      const bins = record?.bins || [];
+
+      bins.forEach((b)=>{
+        const binNo = String(b.binNo || "");
+        const color = String(b.color || "");
+        const adds = (b.entries||[]).filter(e=>e.t==="add").map(e=>Number(e.net||0));
+        const chunks = chunk10(adds);
+
+        chunks.forEach((ch, idx)=>{
+          const row = [ binNo, color, String(idx + 1) ];
+          for(let i=0; i<10; i++) row.push(ch[i] !== undefined ? fmt0(ch[i] || 0) : "");
+          body.push(row);
+        });
+
+        if(adds.length === 0){
+          const row = [binNo, color, "1"];
+          for(let i=0; i<10; i++) row.push("");
+          body.push(row);
+        }
+      });
+
+      return body;
+    }
+
+    function buildBinsRows(){
+      const rows = [];
+      (record?.bins||[]).forEach((b)=>{
+        calcBin(b);
+        rows.push({
+          BIN: String(b.binNo||""),
+          COLOR: String(b.color||""),
+          ESTADO: b.closed ? "TAPADO" : "ABIERTO",
+          LIBRAS: Number(b.total||0),
+          KVT: Number(b.kvt||0)
+        });
+      });
+      return rows;
+    }
+
+    function buildResumenRows(){
+      const bas = parseEsNumber($("inpBasura").value);
+      const basura = Number.isFinite(bas) ? bas : (Number(record?.basuraLbs||0)||0);
+      const sec = String(record?.secuencial||"");
+      const reg = String(record?.regNumber||currentReg||"");
+      return [
+        ["REGISTRO", reg],
+        ["FECHA", String(record?.fecha||"")],
+        ["HORA INICIO", String(record?.horaInicio||"")],
+        ["HORA FINAL", String(record?.horaFinal||"")],
+        ["PESADOR", String(record?.pesadorEmail||currentUserEmail||"")],
+        ["SUPERVISOR", String(record?.supervisorEmail||"")],
+        ["CIRCUITO", String(record?.circuito||"")],
+        ["LOTE", String(record?.lote||"")],
+        ["PARCIAL", String(record?.parcial||"")],
+        ["SECUENCIAL", sec],
+        ["PROVEEDOR", String(record?.proveedor||"")],
+        ["PISCINA", String(record?.piscina||"")],
+        ["LIBRAS GUIA", Number(record?.librasGuia||0)],
+        ["PESO COLA TOTAL", Number(totalPesoCola()||0)],
+        ["KVT TOTAL", Number(totalKvt()||0)],
+        ["BASURA (lb)", Number(basura||0)],
+        ["HUMEDAD", record?.humedad?.enabled ? "SI" : "NO"],
+        ["HUMEDAD %", Number(record?.humedad?.pct||0)]
+      ];
+    }
+
+    function exportExcel(){
+      if(!record){ alert("No hay registro para exportar."); return; }
+
+      const wb = window.XLSX.utils.book_new();
+
+      const res = buildResumenRows();
+      const wsRes = window.XLSX.utils.aoa_to_sheet([["CAMPO","VALOR"], ...res]);
+      window.XLSX.utils.book_append_sheet(wb, wsRes, "RESUMEN");
+
+      const binsRows = buildBinsRows();
+      const wsBins = window.XLSX.utils.json_to_sheet(binsRows);
+      window.XLSX.utils.book_append_sheet(wb, wsBins, "BINS");
+
+      const gavRows = buildGavetasRowsCompact();
+      const wsGav = window.XLSX.utils.json_to_sheet(gavRows);
+      window.XLSX.utils.book_append_sheet(wb, wsGav, "GAVETAS");
+
+      const reg = String(record?.regNumber||currentReg||"REG");
+      const sec = String(record?.secuencial||"");
+      const name = `PCD_${sec ? sec : reg}_${record?.fecha||todayKey()}_${tsFile()}.xlsx`;
+
+      window.XLSX.writeFile(wb, name);
+    }
+
+    function exportPDF(){
+      if(!record){ alert("No hay registro para exportar."); return; }
+
+      const { jsPDF } = window.jspdf;
+      const docPdf = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+
+      const pageW = docPdf.internal.pageSize.getWidth();
+      const marginX = 34;
+
+      docPdf.setFont("times","bold");
+      docPdf.setFontSize(14);
+      docPdf.text("PCD | REGISTRO PESO COLA", pageW/2, 28, { align:"center" });
+
+      docPdf.setFont("times","normal");
+      docPdf.setFontSize(10);
+
+      const reg = String(record?.regNumber||currentReg||"—");
+      const sec = String(record?.secuencial||"—");
+      const prov = String(record?.proveedor||"—");
+      const pisc = String(record?.piscina||"—");
+      const lote = String(record?.lote||"—");
+      const parcial = String(record?.parcial||"—");
+      const supervisor = String(record?.supervisorEmail||"—");
+      const pesador = String(record?.pesadorEmail||currentUserEmail||"—");
+      const fecha = String(record?.fecha||"—");
+      const hi = String(record?.horaInicio||"—");
+      const hf = String(record?.horaFinal||"—");
+      const guia = Number(record?.librasGuia||0);
+      const basura = Number(record?.basuraLbs||0);
+      const hum = record?.humedad?.enabled ? `SI (${Number(record?.humedad?.pct||0)}%)` : "NO";
+
+      docPdf.autoTable({
+        startY: 42,
+        head: [["CAMPO","VALOR","CAMPO","VALOR"]],
+        body: [
+          ["Registro", reg, "Fecha", fecha],
+          ["Hora inicio", hi, "Hora final", hf],
+          ["Secuencial", sec, "Lote", lote],
+          ["Parcial", parcial, "Piscina", pisc],
+          ["Proveedor", prov, "Supervisor", supervisor],
+          ["Pesador", pesador, "Circuito", String(record?.circuito||"")],
+          ["Libras guía", fmt2(guia), "Humedad", hum],
+          ["Peso cola total", fmt0(totalPesoCola()), "KVT total", fmt0(totalKvt())],
+          ["Basura (lb)", fmt2(basura), "", ""]
+        ],
+        styles: { font:"times", fontSize: 9 },
+        headStyles: { fontStyle:"bold" },
+        margin: { left: marginX, right: marginX },
+        tableWidth: "auto"
+      });
+
+      const binsRows = (record?.bins||[]).map((b)=>{
+        calcBin(b);
+        return [ String(b.binNo||""), String(b.color||""), b.closed ? "TAPADO" : "ABIERTO", fmt0(b.total||0), fmt0(b.kvt||0) ];
+      });
+
+      const lastY = docPdf.lastAutoTable?.finalY || 120;
+
+      docPdf.autoTable({
+        startY: lastY + 14,
+        head: [["BIN","COLOR","ESTADO","LIBRAS","KVT"]],
+        body: binsRows.length ? binsRows : [["—","—","—","0","0"]],
+        styles: { font:"times", fontSize: 9 },
+        headStyles: { fontStyle:"bold" },
+        margin: { left: marginX, right: marginX },
+        tableWidth: "auto"
+      });
+
+      const gavBody = buildGavetasBodyCompactForPDF();
+      if(gavBody.length){
+        docPdf.addPage("a4","landscape");
+        docPdf.setFont("times","bold");
+        docPdf.setFontSize(12);
+        docPdf.text("DETALLE DE GAVETAS POR BIN (10 POR FILA)", marginX, 34);
+
+        docPdf.autoTable({
+          startY: 50,
+          head: [[ "BIN","COLOR","FILA","G1","G2","G3","G4","G5","G6","G7","G8","G9","G10" ]],
+          body: gavBody,
+          styles: { font:"times", fontSize: 8 },
+          headStyles: { fontStyle:"bold" },
+          margin: { left: marginX, right: marginX },
+          tableWidth: "auto"
+        });
+      }
+
+      const name = `PCD_${sec !== "—" ? sec : reg}_${fecha}_${tsFile()}.pdf`;
+      docPdf.save(name);
+    }
+
+    $("btnExcel").onclick = ()=>{ exportExcel(); };
+    $("btnPdf").onclick   = ()=>{ exportPDF(); };
+
+    // Guardar manual (fuerza guardar borrador en BD)
+    $("btnGuardar").onclick = async ()=>{ await saveDraft(true); };
+
+    // ==========================
+    // ✅ HISTORIAL (BUSCAR)
+    // ==========================
+    function toDateInputValue(d){
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    function startOfDay(dateStr){
+      // dateStr: YYYY-MM-DD
+      return new Date(`${dateStr}T00:00:00`);
+    }
+    function endOfDay(dateStr){
+      return new Date(`${dateStr}T23:59:59`);
+    }
+
+    function renderHistRows(rows){
+      const tb = $("tbodyHist");
+      tb.innerHTML = "";
+
+      if(!rows.length){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="9" class="center">Sin registros en este rango.</td>`;
+        tb.appendChild(tr);
+        return;
+      }
+
+      rows.forEach((r)=>{
+        const tr = document.createElement("tr");
+
+        const fecha = esc(r.fecha || "");
+        const reg   = esc(r.regNumber || "");
+        const sec   = esc(r.secuencial || "");
+        const prov  = esc(r.proveedor || "");
+        const cola  = fmt0(r.totalPesoCola || 0);
+        const kvt   = fmt0(r.totalKvt || 0);
+        const pes   = esc(r.pesadorEmail || "");
+
+        const canDel = isAdmin();
+
+        tr.innerHTML = `
+          <td class="hDate center">${fecha}</td>
+          <td class="hNum center">${reg}</td>
+          <td class="hSec center">${sec}</td>
+          <td class="hProv">${prov}</td>
+          <td class="hLbs num">${cola}</td>
+          <td class="hKvt center">${kvt}</td>
+          <td class="hProv">${pes}</td>
+          <td class="hOpen center"><span class="btn" data-open="${esc(r.__id)}" data-col="${esc(r.__col)}">ABRIR</span></td>
+          <td class="hOpen center"><span class="btn danger ${canDel ? "" : "disabled"}" data-del="${esc(r.__id)}" data-col="${esc(r.__col)}">ELIMINAR</span></td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    async function fetchHist(desdeStr, hastaStr){
+      await refreshInternetStatus();
+      if(!hasInternet){
+        setHistStatus("Sin internet: no se puede cargar historial.");
+        return [];
+      }
+
+      // rango de fechas (inclusivo)
+      const d0 = startOfDay(desdeStr);
+      const d1 = endOfDay(hastaStr);
+
+      // Firestore: usamos "fecha" (string YYYY-MM-DD) porque está en el documento
+      // Como es string y mantiene orden, podemos filtrar con >= <=
+      const qMine = query(
+        collection(db, COL_PCD_TMP),
+        where("pesadorEmail","==",currentUserEmail),
+        where("fecha", ">=", desdeStr),
+        where("fecha", "<=", hastaStr),
+        orderBy("fecha","desc"),
+        limit(200)
+      );
+
+      try{
+        setHistStatus("Cargando historial…");
+        const snap = await getDocs(qMine);
+
+        const out = [];
+        snap.forEach((docu)=>{
+          const d = docu.data() || {};
+          // ✅ compat: si por alguna razón no existe totalPesoCola, lo calculo desde bins
+          let totalCola = Number(d.totalPesoCola);
+          if(!Number.isFinite(totalCola)){
+            const bins = Array.isArray(d.bins) ? d.bins : [];
+            totalCola = bins.reduce((a,b)=>a+(Number(b?.total)||0),0);
+          }
+
+          let totalK = Number(d.totalKvt);
+          if(!Number.isFinite(totalK)){
+            const bins = Array.isArray(d.bins) ? d.bins : [];
+            totalK = bins.reduce((a,b)=>a+(Number(b?.kvt)||0),0);
+          }
+
+          out.push({
+            __col: COL_PCD_TMP,
+            __id: docu.id,
+            fecha: d.fecha || "",
+            regNumber: d.regNumber || "",
+            secuencial: d.secuencial || "",
+            proveedor: d.proveedor || "",
+            pesadorEmail: d.pesadorEmail || "",
+            totalPesoCola: totalCola || 0,
+            totalKvt: totalK || 0
+          });
+        });
+
+        // Sumatorias
+        const sumCola = out.reduce((a,b)=>a+(Number(b.totalPesoCola)||0),0);
+        const sumKvt  = out.reduce((a,b)=>a+(Number(b.totalKvt)||0),0);
+        $("histSumMine").textContent = `MIS REGISTROS: ${out.length} | PESO COLA: ${fmt0(sumCola)} | KVT: ${fmt0(sumKvt)}`;
+
+        setHistStatus(`OK: ${out.length} registros.`);
+        return out;
+      }catch(err){
+        console.error(err);
+        setHistStatus("No se pudo cargar historial. (revisa índices/reglas)");
+        return [];
+      }
+    }
+
+    async function openHistDoc(col, id){
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede abrir el registro.");
+        return;
+      }
+      try{
+        const s = await getDoc(doc(db, col, id));
+        if(!s.exists()){
+          alert("No existe ese registro.");
+          return;
+        }
+        const d = s.data() || {};
+        loadFromDoc({ __col: col, __id: id, id: id, ...d });
+      }catch(err){
+        console.error(err);
+        alert("No se pudo abrir el registro. Revisa permisos.");
+      }
+    }
+
+    async function deleteHistDoc(col, id){
+      if(!isAdmin()) return;
+      const ok = confirm("¿ELIMINAR este registro?\n\nEsta acción no se puede deshacer.");
+      if(!ok) return;
+
+      await refreshInternetStatus();
+      if(!hasInternet){
+        alert("Sin internet: no se puede eliminar.");
+        return;
+      }
+
+      try{
+        await deleteDoc(doc(db, col, id));
+        alert("Eliminado.");
+        // recargar la tabla con el mismo rango
+        const desde = $("histDesde").value;
+        const hasta = $("histHasta").value;
+        const rows = await fetchHist(desde, hasta);
+        renderHistRows(rows);
+      }catch(err){
+        console.error(err);
+        alert("No se pudo eliminar. Revisa permisos/reglas.");
+      }
+    }
+
+    // Clicks tabla historial
+    $("tbodyHist").addEventListener("click", async (e)=>{
+      const openBtn = e.target.closest("[data-open]");
+      const delBtn  = e.target.closest("[data-del]");
+      if(openBtn){
+        const id = openBtn.getAttribute("data-open");
+        const col = openBtn.getAttribute("data-col");
+        await openHistDoc(col, id);
+      }
+      if(delBtn){
+        if(delBtn.classList.contains("disabled")) return;
+        const id = delBtn.getAttribute("data-del");
+        const col = delBtn.getAttribute("data-col");
+        await deleteHistDoc(col, id);
+      }
+    });
+
+    // BUSCAR (abre historial)
+    $("btnBuscar").onclick = async ()=>{
+      // rango por defecto: últimos 7 días
+      const now = new Date();
+      const d7 = new Date(now.getTime() - 6*24*60*60*1000);
+      if(!$("histHasta").value) $("histHasta").value = toDateInputValue(now);
+      if(!$("histDesde").value) $("histDesde").value = toDateInputValue(d7);
+
+      showView("hist");
+      const rows = await fetchHist($("histDesde").value, $("histHasta").value);
+      renderHistRows(rows);
+    };
+
+    $("btnHistFiltrar").onclick = async ()=>{
+      const desde = $("histDesde").value;
+      const hasta = $("histHasta").value;
+      if(!desde || !hasta){
+        alert("Seleccione DESDE y HASTA.");
+        return;
+      }
+      if(desde > hasta){
+        alert("DESDE no puede ser mayor que HASTA.");
+        return;
+      }
+      const rows = await fetchHist(desde, hasta);
+      renderHistRows(rows);
+    };
+
+    $("btnHistBack").onclick = ()=>{ showView("app"); };
+    $("btnHistLogout").onclick = async ()=>{ await signOut(auth); };
+
+    // ==========================
+    // LOGIN
+    // ==========================
+    const bootMsgEl = $("bootMsg");
+    if(bootMsgEl) bootMsgEl.textContent = "Cargando Firebase…";
+
+    $("btnLogin").onclick = async ()=>{
+      $("loginMsg").textContent = "";
+      const boot2 = safe("bootMsg");
+      if(boot2) boot2.textContent = "Intentando iniciar sesión…";
+      try{
+        const email = $("loginEmail").value.trim();
+        const pass  = $("loginPass").value;
+        if(!email || !pass){
+          $("loginMsg").textContent = "Ingrese usuario y contraseña.";
+          return;
+        }
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){
+        const code = (e && e.code) ? ` (${e.code})` : "";
+        $("loginMsg").textContent = "Error: usuario o contraseña incorrectos." + code;
+        console.error(e);
+      }
+    };
+    ["loginEmail","loginPass"].forEach(id=>{
+      $(id).addEventListener("keydown",(e)=>{ if(e.key==="Enter") $("btnLogin").click(); });
+    });
+
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        currentUserEmail = (user.email||"").toLowerCase();
+        if(!ALLOWED.has(currentUserEmail)){
+          alert("Acceso no autorizado.");
+          await signOut(auth);
+          return;
+        }
+
+        $("authHeader").style.display = "block";
+        $("userEmail").textContent = currentUserEmail;
+
+        currentUserName = (user.displayName || currentUserEmail.split("@")[0] || "").replaceAll("."," ");
+        $("userNameLabel").textContent = `(${currentUserName})`;
+
+        record = blankRecord();
+        tmpDocId = "";
+        finalDocId = "";
+        currentReg = "";
+
+        showView("app");
+        await refreshInternetStatus();
+        updateButtons();
+
+        await newRegistro();
+        if(bootMsgEl) bootMsgEl.textContent = "";
+      }else{
+        currentUserEmail = "";
+        currentUserName = "";
+        $("authHeader").style.display = "none";
+        hideNetBanner();
+        showView("login");
+        if(bootMsgEl) bootMsgEl.textContent = "";
+      }
+    });
+
+    $("btnLogoutTop").onclick = async ()=>{ await signOut(auth); };
+    $("btnNuevo").onclick = async ()=>{
+      const ok = confirm("¿Crear un NUEVO registro?\n\nSe perderán cambios no guardados si no se guardó el borrador.");
+      if(!ok) return;
+      await newRegistro();
+    };
+
+  </script>
+</body>
+</html>
