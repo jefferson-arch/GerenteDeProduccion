@@ -2085,8 +2085,14 @@ const LOGO_SRC = "logo.png";
 try{
   const logoData = await loadImageAsDataURL(LOGO_SRC);
   // tamaño y posición (arriba derecha)
-  const logoW = 120;
-  const logoH = 40;
+  const logoW = 140; // ancho deseado
+  const imgTmp = new Image();
+  imgTmp.src = logoData;
+  await new Promise(r => (imgTmp.onload = r));
+
+  const ratio = (imgTmp.naturalHeight || imgTmp.height) / (imgTmp.naturalWidth || imgTmp.width);
+  const logoH = Math.round(logoW * ratio); // altura proporcional
+
   const pageW = docPdf.internal.pageSize.getWidth();
   docPdf.addImage(logoData, "PNG", pageW - marginX - logoW, 24, logoW, logoH);
 }catch(e){
