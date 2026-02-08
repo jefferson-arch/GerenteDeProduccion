@@ -1,0 +1,1882 @@
+<!doctype html>
+<!-- DX — Etiquetas de Importador + Excel Template Renderer -->
+<!-- BUILD_DX_IMPORTER_LABELS_EXCEL v2.0.1 2026-02-08 -->
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>DX — Etiquetas de Importador</title>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --panel2:#0b1326;
+      --grid:#1f2a44;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --accent:#2563eb;
+      --danger:#ef4444;
+      --ok:#16a34a;
+      --white:#fff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:.2px}
+    header .right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .badge{font-size:12px;opacity:.9;padding:6px 10px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.06)}
+    .btn{appearance:none;border:0;border-radius:10px;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.ghost{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.14)}
+    .btn.danger{background:var(--danger);color:#fff}
+    .btn.ok{background:var(--ok);color:#fff}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .wrap{max-width:1280px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .grid2{display:grid;grid-template-columns:420px 1fr;gap:12px}
+    @media(max-width:980px){ .grid2{grid-template-columns:1fr} }
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px}
+    .card h2{margin:0 0 10px;font-size:14px}
+    label{display:block;font-size:12px;opacity:.9;margin:10px 0 6px}
+    input, textarea, select{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:#fff;padding:10px 10px;font-size:13px;outline:none}
+    textarea{min-height:58px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .help{font-size:12px;color:var(--muted);line-height:1.3;margin-top:6px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);cursor:pointer;font-weight:800;font-size:12px}
+    .tab.active{background:rgba(37,99,235,.25);border-color:rgba(37,99,235,.55)}
+    .previewWrap{background:#fff;border-radius:14px;border:1px solid rgba(0,0,0,.12);padding:14px;overflow:auto}
+    .labelCanvas{display:flex;justify-content:center}
+    .labelBox{background:#fff;padding:10px;border:1px solid #000;position:relative;overflow:visible;}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .kpi{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .kpi .dot{width:10px;height:10px;border-radius:999px;background:var(--ok)}
+    .kpi .dot.warn{background:#f59e0b}
+    .kpi .dot.bad{background:var(--danger)}
+    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.25);font-size:11px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .mini{padding:7px 10px;border-radius:10px;font-weight:900;font-size:12px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.25);color:#fff;cursor:pointer}
+    .mini:hover{filter:brightness(1.05)}
+    .mini:disabled{opacity:.45;cursor:not-allowed}
+
+    /* LOGIN */
+    .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+    .login .box{width:min(460px,100%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px}
+    .login h2{margin:0 0 10px;font-size:16px}
+    .err{margin-top:10px;color:#fecaca;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);padding:10px;border-radius:12px;display:none}
+
+    /* PRINT */
+    @media print {
+      body{background:#fff}
+      header, .noPrint{display:none !important}
+      .grid2{grid-template-columns:1fr !important}
+      .grid2 > .card:first-child{display:none !important}
+      .grid2 > .card:last-child{border:none !important;background:#fff !important;padding:0 !important}
+      .wrap{padding:0 !important;max-width:none !important}
+      .previewWrap{border:none !important;padding:0 !important;margin:0 !important;overflow:visible !important}
+      .labelCanvas{justify-content:center !important}
+      .labelBox{
+        margin:0 auto !important;
+        padding:0 !important;
+        border:1px solid #000 !important;
+        background:#fff !important;
+      }
+      @page { size: A4 portrait; margin: 10mm; }
+    }
+
+    /* =========================
+       Excel Renderer (HTML)
+       ========================= */
+    .excelStage{
+      position:relative;
+      transform-origin: top left;
+      background:#fff;
+      /* Evita selección rara al hacer zoom */
+      user-select:none;
+    }
+    table.excelTable{
+      border-collapse:collapse;
+      table-layout:fixed;
+      background:#fff;
+    }
+    table.excelTable td{
+      padding:0;
+      vertical-align:middle;
+      overflow:hidden;
+      text-overflow:clip;
+      white-space:pre-wrap;
+    }
+    /* Imágenes overlay */
+    .excelImg{
+      position:absolute;
+      left:0; top:0;
+      pointer-events:none;
+    }
+  </style>
+
+  <style id="dynPageStyle"></style>
+</head>
+
+<body>
+  <!-- LOGIN VIEW -->
+  <div id="loginView" class="login">
+    <div class="box">
+      <h2>OCEANTREASURE — DX Etiquetas</h2>
+      <div class="help">
+        Acceso con correo y contraseña (Firebase). Todos los usuarios logueados pueden ver.
+        Solo EDITORES pueden guardar/eliminar.
+      </div>
+      <label>Correo</label>
+      <input id="email" type="email" autocomplete="username" placeholder="usuario@oceantreasure.local" />
+      <label>Contraseña</label>
+      <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn primary" id="btnLogin">INGRESAR</button>
+        <button class="btn ghost" id="btnDemo">Cargar (modo demo)</button>
+      </div>
+      <div class="err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- APP VIEW -->
+  <div id="appView" style="display:none">
+    <header>
+      <div>
+        <h1>DX — Etiquetas de Importador</h1>
+        <div class="help" style="margin-top:4px">
+          Puedes usar tu plantilla actual o cargar un Excel (.xlsx recomendado) y renderizarlo en pantalla con bordes/estilos + imágenes.
+        </div>
+      </div>
+
+      <div class="right">
+        <input id="excelFile" type="file" accept=".xlsx,.xls" style="display:none" />
+        <button class="btn ghost noPrint" id="btnLoadExcel">INSERTAR EXCEL</button>
+        <button class="btn ghost noPrint" id="btnClearExcel" style="display:none">QUITAR EXCEL</button>
+
+        <span class="badge" id="excelBadge" style="display:none">Excel: —</span>
+
+        <span class="badge" id="userBadge">—</span>
+        <span class="badge" id="roleBadge">—</span>
+        <button class="btn ghost" id="btnLogout">SALIR</button>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="grid2">
+
+        <!-- FORM -->
+        <div class="card">
+          <h2>Datos de la etiqueta</h2>
+
+          <div class="help" style="margin-top:-4px">
+            Si cargas un Excel, se mostrará la hoja seleccionada tal cual (con imágenes). Si quieres “rellenar campos”, puedes seguir usando el modo OUTER/INNER actual.
+          </div>
+
+          <div class="tabs noPrint" style="margin-top:10px">
+            <button class="tab active" data-tpl="OUTER" id="tabOuter">OUTER</button>
+            <button class="tab" data-tpl="INNER" id="tabInner">INNER</button>
+            <button class="tab" data-tpl="EXCEL" id="tabExcel">EXCEL</button>
+          </div>
+
+          <!-- Controles Excel -->
+          <div id="excelControls" class="noPrint" style="display:none;margin-top:10px">
+            <div class="row">
+              <div>
+                <label>HOJA</label>
+                <select id="excelSheet"></select>
+                <div class="help">Tip: si tu archivo tiene varias etiquetas (pestañas), cambia aquí.</div>
+              </div>
+              <div>
+                <label>ZOOM</label>
+                <input id="excelZoom" type="range" min="25" max="300" value="100" />
+                <div class="help"><span id="excelZoomLabel">100%</span> — Ajusta solo la vista. (La exportación PDF/PNG usa el tamaño real del marco).</div>
+              </div>
+
+            <div class="actions" style="justify-content:flex-end;margin-top:8px">
+              <button class="mini" id="btnExcelAutoCenter" type="button">AUTO CENTRAR</button>
+            </div>
+            <div class="help">Auto centrar: pone DESPLAZAR X/Y en 0 y centra el Excel dentro del marco.</div>
+
+            </div>
+
+            <div class="row3" style="margin-top:10px">
+              <div>
+                <label>AJUSTE EXCEL</label>
+                <select id="selExcelFit">
+                  <option value="contain">CONTENER (sin recortar)</option>
+                  <option value="cover">CUBRIR (sin bordes blancos)</option>
+                  <option value="stretch">ESTIRAR (llenar)</option>
+                  <option value="width">AJUSTAR A ANCHO</option>
+                  <option value="height">AJUSTAR A ALTO</option>
+                </select>
+              </div>
+              <div>
+                <label>DESPLAZAR X (mm)</label>
+                <input id="inpExcelOffsetXmm" type="number" step="0.5" value="0" />
+              </div>
+              <div>
+                <label>DESPLAZAR Y (mm)</label>
+                <input id="inpExcelOffsetYmm" type="number" step="0.5" value="0" />
+              </div>
+            </div>
+
+            <div class="row3" style="margin-top:10px">
+              <div>
+                <label>ANCHO ETIQUETA (cm)</label>
+                <input id="f_labelWcm" type="number" step="0.1" min="0" placeholder="Ej: 10" />
+              </div>
+              <div>
+                <label>ALTO ETIQUETA (cm)</label>
+                <input id="f_labelHcm" type="number" step="0.1" min="0" placeholder="Ej: 15" />
+              </div>
+              <div>
+                <label>AJUSTE</label>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                  <label style="margin:0;display:flex;gap:8px;align-items:center;font-size:12px;opacity:.95">
+                    <input id="chkKeepRatio" type="checkbox" checked style="width:auto" />
+                    Mantener proporción
+                  </label>
+                  <label style="margin:0;display:flex;gap:8px;align-items:center;font-size:12px;opacity:.95">
+                    <input id="chkPrintAsLabel" type="checkbox" checked style="width:auto" />
+                    Imprimir como etiqueta (tamaño cm)
+                  </label>
+                  <div class="zplBox" style="margin-top:10px;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;">
+                    <div style="font-weight:800;margin-bottom:6px;">Impresora Zebra (ZT411)</div>
+                    <div class="grid2">
+                      <label>DPI
+                        <select id="zplDpi">
+                          <option value="203">203 dpi</option>
+                          <option value="300" selected>300 dpi</option>
+                        </select>
+                      </label>
+                      <label>Umbral (negro)
+                        <input id="zplThreshold" type="number" min="0" max="255" value="190" />
+                      </label>
+                    </div>
+                    <div class="grid2" style="margin-top:8px;">
+                      <label>Oscuridad
+                        <input id="zplDarkness" type="number" min="-30" max="30" value="0" />
+                      </label>
+                      <label>Velocidad
+                        <input id="zplSpeed" type="number" min="1" max="14" value="6" />
+                      </label>
+                    </div>
+                    <label style="display:flex;gap:10px;align-items:center;margin-top:8px;opacity:.95">
+                      <input id="zplInvert" type="checkbox" style="width:auto" />
+                      Invertir (si sale “negativo”)
+                    </label>
+                    <div style="margin-top:8px;opacity:.85;font-size:12px;line-height:1.25;">
+                      Tip: Para impresión exacta sin “escalado” del driver, usa <b>EXPORTAR ZPL</b>.
+                    </div>
+                  </div>
+
+                  <button class="mini" id="btnApplySize" type="button">APLICAR</button>
+                  <button class="mini" id="btnResetSize" type="button">RESET</button>
+                </div>
+                <div class="help">En modo EXCEL, esto define el marco (cm) y escala el contenido para encajar.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form normal (OUTER/INNER) -->
+          <div id="formNormal">
+            <div class="row3" style="margin-top:10px">
+              <div>
+                <label>SIZE (规格)</label>
+                <input id="f_size" />
+              </div>
+              <div>
+                <label>PRODUCTION LOT NO. (生产批号)</label>
+                <input id="f_lotNo" />
+              </div>
+              <div>
+                <label>SECUENCIAL</label>
+                <input id="f_secuencial" placeholder="Ej: 4470" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>PRODUCTION DATE (生产日期)</label>
+                <input id="f_prodDate" placeholder="2026 年 01 月 22 日" />
+                <div class="help">Tip: si prefieres, escribe en formato “YYYY 年 MM 月 DD 日”.</div>
+              </div>
+              <div>
+                <label>NET WEIGHT (净含量)</label>
+                <textarea id="f_netWeight" style="min-height:64px"></textarea>
+              </div>
+            </div>
+
+            <label>NAME AND ADDRESS OF PRODUCTION AND PROCESSING ENTERPRISES (生产加工企业名称和地址)</label>
+            <textarea id="f_producerAddress"></textarea>
+
+            <div class="row">
+              <div>
+                <label>FACTORY REG NO (注册号)</label>
+                <input id="f_factoryRegNo" />
+              </div>
+              <div>
+                <label>FACTORY REGISTRATION NO, IN CHINA (在华工厂注册号)</label>
+                <input id="f_factoryRegChina" />
+              </div>
+            </div>
+
+            <label>NAME AND ADDRESS OF COLD STORAGE (冷库名称和地址)</label>
+            <textarea id="f_coldStorage"></textarea>
+
+            <div class="row">
+              <div>
+                <label>IMPORTER (进口商)</label>
+                <input id="f_importerName" />
+              </div>
+              <div>
+                <label>PHONE OF IMPORTER (进口商联系方式)</label>
+                <input id="f_importerPhone" />
+              </div>
+            </div>
+
+            <label>IMPORTER'S ADDRESS (进口商地址)</label>
+            <textarea id="f_importerAddress"></textarea>
+          </div>
+
+          <div class="toolbar noPrint" style="margin-top:12px">
+            <button class="btn ghost" id="btnNew">NUEVO</button>
+            <button class="btn ok" id="btnSave">GUARDAR</button>
+            <button class="btn danger" id="btnDelete">ELIMINAR</button>
+            <button class="btn primary" id="btnPrint">EXPORTAR PDF</button>
+            <button class="btn ghost" id="btnPng">EXPORTAR PNG</button>
+          <button class="btn ghost" id="btnZpl">EXPORTAR ZPL</button>
+          <button class="btn ghost" id="btnSendZebra" title="Requiere Zebra Browser Print (PC) / o usa EXPORTAR ZPL">ENVIAR A ZEBRA</button>
+
+          </div>
+          <div class="help" id="statusLine" style="margin-top:10px">—</div>
+
+          <div class="help" style="margin-top:10px">
+            <b>Importante:</b> Para “100%” fiel, sube el archivo como <b>.xlsx</b> (mantiene imágenes y estilos). Si subes <b>.xls</b> (antiguo), el navegador no puede recuperar imágenes con fidelidad.
+          </div>
+        </div>
+
+        <!-- PREVIEW + LIST -->
+        <div class="card">
+          <div class="kpi noPrint" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="dot" id="dotConn"></div>
+              <div>
+                <div style="font-weight:900">Vista previa</div>
+                <div class="help">Se actualiza automáticamente (modo OUTER/INNER) o se renderiza desde Excel (modo EXCEL).</div>
+              </div>
+            </div>
+            <div class="actions noPrint">
+              <span class="pill" id="docPill">Nuevo</span>
+              <span class="pill" id="tplPill">OUTER</span>
+            </div>
+          </div>
+
+          <div class="previewWrap">
+            <div class="labelCanvas">
+              <div class="labelBox" id="labelBox">
+                <!-- STAGE (para escalar/centrar etiqueta cm) -->
+                <div id="labelStage" class="excelStage">
+
+                  <!-- Plantillas actuales -->
+                  <div id="tplOuter" class="tpl">
+                    <div style="font-size:12px;color:#111;font-weight:900;margin-bottom:8px;display:none">OUTER</div>
+                    <!-- (Mantengo tu template de ejemplo; puedes reemplazarlo si quieres) -->
+                    <table class="label-table" cellspacing="0" cellpadding="0" style="border-collapse:collapse;table-layout:fixed;width:760px;max-width:100%">
+                      <tr><td style="border:2px solid #000;padding:12px;font-weight:900;color:#000">Tu plantilla OUTER actual sigue aquí.</td></tr>
+                      <tr><td style="border:2px solid #000;border-top:0;padding:12px;color:#000">
+                        Carga un Excel y ve a la pestaña <b>EXCEL</b> para renderizar tu etiqueta real con imágenes.
+                      </td></tr>
+                    </table>
+                  </div>
+
+                  <div id="tplInner" class="tpl" style="display:none">
+                    <table class="label-table" cellspacing="0" cellpadding="0" style="border-collapse:collapse;table-layout:fixed;width:760px;max-width:100%">
+                      <tr><td style="border:2px solid #000;padding:12px;font-weight:900;color:#000">Tu plantilla INNER actual sigue aquí.</td></tr>
+                    </table>
+                  </div>
+
+                  <!-- Render Excel -->
+                  <div id="tplExcel" class="tpl" style="display:none">
+                    <div id="excelRenderHost"></div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LISTADO (igual que antes) -->
+          <div class="noPrint" style="margin-top:12px">
+            <h2 style="margin:0 0 8px">Etiquetas guardadas</h2>
+            <div class="row">
+              <div>
+                <input id="search" placeholder="Buscar por LOTE, SECUENCIAL, SIZE, IMPORTER, FECHA..." />
+              </div>
+              <div class="actions" style="justify-content:flex-end">
+                <button class="mini" id="btnRefresh">Refrescar</button>
+              </div>
+            </div>
+
+            <div class="list" style="margin-top:10px;max-height:340px;overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px">
+              <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead>
+                  <tr>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left">Fecha</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left">Template</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left">Size</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left">Lote</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left">Secuencial</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left">Importer</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="rows">
+                  <tr><td colspan="7" style="opacity:.75;padding:8px">Inicia sesión para cargar desde Firestore…</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="help" style="margin-top:10px">
+              Nota: En impresión, solo se imprime la etiqueta (preview). Si estás en modo EXCEL, se imprime el render Excel.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- html2canvas + jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <!-- ExcelJS (XLSX render) -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+  <script>
+    // ===== Firebase Config (tu config) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    // ===== Lista de editores (misma que en Rules) =====
+    const EDITORS = new Set([
+      "yanelavinueza@oceantreasure.local",
+      "jeffersonfigueroa@oceantreasure.local",
+      "milenalmeida@oceantreasure.local",
+      "aracellytomala@oceantreasure.local",
+      "keniacruz@oceantreasure.local",
+      "rrhh@oceantreasure.local",
+      "soporte@oceantreasure.local",
+      "liquidacionesdepago@oceantreasure.local",
+      "ordenesdeproduccion@oceantreasure.local"
+    ]);
+
+    const DEFAULTS = {
+      "OUTER": {
+        "size": "21/25",
+        "productionDate": "2025 年 03 月 01 日",
+        "lotNo": "COL25010301",
+        "producerAddress": "",
+        "factoryRegNo": "",
+        "coldStorageAddress": "",
+        "factoryRegChina": "",
+        "importerName": "懂鲜帝控股（浙江）有限公司",
+        "importerAddress": "浙江省金华市义乌市义亭镇同义路1000号1栋1楼115室",
+        "importerPhone": "15657629988",
+        "netWeightLine": "NET WEIGHT(净含量) :12千克\n(1X12千克)",
+        "secuencial": ""
+      },
+      "INNER": {
+        "size": "21/25",
+        "productionDate": "2025 年 03 月 01 日",
+        "lotNo": "COL25010301",
+        "producerAddress": "",
+        "factoryRegNo": "",
+        "coldStorageAddress": "",
+        "factoryRegChina": "",
+        "importerName": "懂鲜帝控股（浙江）有限公司",
+        "importerAddress": "浙江省金华市义乌市义亭镇同义路1000号1栋1楼115室",
+        "importerPhone": "15657629988",
+        "netWeightLine": "NET WEIGHT(净含量) :12千克",
+        "secuencial": ""
+      }
+    };
+
+    // ===== State =====
+    let currentTpl = "OUTER";
+    let currentDocId = null;
+    let canWrite = false;
+
+    // ===== Excel State =====
+    let excelWb = null;
+  let excelFileBuf = null;
+  let excelFileMeta = null;
+  let excelStoragePath = null;
+  let excelDownloadURL = null;
+  let excelDesiredSheetName = null;
+    let excelActiveSheetName = null;
+    let excelLoaded = false;
+    let excelHost = null;
+
+    // ===== Init Firebase =====
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  const storage = firebase.storage();
+
+    // ===== UI refs =====
+    const loginView = document.getElementById("loginView");
+    const appView   = document.getElementById("appView");
+    const loginErr  = document.getElementById("loginErr");
+    const userBadge = document.getElementById("userBadge");
+    const roleBadge = document.getElementById("roleBadge");
+    const dotConn   = document.getElementById("dotConn");
+    const statusLine= document.getElementById("statusLine");
+
+    const tplOuter = document.getElementById("tplOuter");
+    const tplInner = document.getElementById("tplInner");
+    const tplExcel = document.getElementById("tplExcel");
+
+    const labelBox = document.getElementById("labelBox");
+    const labelStage = document.getElementById("labelStage");
+
+    const docPill  = document.getElementById("docPill");
+    const tplPill  = document.getElementById("tplPill");
+
+    const rowsTbody = document.getElementById("rows");
+    const searchInp = document.getElementById("search");
+
+    const btnSave   = document.getElementById("btnSave");
+    const btnDelete = document.getElementById("btnDelete");
+
+    // Excel UI
+    const btnLoadExcel = document.getElementById("btnLoadExcel");
+    const btnClearExcel = document.getElementById("btnClearExcel");
+    const excelFile = document.getElementById("excelFile");
+    const excelBadge = document.getElementById("excelBadge");
+    const excelControls = document.getElementById("excelControls");
+    const excelSheetSel = document.getElementById("excelSheet");
+    const excelZoom = document.getElementById("excelZoom");
+    const excelZoomLabel = document.getElementById("excelZoomLabel");
+    const selExcelFit = document.getElementById("selExcelFit");
+    const inpExcelOffsetXmm = document.getElementById("inpExcelOffsetXmm");
+    const inpExcelOffsetYmm = document.getElementById("inpExcelOffsetYmm");
+    const btnExcelAutoCenter = document.getElementById("btnExcelAutoCenter");
+
+    const excelRenderHost = document.getElementById("excelRenderHost");
+    const formNormal = document.getElementById("formNormal");
+
+    // Tamaño etiqueta (cm) - se usa en OUTER/INNER (si quieres) y en EXCEL (principal)
+    const inpWcm = document.getElementById("f_labelWcm");
+    const inpHcm = document.getElementById("f_labelHcm");
+    const chkKeepRatio = document.getElementById("chkKeepRatio");
+    const chkPrintAsLabel = document.getElementById("chkPrintAsLabel");
+    const btnApplySize = document.getElementById("btnApplySize");
+    const btnResetSize = document.getElementById("btnResetSize");
+    const dynPageStyle = document.getElementById("dynPageStyle");
+
+    // Form fields (OUTER/INNER)
+    const f = {
+      size: document.getElementById("f_size"),
+      lotNo: document.getElementById("f_lotNo"),
+      productionDate: document.getElementById("f_prodDate"),
+      netWeightLine: document.getElementById("f_netWeight"),
+      producerAddress: document.getElementById("f_producerAddress"),
+      factoryRegNo: document.getElementById("f_factoryRegNo"),
+      coldStorageAddress: document.getElementById("f_coldStorage"),
+      factoryRegChina: document.getElementById("f_factoryRegChina"),
+      importerName: document.getElementById("f_importerName"),
+      importerAddress: document.getElementById("f_importerAddress"),
+      importerPhone: document.getElementById("f_importerPhone"),
+      secuencial: document.getElementById("f_secuencial"),
+    };
+
+    // ===== Helpers =====
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    function setStatus(msg){
+      statusLine.textContent = msg || "—";
+    }
+
+    function setDocPill(){
+      docPill.textContent = currentDocId ? ("ID: " + currentDocId.slice(0,8) + "…") : "Nuevo";
+    }
+
+    function setWriteUI(){
+      btnSave.disabled = !canWrite;
+      btnDelete.disabled = !canWrite || !currentDocId;
+    }
+
+    // ===== Tabs (OUTER/INNER/EXCEL) =====
+    function setTpl(tpl){
+      currentTpl = tpl;
+
+      document.getElementById("tabOuter").classList.toggle("active", tpl==="OUTER");
+      document.getElementById("tabInner").classList.toggle("active", tpl==="INNER");
+      document.getElementById("tabExcel").classList.toggle("active", tpl==="EXCEL");
+
+      tplOuter.style.display = (tpl==="OUTER") ? "" : "none";
+      tplInner.style.display = (tpl==="INNER") ? "" : "none";
+      tplExcel.style.display = (tpl==="EXCEL") ? "" : "none";
+
+      tplPill.textContent = tpl;
+
+      // Excel controls
+      excelControls.style.display = (tpl==="EXCEL") ? "" : "none";
+      formNormal.style.display = (tpl==="EXCEL") ? "none" : "";
+
+      // si cambia a excel, re-aplica zoom y size
+      if(tpl==="EXCEL"){
+        applyExcelZoom();
+        applyLabelSize();
+      }else{
+        // en modo normal, dejamos la etiqueta como estaba (padding normal)
+        if(!(getSizeInputs().wcm>0 && getSizeInputs().hcm>0)){
+          labelBox.style.padding = "10px";
+          labelBox.style.overflow = "visible";
+          labelStage.style.transform = "none";
+          labelStage.style.position = "relative";
+          labelStage.style.left = "";
+          labelStage.style.top  = "";
+        }
+      }
+    }
+
+    function loadDefaults(tpl){
+      const d = DEFAULTS[tpl] || {};
+      f.size.value = d.size || "";
+      f.productionDate.value = d.productionDate || "";
+      f.lotNo.value = d.lotNo || "";
+      f.secuencial.value = d.secuencial || "";
+      f.producerAddress.value = d.producerAddress || "";
+      f.factoryRegNo.value = d.factoryRegNo || "";
+      f.coldStorageAddress.value = d.coldStorageAddress || "";
+      f.factoryRegChina.value = d.factoryRegChina || "";
+      f.importerName.value = d.importerName || "";
+      f.importerAddress.value = d.importerAddress || "";
+      f.importerPhone.value = d.importerPhone || "";
+      f.netWeightLine.value = d.netWeightLine || "";
+      setStatus("Plantilla cargada: " + tpl);
+    }
+
+    function newDoc(){
+      currentDocId = null;
+      setDocPill();
+      setWriteUI();
+      if(currentTpl === "EXCEL"){
+        setStatus("Modo EXCEL: listo.");
+      }else{
+        loadDefaults(currentTpl);
+      }
+    }
+
+    function collectData(){
+      return {
+        template: currentTpl,
+        size: f.size.value.trim(),
+        productionDate: f.productionDate.value.trim(),
+        lotNo: f.lotNo.value.trim(),
+        secuencial: f.secuencial.value.trim(),
+        producerAddress: f.producerAddress.value.trim(),
+        factoryRegNo: f.factoryRegNo.value.trim(),
+        coldStorageAddress: f.coldStorageAddress.value.trim(),
+        factoryRegChina: f.factoryRegChina.value.trim(),
+        importerName: f.importerName.value.trim(),
+        importerAddress: f.importerAddress.value.trim(),
+        importerPhone: f.importerPhone.value.trim(),
+        netWeightLine: f.netWeightLine.value.trim(),
+      };
+    }
+
+    // ==========================
+    // Tamaño etiqueta (cm)
+    // ==========================
+    function getSizeInputs(){
+      const w = parseFloat((inpWcm.value || "").toString().replace(",", "."));
+      const h = parseFloat((inpHcm.value || "").toString().replace(",", "."));
+      return { wcm: isFinite(w) ? w : 0, hcm: isFinite(h) ? h : 0 };
+    }
+
+    function persistSize(){
+      try{
+        const {wcm,hcm} = getSizeInputs();
+        const payload = {
+          wcm, hcm,
+          keep: !!chkKeepRatio.checked,
+          printAsLabel: !!chkPrintAsLabel.checked,
+          excelFit: (selExcelFit && selExcelFit.value) ? selExcelFit.value : "contain",
+          excelOffXmm: parseFloat(inpExcelOffsetXmm?.value || "0") || 0,
+          excelOffYmm: parseFloat(inpExcelOffsetYmm?.value || "0") || 0
+        };
+        localStorage.setItem("DX_LABEL_SIZE_CM", JSON.stringify(payload));
+      }catch(e){}
+    }
+
+    function restoreSize(){
+      try{
+        const raw = localStorage.getItem("DX_LABEL_SIZE_CM");
+        if(!raw) return;
+        const p = JSON.parse(raw);
+        if(p && typeof p === "object"){
+          if(p.wcm) inpWcm.value = p.wcm;
+          if(p.hcm) inpHcm.value = p.hcm;
+          chkKeepRatio.checked = (p.keep !== false);
+          chkPrintAsLabel.checked = (p.printAsLabel !== false);
+
+          if(selExcelFit && p.excelFit) selExcelFit.value = p.excelFit;
+          if(inpExcelOffsetXmm && (p.excelOffXmm !== undefined)) inpExcelOffsetXmm.value = String(p.excelOffXmm);
+          if(inpExcelOffsetYmm && (p.excelOffYmm !== undefined)) inpExcelOffsetYmm.value = String(p.excelOffYmm);
+        }
+      }catch(e){}
+    }
+
+    function updateDynPageStyle(){
+      const {wcm,hcm} = getSizeInputs();
+      const wantLabel = chkPrintAsLabel.checked && wcm>0 && hcm>0;
+
+      if(!dynPageStyle) return;
+
+      if(wantLabel){
+        dynPageStyle.textContent = `
+@page{ size:${wcm}cm ${hcm}cm; margin:0; }
+@media print{
+  html, body{
+    width:${wcm}cm; height:${hcm}cm;
+    margin:0 !important; padding:0 !important;
+    background:#fff !important;
+  }
+  .wrap, .grid2, .card, .previewWrap, .labelCanvas{
+    margin:0 !important; padding:0 !important;
+    border:none !important; background:#fff !important;
+  }
+  #labelBox{
+    width:${wcm}cm !important;
+    height:${hcm}cm !important;
+    padding:0 !important;
+    border:1px solid #000 !important;
+    background:#fff !important;
+    position:fixed !important;
+    left:0 !important;
+    top:0 !important;
+    overflow:hidden !important;
+  }
+}`;
+      }else{
+        dynPageStyle.textContent = "";
+      }
+    }
+
+    function applyLabelSize(){
+      const {wcm,hcm} = getSizeInputs();
+
+      // RESET si no hay medidas
+      if(!(wcm>0 && hcm>0)){
+        labelBox.style.width = "";
+        labelBox.style.height = "";
+        labelBox.style.padding = "10px";
+        labelBox.style.overflow = "visible";
+
+        labelStage.style.transform = "none";
+        labelStage.style.position = "relative";
+        labelStage.style.left = "";
+        labelStage.style.top  = "";
+
+        persistSize();
+        updateDynPageStyle();
+        return;
+      }
+
+      // Marco en cm
+      labelBox.style.width  = wcm + "cm";
+      labelBox.style.height = hcm + "cm";
+      labelBox.style.padding = "0";
+      labelBox.style.overflow = "hidden";
+
+      // Mide y escala labelStage para encajar
+      labelStage.style.transform = "none";
+      labelStage.style.position = "absolute";
+      labelStage.style.left = "0px";
+      labelStage.style.top  = "0px";
+
+      const targetRect = labelBox.getBoundingClientRect();
+      const contentRect = labelStage.getBoundingClientRect();
+
+      const targetWpx = Math.max(1, targetRect.width);
+      const targetHpx = Math.max(1, targetRect.height);
+
+      const contentWpx = Math.max(1, contentRect.width);
+      const contentHpx = Math.max(1, contentRect.height);
+
+      const scaleX = targetWpx / contentWpx;
+      const scaleY = targetHpx / contentHpx;
+
+      // Modo de ajuste:
+      // - Normal (OUTER/INNER): usa "Mantener proporción"
+      // - EXCEL: permite CONTENER / CUBRIR / ESTIRAR + desplazamientos en mm
+      const isExcel = (currentTpl === "EXCEL" && excelLoaded && excelHost);
+
+      let sx = scaleX, sy = scaleY;
+
+      if(isExcel){
+        const mode = (selExcelFit && selExcelFit.value) ? selExcelFit.value : "contain";
+        if(mode === "contain"){
+          const s = Math.min(scaleX, scaleY);
+          sx = s; sy = s;
+        }else if(mode === "cover"){
+          const s = Math.max(scaleX, scaleY);
+          sx = s; sy = s;
+        }else if(mode === "stretch"){
+          sx = scaleX; sy = scaleY;
+        }else if(mode === "width"){
+          sx = scaleX; sy = scaleX;
+        }else if(mode === "height"){
+          sx = scaleY; sy = scaleY;
+        }
+      }else{
+        if(chkKeepRatio && chkKeepRatio.checked){
+          const s = Math.min(scaleX, scaleY);
+          sx = s; sy = s;
+        }
+      }
+
+      labelStage.style.transformOrigin = "top left";
+      labelStage.style.transform = `scale(${sx}, ${sy})`;
+
+      const stageW = contentWpx * sx;
+      const stageH = contentHpx * sy;
+
+      let left = (targetWpx - stageW) / 2;
+      let top  = (targetHpx - stageH) / 2;
+
+      if(isExcel){
+        const mmToPx = 96 / 25.4;
+        const offXmm = parseFloat(inpExcelOffsetXmm?.value || "0") || 0;
+        const offYmm = parseFloat(inpExcelOffsetYmm?.value || "0") || 0;
+        left += offXmm * mmToPx;
+        top  += offYmm * mmToPx;
+      }
+
+      labelStage.style.left = left + "px";
+      labelStage.style.top  = top + "px";
+
+      persistSize();
+      updateDynPageStyle();
+    }
+
+    // ==========================
+    // Excel Renderer (ExcelJS)
+    // ==========================
+    function argbToCss(argb){
+      if(!argb) return "";
+      const a = argb.length === 8 ? argb.slice(0,2) : "FF";
+      const r = argb.length === 8 ? argb.slice(2,4) : argb.slice(0,2);
+      const g = argb.length === 8 ? argb.slice(4,6) : argb.slice(2,4);
+      const b = argb.length === 8 ? argb.slice(6,8) : argb.slice(4,6);
+      const alpha = parseInt(a,16)/255;
+      return `rgba(${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)},${alpha.toFixed(3)})`;
+    }
+
+    function borderCss(side){
+      if(!side) return "";
+      const style = (side.style || "").toLowerCase();
+      const col = side.color ? (side.color.argb ? argbToCss(side.color.argb) : "") : "";
+      let w = 1;
+      if(style === "thin") w = 1;
+      else if(style === "medium") w = 2;
+      else if(style === "thick") w = 3;
+      else if(style === "hair") w = 1;
+      else if(style === "double") w = 3;
+      else if(style === "dotted") w = 1;
+      else if(style === "dashed") w = 1;
+
+      const cssStyle =
+        (style === "dotted") ? "dotted" :
+        (style === "dashed") ? "dashed" :
+        (style === "double") ? "double" : "solid";
+
+      return `${w}px ${cssStyle} ${col || "#000"}`;
+    }
+
+    function colWidthToPx(excelWidth){
+      // Aproximación estable para Excel -> px
+      // Excel width "characters" ~ px = w*7 + 5 (común en 96dpi)
+      const w = (excelWidth || 8.43);
+      return Math.max(1, Math.round(w * 7 + 5));
+    }
+    function rowHeightToPx(points){
+      const pt = (points || 15);
+      return Math.max(1, Math.round(pt * (96/72)));
+    }
+
+    function getCellDisplayText(cell){
+      if(!cell) return "";
+      // ExcelJS ya calcula cell.text (incluye formato)
+      if(cell.text != null && cell.text !== "") return String(cell.text);
+      const v = cell.value;
+      if(v == null) return "";
+      if(typeof v === "object"){
+        if(v.richText) return v.richText.map(x => x.text).join("");
+        if(v.hyperlink && v.text) return v.text;
+        if(v.formula && v.result != null) return String(v.result);
+        if(v.result != null) return String(v.result);
+        if(v.text != null) return String(v.text);
+      }
+      return String(v);
+    }
+
+    function clearExcelRender(){
+      excelRenderHost.innerHTML = "";
+      excelWb = null;
+      excelActiveSheetName = null;
+      excelLoaded = false;
+      excelHost = null;
+
+      excelSheetSel.innerHTML = "";
+      excelBadge.style.display = "none";
+      btnClearExcel.style.display = "none";
+
+      setStatus("Excel removido.");
+    }
+
+    function applyExcelZoom(){
+      const z = parseInt(excelZoom.value || "100", 10);
+      excelZoomLabel.textContent = z + "%";
+      // Zoom SOLO afecta el render (no el marco cm)
+      // Se aplica como scale adicional al labelStage
+      // Para evitar mezclar con applyLabelSize(), hacemos un wrapper interno:
+      const stage = document.getElementById("excelStageInner");
+      if(stage){
+        stage.style.transformOrigin = "top left";
+        stage.style.transform = `scale(${Math.max(0.25, z/100)})`;
+      }
+    }
+
+    async function renderExcelSheet(sheetName){
+      if(!excelWb) return;
+      const ws = excelWb.getWorksheet(sheetName);
+      if(!ws){
+        setStatus("No se pudo abrir la hoja: " + sheetName);
+        return;
+      }
+
+      // Limpia host
+      excelRenderHost.innerHTML = "";
+
+      // Wrapper interno para zoom (no confundir con applyLabelSize)
+      const inner = document.createElement("div");
+      inner.id = "excelStageInner";
+      inner.style.position = "relative";
+      inner.style.display = "inline-block";
+      inner.style.background = "#fff";
+      excelRenderHost.appendChild(inner);
+
+      // Dimensiones
+      const dim = ws.dimensions; // {top,left,bottom,right}
+      const top = dim.top || 1, left = dim.left || 1, bottom = dim.bottom || 1, right = dim.right || 1;
+
+      // Column widths px
+      const colPx = [];
+      colPx[0] = 0;
+      for(let c=left; c<=right; c++){
+        const col = ws.getColumn(c);
+        const w = col && col.width ? col.width : 8.43;
+        colPx[c] = colWidthToPx(w);
+      }
+
+      // Row heights px
+      const rowPx = [];
+      rowPx[0] = 0;
+      for(let r=top; r<=bottom; r++){
+        const row = ws.getRow(r);
+        const h = row && row.height ? row.height : 15;
+        rowPx[r] = rowHeightToPx(h);
+      }
+
+      // Prefix sums for absolute positioning (images)
+      const x = {};
+      let acc = 0;
+      for(let c=left; c<=right; c++){ x[c]=acc; acc += colPx[c]; }
+      const totalW = acc;
+
+      const y = {};
+      let accY = 0;
+      for(let r=top; r<=bottom; r++){ y[r]=accY; accY += rowPx[r]; }
+      const totalH = accY;
+
+      // Build merges map
+      const skip = new Set();
+      const mergeMap = new Map(); // key "r,c" -> {rowspan,colspan}
+      (ws.model.merges || []).forEach(addr => {
+        // addr like "C7:E7"
+        const m = addr.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/);
+        if(!m) return;
+        const c1 = ExcelJS.utils ? ExcelJS.utils.colCache.l2n(m[1]) : colLetterToNumber(m[1]);
+        const r1 = parseInt(m[2],10);
+        const c2 = ExcelJS.utils ? ExcelJS.utils.colCache.l2n(m[3]) : colLetterToNumber(m[3]);
+        const r2 = parseInt(m[4],10);
+        const rs = (r2-r1+1);
+        const cs = (c2-c1+1);
+        mergeMap.set(r1 + "," + c1, {rowspan:rs, colspan:cs});
+        for(let rr=r1; rr<=r2; rr++){
+          for(let cc=c1; cc<=c2; cc++){
+            if(!(rr===r1 && cc===c1)) skip.add(rr + "," + cc);
+          }
+        }
+      });
+
+      function colLetterToNumber(letter){
+        let n=0;
+        for(let i=0;i<letter.length;i++){
+          n = n*26 + (letter.charCodeAt(i)-64);
+        }
+        return n;
+      }
+
+      // Create table
+      const table = document.createElement("table");
+      table.className = "excelTable";
+      table.style.width = totalW + "px";
+
+      // colgroup
+      const colgroup = document.createElement("colgroup");
+      for(let c=left; c<=right; c++){
+        const col = document.createElement("col");
+        col.style.width = colPx[c] + "px";
+        colgroup.appendChild(col);
+      }
+      table.appendChild(colgroup);
+
+      const tbody = document.createElement("tbody");
+
+      for(let r=top; r<=bottom; r++){
+        const tr = document.createElement("tr");
+        tr.style.height = rowPx[r] + "px";
+
+        for(let c=left; c<=right; c++){
+          const key = r + "," + c;
+          if(skip.has(key)) continue;
+
+          const td = document.createElement("td");
+
+          // merges
+          const m = mergeMap.get(key);
+          if(m){
+            td.rowSpan = m.rowspan;
+            td.colSpan = m.colspan;
+            // calcula width/height combinados
+            let wSum=0; for(let cc=c; cc<c+m.colspan; cc++) wSum += colPx[cc];
+            let hSum=0; for(let rr=r; rr<r+m.rowspan; rr++) hSum += rowPx[rr];
+            td.style.width = wSum + "px";
+            td.style.height = hSum + "px";
+          } else {
+            td.style.width = colPx[c] + "px";
+            td.style.height = rowPx[r] + "px";
+          }
+
+          const cell = ws.getCell(r,c);
+
+          // value
+          const text = getCellDisplayText(cell);
+
+          // style defaults
+          const st = cell.style || {};
+          const font = st.font || {};
+          const align = st.alignment || {};
+          const fill = st.fill || {};
+          const border = st.border || {};
+
+          // Apply fill (solid)
+          if(fill && fill.type === "pattern" && fill.pattern === "solid" && fill.fgColor && fill.fgColor.argb){
+            td.style.background = argbToCss(fill.fgColor.argb);
+          } else {
+            td.style.background = "transparent";
+          }
+
+          // Font
+          td.style.fontFamily = font.name ? font.name : "Arial";
+          td.style.fontSize = (font.size ? font.size : 11) + "px";
+          td.style.fontWeight = font.bold ? "700" : "400";
+          td.style.fontStyle = font.italic ? "italic" : "normal";
+          td.style.textDecoration = font.underline ? "underline" : "none";
+          if(font.color && font.color.argb){
+            td.style.color = argbToCss(font.color.argb);
+          } else {
+            td.style.color = "#000";
+          }
+
+          // Alignment
+          const h = (align.horizontal || "left").toLowerCase();
+          const v = (align.vertical || "middle").toLowerCase();
+          td.style.textAlign = (h === "centerContinuous") ? "center" : h;
+          td.style.verticalAlign = (v === "center") ? "middle" : v;
+          td.style.whiteSpace = align.wrapText ? "pre-wrap" : "pre";
+          td.style.paddingLeft = "2px";
+          td.style.paddingRight = "2px";
+
+          // Borders
+          if(border.left)   td.style.borderLeft = borderCss(border.left);
+          if(border.right)  td.style.borderRight = borderCss(border.right);
+          if(border.top)    td.style.borderTop = borderCss(border.top);
+          if(border.bottom) td.style.borderBottom = borderCss(border.bottom);
+
+          // Content
+          // Usa div para controlar el line-height
+          const div = document.createElement("div");
+          div.style.lineHeight = "1.15";
+          div.innerHTML = escapeHtml(text).replaceAll("\n","<br>");
+          td.appendChild(div);
+
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      inner.appendChild(table);
+
+      // Render images
+      try{
+        const images = ws.getImages(); // [{imageId, range}]
+        for(const it of images){
+          const img = excelWb.getImage(it.imageId);
+          if(!img || !img.buffer) continue;
+
+          const mime = img.extension === "jpeg" ? "image/jpeg" :
+                       img.extension === "jpg" ? "image/jpeg" :
+                       img.extension === "png" ? "image/png" : "application/octet-stream";
+
+          const b64 = arrayBufferToBase64(img.buffer);
+          const src = `data:${mime};base64,${b64}`;
+
+          const el = document.createElement("img");
+          el.className = "excelImg";
+          el.src = src;
+
+          // Posición (col/row en 0-based, ExcelJS tl.col/row son 0-based)
+          const tl = it.range.tl;
+          const br = it.range.br;
+
+          // Convertir a 1-based para nuestros sums
+          const tlCol = (tl.col || 0) + 1;
+          const tlRow = (tl.row || 0) + 1;
+          const brCol = (br.col || 0) + 1;
+          const brRow = (br.row || 0) + 1;
+
+          const leftPx = (x[tlCol] ?? 0) + (tl.colOff ? (tl.colOff/9525) : 0);
+          const topPx  = (y[tlRow] ?? 0) + (tl.rowOff ? (tl.rowOff/9525) : 0);
+
+          const rightPx = (x[brCol] ?? totalW) + (br.colOff ? (br.colOff/9525) : 0);
+          const bottomPx= (y[brRow] ?? totalH) + (br.rowOff ? (br.rowOff/9525) : 0);
+
+          const wPx = Math.max(1, rightPx - leftPx);
+          const hPx = Math.max(1, bottomPx - topPx);
+
+          el.style.left = leftPx + "px";
+          el.style.top  = topPx + "px";
+          el.style.width = wPx + "px";
+          el.style.height = hPx + "px";
+
+          inner.appendChild(el);
+        }
+      }catch(e){
+        console.warn("No se pudieron dibujar imágenes:", e);
+      }
+
+      applyExcelZoom();
+      setStatus("Excel renderizado: " + sheetName);
+      // Asegura que el encaje por cm (si está activo) se recalcula
+      setTimeout(() => { try{ applyLabelSize(); }catch(_){} }, 0);
+    }
+
+    function arrayBufferToBase64(buffer){
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      const chunk = 0x8000;
+      for(let i=0;i<bytes.length;i+=chunk){
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunk));
+      }
+      return btoa(binary);
+    }
+
+    async function loadExcelFile(file){
+      if(!file) return;
+
+      const name = file.name || "excel";
+      const ext = name.toLowerCase().split(".").pop();
+
+      if(ext === "xls"){
+        alert("Este archivo es .XLS (formato antiguo). Para renderizar con estilo + imágenes, guárdalo como .XLSX y vuelve a subirlo.");
+        return;
+      }
+
+      if(ext !== "xlsx"){
+        alert("Solo se admite .XLSX (recomendado) para render fiel.");
+        return;
+      }
+
+      try{
+        const buf = await file.arrayBuffer();
+    excelFileBuf = buf;
+    excelFileMeta = { name: file.name || 'label.xlsx', type: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', size: file.size || null };
+    excelStoragePath = null; excelDownloadURL = null;
+        const wb = new ExcelJS.Workbook();
+        // Importante: exceljs usa JSZip (ya incluido)
+        await wb.xlsx.load(buf);
+
+        excelWb = wb;
+
+        // Poblar selector de hojas
+        excelSheetSel.innerHTML = "";
+        wb.worksheets.forEach(ws => {
+          const opt = document.createElement("option");
+          opt.value = ws.name;
+          opt.textContent = ws.name;
+          excelSheetSel.appendChild(opt);
+        });
+
+        excelActiveSheetName = (wb.worksheets[0] ? wb.worksheets[0].name : null);
+        if(excelActiveSheetName){
+          excelSheetSel.value = excelActiveSheetName;
+        }
+        excelLoaded = true;
+        excelHost = document.getElementById('excelRenderHost');
+
+        excelBadge.textContent = "Excel: " + name;
+        excelBadge.style.display = "";
+        btnClearExcel.style.display = "";
+        setStatus("Excel cargado. Renderizando…");
+
+        // Cambia a modo EXCEL automáticamente
+        setTpl("EXCEL");
+
+        await renderExcelSheet(excelActiveSheetName);
+      }catch(e){
+        console.error(e);
+        alert("No se pudo leer el Excel: " + (e?.message || e));
+      }
+    }
+
+    // ==========================
+    // Login
+    // ==========================
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      loginErr.style.display="none";
+      const email = document.getElementById("email").value.trim();
+      const pass  = document.getElementById("pass").value;
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+      } catch (e) {
+        loginErr.textContent = (e && e.message) ? e.message : "Error de login.";
+        loginErr.style.display="block";
+      }
+    });
+
+    document.getElementById("btnDemo").addEventListener("click", () => {
+      loginView.style.display = "none";
+      appView.style.display = "";
+      userBadge.textContent = "MODO DEMO (sin guardar)";
+      roleBadge.textContent = "Solo vista";
+      dotConn.classList.add("warn");
+      canWrite = false;
+      setWriteUI();
+      newDoc();
+      rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75;padding:8px">Modo demo: inicia sesión para ver/guardar en Firestore.</td></tr>';
+      setStatus("Modo demo activo (puedes imprimir/exportar PNG/PDF).");
+    });
+
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+      try{ await auth.signOut(); }catch(e){}
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      if(!user){
+        appView.style.display="none";
+        loginView.style.display="";
+        document.getElementById("email").value="";
+        document.getElementById("pass").value="";
+        rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75;padding:8px">Inicia sesión para cargar desde Firestore…</td></tr>';
+        return;
+      }
+
+      loginView.style.display="none";
+      appView.style.display="";
+
+      const email = (user.email || "").toLowerCase();
+      userBadge.textContent = email || "Usuario";
+      canWrite = EDITORS.has(email);
+      roleBadge.textContent = canWrite ? "EDITOR (guardar permitido)" : "Solo vista";
+      dotConn.classList.toggle("warn", !canWrite);
+      dotConn.classList.toggle("bad", false);
+
+      setWriteUI();
+      newDoc();
+      await loadList();
+      setStatus("Conectado. Listo para generar etiquetas.");
+    });
+
+    // ==========================
+    // Tabs
+    // ==========================
+    document.getElementById("tabOuter").addEventListener("click", () => setTpl("OUTER"));
+    document.getElementById("tabInner").addEventListener("click", () => setTpl("INNER"));
+    document.getElementById("tabExcel").addEventListener("click", () => {
+      setTpl("EXCEL");
+      if(!excelWb){
+        setStatus("Modo EXCEL: presiona INSERTAR EXCEL.");
+      }
+    });
+
+    // Live updates (solo OUTER/INNER)
+    Object.values(f).forEach(el => {
+      el.addEventListener("input", () => {
+        // Aquí iría tu renderPreview original para dyn fields.
+        // En este build, tu plantilla OUTER/INNER de ejemplo no tiene .dyn.
+      });
+    });
+
+    // ==========================
+    // Excel UI events
+    // ==========================
+    btnLoadExcel.addEventListener("click", () => excelFile.click());
+    excelFile.addEventListener("change", async () => {
+      const file = excelFile.files && excelFile.files[0];
+      await loadExcelFile(file);
+      excelFile.value = ""; // permite re-cargar el mismo archivo
+    });
+
+    btnClearExcel.addEventListener("click", () => {
+      clearExcelRender();
+      setTpl("OUTER");
+    });
+
+    excelSheetSel.addEventListener("change", async () => {
+      const name = excelSheetSel.value;
+      excelActiveSheetName = name;
+      await renderExcelSheet(name);
+    });
+
+    excelZoom.addEventListener("input", () => {
+      applyExcelZoom();
+    });
+
+    // Ajuste / desplazamiento EXCEL
+    selExcelFit?.addEventListener("change", () => { applyLabelSize(); persistSize(); });
+    inpExcelOffsetXmm?.addEventListener("input", () => { applyLabelSize(); persistSize(); });
+    inpExcelOffsetYmm?.addEventListener("input", () => { applyLabelSize(); persistSize(); });
+
+    btnExcelAutoCenter?.addEventListener("click", () => {
+      inpExcelOffsetXmm.value = 0;
+      inpExcelOffsetYmm.value = 0;
+      applyLabelSize();
+      persistSize();
+      setStatus("Excel centrado automáticamente.");
+    });
+
+    // Tamaño etiqueta
+    restoreSize();
+    btnApplySize.addEventListener("click", () => applyLabelSize());
+    btnResetSize.addEventListener("click", () => {
+      inpWcm.value = "";
+      inpHcm.value = "";
+      chkKeepRatio.checked = true;
+      applyLabelSize();
+    });
+    inpWcm.addEventListener("input", () => applyLabelSize());
+    inpHcm.addEventListener("input", () => applyLabelSize());
+    chkKeepRatio.addEventListener("change", () => applyLabelSize());
+    chkPrintAsLabel.addEventListener("change", () => updateDynPageStyle());
+
+    // Antes de imprimir, recalcula tamaño
+    window.addEventListener("beforeprint", () => {
+      applyLabelSize();
+    });
+
+    // ==========================
+    // Export PNG/PDF (usa labelBox)
+    // ==========================
+    document.getElementById("btnPrint").addEventListener("click", async () => {
+      await exportPdfExact();
+    });
+
+    document.getElementById("btnPng").addEventListener("click", async () => {
+      const target = document.getElementById("labelBox");
+      try {
+        const canvas = await html2canvas(target, {scale: 2, backgroundColor:"#ffffff", useCORS:true});
+        const a = document.createElement("a");
+        a.download = `DX_LABEL_${currentTpl}_${Date.now()}.png`;
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+        setStatus("PNG exportado.");
+      } catch (e) {
+        alert("No se pudo exportar PNG: " + (e?.message || e));
+      }
+    });
+
+    
+      // ===============================
+      // ZPL (Zebra) export / send
+      // ===============================
+      const btnZpl = document.getElementById("btnZpl");
+      const btnSendZebra = document.getElementById("btnSendZebra");
+
+      function cmToIn(cm){ return (cm||0)/2.54; }
+
+      async function renderLabelCanvasAtDots(widthDots, heightDots){
+        const label = document.getElementById("labelBox");
+        // capturamos a alta resolución y luego reescalamos a "dots" exactos
+        const raw = await html2canvas(label, { backgroundColor: "#ffffff", scale: Math.max(2, (window.devicePixelRatio||1)*2), useCORS: true });
+        const out = document.createElement("canvas");
+        out.width = Math.max(1, Math.floor(widthDots));
+        out.height = Math.max(1, Math.floor(heightDots));
+        const ctx = out.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0,0,out.width,out.height);
+        ctx.drawImage(raw, 0, 0, out.width, out.height);
+        return out;
+      }
+
+      function canvasToZPL_GFA(canvas, opts){
+        const w = canvas.width, h = canvas.height;
+        const threshold = Math.max(0, Math.min(255, (opts.threshold ?? 190)));
+        const invert = !!opts.invert;
+
+        const ctx = canvas.getContext("2d");
+        const data = ctx.getImageData(0,0,w,h).data;
+
+        const bytesPerRow = Math.ceil(w/8);
+        const totalBytes = bytesPerRow * h;
+
+        // Genera HEX por filas
+        let hex = "";
+        for(let y=0; y<h; y++){
+          for(let bx=0; bx<bytesPerRow; bx++){
+            let byte = 0;
+            for(let bit=0; bit<8; bit++){
+              const x = bx*8 + bit;
+              if(x < w){
+                const i = (y*w + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                const lum = (0.299*r + 0.587*g + 0.114*b); // 0..255
+                let black = lum < threshold;
+                if(invert) black = !black;
+                if(black) byte |= (1 << (7-bit));
+              }
+            }
+            hex += byte.toString(16).padStart(2,"0").toUpperCase();
+          }
+        }
+        return { hex, bytesPerRow, totalBytes };
+      }
+
+      async function buildZPLFromCurrentLabel(){
+        const wCm = parseFloat(document.getElementById("labelW").value || "10") || 10;
+        const hCm = parseFloat(document.getElementById("labelH").value || "15") || 15;
+        const dpi = parseInt((document.getElementById("zplDpi")?.value || "300"), 10) || 300;
+
+        const widthDots = Math.round(cmToIn(wCm) * dpi);
+        const heightDots = Math.round(cmToIn(hCm) * dpi);
+
+        const threshold = parseInt((document.getElementById("zplThreshold")?.value || "190"), 10);
+        const invert = !!document.getElementById("zplInvert")?.checked;
+
+        const darkness = Math.max(-30, Math.min(30, parseInt((document.getElementById("zplDarkness")?.value || "0"), 10) || 0));
+        const speed = Math.max(1, Math.min(14, parseInt((document.getElementById("zplSpeed")?.value || "6"), 10) || 6));
+
+        const c = await renderLabelCanvasAtDots(widthDots, heightDots);
+        const {hex, bytesPerRow, totalBytes} = canvasToZPL_GFA(c, {threshold, invert});
+
+        const zpl =
+`^XA
+^PW${widthDots}
+^LL${heightDots}
+^LS0
+^PR${speed}
+^MD${darkness}
+^FO0,0^GFA,${totalBytes},${totalBytes},${bytesPerRow},${hex}^FS
+^XZ`;
+
+        return { zpl, widthDots, heightDots, dpi, wCm, hCm };
+      }
+
+      function downloadText(filename, text){
+        const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 200);
+      }
+
+      btnZpl?.addEventListener("click", async ()=>{
+        try{
+          setStatus("Generando ZPL…");
+          const { zpl, dpi, wCm, hCm } = await buildZPLFromCurrentLabel();
+          const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+          const name = `DX_LABEL_${wCm}x${hCm}cm_${dpi}dpi_${ts}.zpl`;
+          downloadText(name, zpl);
+          setStatus("ZPL exportado (descargado).");
+        }catch(e){
+          console.error(e);
+          setStatus("Error al exportar ZPL.");
+          alert("No se pudo generar ZPL. Revisa consola.");
+        }
+      });
+
+      // Zebra Browser Print (opcional)
+      function loadBrowserPrint(){
+        return new Promise((resolve, reject)=>{
+          if(window.BrowserPrint) return resolve(window.BrowserPrint);
+          const tryLoad = (src, next) => {
+            const s = document.createElement("script");
+            s.src = src;
+            s.onload = ()=> window.BrowserPrint ? resolve(window.BrowserPrint) : (next ? next() : reject(new Error("BrowserPrint no disponible")));
+            s.onerror = ()=> (next ? next() : reject(new Error("No se pudo cargar BrowserPrint")));
+            document.head.appendChild(s);
+          };
+          // En páginas HTTPS, a veces el HTTP se bloquea (mixed content). Probamos https primero.
+          tryLoad("https://localhost:9101/BrowserPrint/BrowserPrint.js", ()=> tryLoad("http://localhost:9101/BrowserPrint/BrowserPrint.js", null));
+        });
+      }
+
+      btnSendZebra?.addEventListener("click", async ()=>{
+        try{
+          setStatus("Preparando impresión Zebra…");
+          const { zpl } = await buildZPLFromCurrentLabel();
+
+          // Si estás en GitHub Pages (HTTPS), el envío directo puede bloquearse.
+          const BP = await loadBrowserPrint();
+          BP.getDefaultDevice("printer", (device)=>{
+            if(!device){
+              setStatus("No se encontró impresora Zebra por Browser Print.");
+              alert("No se encontró impresora. Alternativa: usa EXPORTAR ZPL y envíalo con Zebra Setup Utilities.");
+              return;
+            }
+            device.send(zpl, ()=>{
+              setStatus("Enviado a Zebra (ZPL).");
+            }, (err)=>{
+              console.error(err);
+              setStatus("Error enviando a Zebra.");
+              alert("No se pudo enviar por Browser Print. Usa EXPORTAR ZPL.");
+            });
+          }, (err)=>{
+            console.error(err);
+            setStatus("Browser Print no disponible.");
+            alert("Browser Print no disponible (o bloqueado por HTTPS). Usa EXPORTAR ZPL.");
+          });
+
+        }catch(e){
+          console.error(e);
+          setStatus("Error al imprimir en Zebra.");
+          alert("Error al imprimir. Usa EXPORTAR ZPL.");
+        }
+      });
+
+async function exportPdfExact(){
+      const {wcm,hcm} = getSizeInputs();
+      if(!(wcm>0 && hcm>0)){
+        alert("Define ANCHO y ALTO en cm para generar PDF exacto.");
+        return;
+      }
+
+      try{ applyLabelSize(); }catch(e){}
+
+      const target = document.getElementById("labelBox");
+      const scale = 4;
+
+      try{
+        const canvas = await html2canvas(target, {
+          scale,
+          backgroundColor: "#ffffff",
+          useCORS: true
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+
+        const { jsPDF } = window.jspdf;
+        const wmm = wcm * 10;
+        const hmm = hcm * 10;
+
+        const pdf = new jsPDF({
+          orientation: (wmm >= hmm) ? "landscape" : "portrait",
+          unit: "mm",
+          format: [wmm, hmm],
+          compress: true
+        });
+
+        pdf.addImage(imgData, "PNG", 0, 0, wmm, hmm, undefined, "FAST");
+
+        const name = `DX_LABEL_${currentTpl}_${wcm}x${hcm}cm.pdf`;
+        pdf.save(name);
+        setStatus("PDF generado (tamaño exacto).");
+      }catch(e){
+        alert("No se pudo generar el PDF: " + (e?.message || e));
+      }
+    }
+
+    // ==========================
+    // Firestore CRUD (igual a tu lógica original)
+    // ==========================
+    const COL = db.collection("DX_IMPORTER_LABELS");
+    async function saveDoc(){
+      if(!canWrite) return;
+      if(currentTpl === "EXCEL"){
+        alert("En modo EXCEL este build no guarda campos a Firestore (porque no hay mapeo de celdas). Si quieres, te lo armo: guardar el archivo base64 + hoja + tamaños cm + zoom.");
+        return;
+      }
+
+      const user = auth.currentUser;
+      const email = (user?.email || "").toLowerCase();
+      const data = collectData();
+
+      if(!data.lotNo || !data.size){
+        alert("Completa al menos SIZE y LOTE para guardar.");
+        return;
+      }
+
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+
+      try {
+        if(currentDocId){
+          await COL.doc(currentDocId).set({
+            ...data,
+            updatedAt: now,
+            updatedBy: email
+          }, {merge:true});
+          setStatus("Actualizado en Firestore.");
+        } else {
+          const ref = await COL.add({
+            ...data,
+            createdAt: now,
+            createdBy: email,
+            updatedAt: now,
+            updatedBy: email
+          });
+          currentDocId = ref.id;
+          setDocPill();
+          setWriteUI();
+          setStatus("Guardado en Firestore.");
+        }
+        await loadList();
+      } catch (e) {
+        alert("Error guardando: " + (e?.message || e));
+      }
+    }
+
+    async function deleteDoc(){
+      if(!canWrite || !currentDocId) return;
+      if(!confirm("¿Eliminar esta etiqueta?")) return;
+      try {
+        await COL.doc(currentDocId).delete();
+        setStatus("Eliminado.");
+        newDoc();
+        await loadList();
+      } catch (e) {
+        alert("Error eliminando: " + (e?.message || e));
+      }
+    }
+
+    btnSave.addEventListener("click", saveDoc);
+    btnDelete.addEventListener("click", deleteDoc);
+
+    // ===== List & search (igual) =====
+    let cacheList = [];
+
+    function fmtDate(ts){
+      try {
+        if(!ts) return "";
+        const d = ts.toDate ? ts.toDate() : (ts instanceof Date ? ts : null);
+        if(!d) return "";
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        const hh = String(d.getHours()).padStart(2,"0");
+        const mi = String(d.getMinutes()).padStart(2,"0");
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+      } catch {
+        return "";
+      }
+    }
+
+    function matchesSearch(item, q){
+      if(!q) return true;
+      q = q.toLowerCase();
+      const hay = [
+        item.template, item.size, item.lotNo, item.secuencial, item.importerName, item.productionDate, item.importerPhone
+      ].map(x => String(x||"").toLowerCase()).join(" | ");
+      return hay.includes(q);
+    }
+
+    function renderList(){
+      const q = searchInp.value.trim().toLowerCase();
+      const items = cacheList.filter(it => matchesSearch(it, q));
+
+      if(!items.length){
+        rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75;padding:8px">Sin resultados.</td></tr>';
+        return;
+      }
+
+      rowsTbody.innerHTML = items.map(it => {
+        return `
+          <tr>
+            <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10)">${escapeHtml(fmtDate(it.updatedAt) || fmtDate(it.createdAt))}</td>
+            <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10)"><span class="pill">${escapeHtml(it.template || "")}</span></td>
+            <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10)">${escapeHtml(it.size || "")}</td>
+            <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10);font-weight:900">${escapeHtml(it.lotNo || "")}</td>
+            <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10)">${escapeHtml(it.secuencial || "")}</td>
+            <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10)">${escapeHtml(it.importerName || "")}</td>
+            <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,.10)">
+              <div class="actions">
+                <button class="mini" data-act="load" data-id="${it.id}">Cargar</button>
+                <button class="mini" data-act="dup" data-id="${it.id}">Duplicar</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadList(){
+      if(!auth.currentUser) return;
+
+      try {
+        const snap = await COL.orderBy("updatedAt","desc").limit(150).get();
+        cacheList = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+        renderList();
+        dotConn.classList.remove("bad");
+      } catch (e) {
+        try {
+          const snap2 = await COL.orderBy("createdAt","desc").limit(150).get();
+          cacheList = snap2.docs.map(d => ({ id:d.id, ...d.data() }));
+          renderList();
+          dotConn.classList.remove("bad");
+        } catch (e2) {
+          dotConn.classList.add("bad");
+          rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75;padding:8px">No se pudo leer Firestore (revisa permisos / conexión).</td></tr>';
+          console.error(e2);
+        }
+      }
+    }
+
+    document.getElementById("btnRefresh").addEventListener("click", loadList);
+    searchInp.addEventListener("input", renderList);
+
+    rowsTbody.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-act]");
+      if(!btn) return;
+      const act = btn.getAttribute("data-act");
+      const id  = btn.getAttribute("data-id");
+      const item = cacheList.find(x => x.id === id);
+      if(!item) return;
+
+      if(act === "load"){
+        currentDocId = id;
+        setDocPill();
+        setWriteUI();
+        setTpl(item.template || "OUTER");
+        if(currentTpl !== "EXCEL"){
+          f.size.value = item.size || "";
+          f.productionDate.value = item.productionDate || "";
+          f.lotNo.value = item.lotNo || "";
+          f.secuencial.value = item.secuencial || "";
+          f.producerAddress.value = item.producerAddress || "";
+          f.factoryRegNo.value = item.factoryRegNo || "";
+          f.coldStorageAddress.value = item.coldStorageAddress || "";
+          f.factoryRegChina.value = item.factoryRegChina || "";
+          f.importerName.value = item.importerName || "";
+          f.importerAddress.value = item.importerAddress || "";
+          f.importerPhone.value = item.importerPhone || "";
+          f.netWeightLine.value = item.netWeightLine || "";
+        
+        } else {
+          // Cargar Excel guardado (Storage) + aplicar ajustes
+          if(item.excelSettings){
+            $("#numWcm").value = (item.excelSettings.wcm ?? 10);
+            $("#numHcm").value = (item.excelSettings.hcm ?? 15);
+            $("#selExcelFit").value = (item.excelSettings.fit ?? "FIT");
+            $("#numOffX").value = (item.excelSettings.offXmm ?? 0);
+            $("#numOffY").value = (item.excelSettings.offYmm ?? 0);
+            $("#chkKeepRatio").checked = !!item.excelSettings.keepRatio;
+            $("#chkPrintAsLabel").checked = !!item.excelSettings.printAsLabel;
+            $("#chkAutoCenter").checked = !!item.excelSettings.autoCenter;
+            if(item.excelSettings.zebra){
+              $("#zplDpi").value = String(item.excelSettings.zebra.dpi ?? 300);
+              $("#zplDark").value = String(item.excelSettings.zebra.darkness ?? 19);
+              $("#zplSpeed").value = String(item.excelSettings.zebra.speed ?? 6);
+              $("#zplInvert").checked = !!item.excelSettings.zebra.invert;
+            }
+          }
+          excelDesiredSheetName = item.excel?.sheet || null;
+          if(item.excel?.downloadURL){
+            try{
+              await loadExcelFromUrl(item.excel.downloadURL, item.excel?.name || "label.xlsx");
+              setStatus("Documento cargado (EXCEL).");
+            }catch(err){
+              console.error(err);
+              alert("No se pudo cargar el Excel guardado: " + (err?.message || err));
+            }
+          }else{
+            alert("Este registro no tiene Excel asociado.");
+          }
+        }
+        setStatus("Documento cargado.");
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+
+      if(act === "dup"){
+        currentDocId = null;
+        setDocPill();
+        setWriteUI();
+        setTpl(item.template || "OUTER");
+        if(currentTpl !== "EXCEL"){
+          f.size.value = item.size || "";
+          f.productionDate.value = item.productionDate || "";
+          f.lotNo.value = item.lotNo || "";
+          f.secuencial.value = item.secuencial || "";
+          f.producerAddress.value = item.producerAddress || "";
+          f.factoryRegNo.value = item.factoryRegNo || "";
+          f.coldStorageAddress.value = item.coldStorageAddress || "";
+          f.factoryRegChina.value = item.factoryRegChina || "";
+          f.importerName.value = item.importerName || "";
+          f.importerAddress.value = item.importerAddress || "";
+          f.importerPhone.value = item.importerPhone || "";
+          f.netWeightLine.value = item.netWeightLine || "";
+        }
+        setStatus("Duplicado listo. (Presiona GUARDAR para crear uno nuevo).");
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+    });
+
+    // ===== boot =====
+    setTpl("OUTER");
+    newDoc();
+    setWriteUI();
+    updateDynPageStyle();
+    requestAnimationFrame(() => { try{ applyLabelSize(); }catch(e){} });
+  </script>
+</body>
+</html>
