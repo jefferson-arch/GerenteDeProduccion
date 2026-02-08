@@ -1,0 +1,1171 @@
+<!doctype html>
+<!-- DX - Etiquetas Importadores Zebra ZT411 (10x15cm) -->
+<!-- BUILD_DX_LABELS_ZT411 v1.1.1 2026-02-08 -->
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>DX | Etiquetas Importadores (ZT411)</title>
+  <link rel="icon" href="favicon.ico?v=1">
+
+  <style>
+    :root{
+      --navy:#0d2f4f; --blue:#1e88e5; --green:#2e7d32; --red:#c62828;
+      --gray:#6b7280; --bg:#f6f7fb; --card:#ffffff; --border:#e5e7eb;
+      --shadow: 0 8px 20px rgba(0,0,0,.08);
+      --labelScale: 1;
+      --textScale: 1;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:#111827; }
+    .topbar{ position: sticky; top:0; z-index: 20; background: linear-gradient(90deg, var(--navy), #163e67); color:#fff; padding: 12px 16px;
+      display:flex; align-items:center; justify-content:space-between; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    .topbar .title{ font-weight: 800; letter-spacing:.2px; }
+    .topbar .meta{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; font-size: 12.5px; }
+    .pill{ background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); padding: 5px 10px; border-radius: 999px; }
+    .btn{ border:1px solid var(--border); background:#fff; padding: 8px 12px; border-radius: 10px; cursor:pointer; font-weight: 700;
+      transition: transform .04s ease, box-shadow .14s ease; }
+    .btn:hover{ box-shadow: 0 10px 20px rgba(0,0,0,.08); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{ background: var(--blue); border-color: #1976d2; color:#fff; }
+    .btn.danger{ background: var(--red); border-color: #b71c1c; color:#fff; }
+    .btn.green{ background: var(--green); border-color: #1b5e20; color:#fff; }
+    .btn.ghost{ background: transparent; color:#fff; border-color: rgba(255,255,255,.28); }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
+
+    .wrap{ max-width: 1320px; margin: 14px auto; padding: 0 12px 24px; }
+    .grid{ display:grid; grid-template-columns: 430px 1fr; gap: 14px; align-items:start; }
+    .card{ background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow:hidden; }
+    .card h3{ margin:0; padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 14px; letter-spacing: .2px;
+      color:#0f172a; background: linear-gradient(180deg, #ffffff, #fbfcff); }
+    .card .content{ padding: 12px 14px; }
+
+    .tabs{ display:flex; gap: 8px; flex-wrap:wrap; padding: 12px 14px; border-bottom:1px solid var(--border); background: #ffffff; }
+    .tab{ border: 1px solid var(--border); background:#fff; padding: 7px 10px; border-radius: 999px; font-size: 12.5px;
+      cursor:pointer; font-weight: 800; user-select:none; }
+    .tab.active{ background: #eaf2ff; border-color: #bcd7ff; color:#0b3a7a; }
+
+    .row{ display:flex; gap: 10px; align-items:center; margin: 10px 0; flex-wrap:wrap; }
+    label{ font-size: 12px; color: var(--gray); font-weight: 800; display:block; margin-bottom: 5px; }
+    input[type="text"], input[type="date"], input[type="number"], select{ width: 100%; padding: 9px 10px; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 14px; outline:none; background:#fff; }
+    input[type="range"]{ width: 100%; }
+    .col{ flex: 1 1 160px; min-width: 160px; }
+
+    .hint{ font-size: 12px; color:#4b5563; line-height: 1.25rem; }
+    .small{ font-size: 11.5px; color:#6b7280; }
+    .hr{ height: 1px; background: var(--border); margin: 12px 0; }
+
+    .previewWrap{ padding: 12px 14px; }
+    .previewHeader{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 10px; }
+    .labelOuter{ width: 100%; min-height: 520px; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(0deg, rgba(0,0,0,.04), rgba(0,0,0,.04)),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0, rgba(0,0,0,.07) 1px, transparent 1px, transparent 10px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.07) 0, rgba(0,0,0,.07) 1px, transparent 1px, transparent 10px);
+      border: 1px dashed #cbd5e1; border-radius: 14px; padding: 16px; overflow:auto; }
+
+    .labelStage{ width: 100mm; height: 150mm; background:#fff; border: 1px solid #111827; box-shadow: 0 18px 40px rgba(0,0,0,.15);
+      transform-origin: top left; transform: scale(var(--labelScale)); }
+
+    #labelSVG{ width: 100%; height: 100%; display:block; }
+    .svgText{ font-family: Arial, Helvetica, sans-serif; font-weight: 700; fill: #000; }
+    .tableTextL{ font-family: Arial, Helvetica, sans-serif; font-weight: 800; fill:#000; }
+    .tableTextR{ font-family: Arial, Helvetica, sans-serif; font-weight: 700; fill:#000; }
+
+    table{ width:100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td{ border-bottom: 1px solid var(--border); padding: 8px 8px; text-align:left; vertical-align:middle; }
+    th{ background:#fbfcff; color:#334155; font-size: 12px; letter-spacing:.2px; position: sticky; top: 0; z-index: 2; }
+    .tableWrap{ max-height: 330px; overflow:auto; border: 1px solid var(--border); border-radius: 12px; }
+
+    .toast{ position: fixed; right: 14px; bottom: 14px; background: #111827; color: #fff; padding: 10px 12px; border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.25); max-width: 360px; font-size: 13px; display:none; z-index: 999; }
+
+    .modalBack{ position: fixed; inset:0; background: rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding: 16px; z-index: 1000; }
+    .modal{ width: min(520px, 100%); background:#fff; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 30px 90px rgba(0,0,0,.35); overflow:hidden; }
+    .modal h2{ margin:0; padding: 14px 16px; background: linear-gradient(90deg, var(--navy), #163e67); color:#fff; font-size: 15px; letter-spacing:.2px; }
+    .modal .body{ padding: 14px 16px; }
+    .modal .footer{ padding: 12px 16px; border-top: 1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; background:#fff; }
+
+    @media print{
+      body{ background:#fff !important; }
+      .topbar, .wrap, .toast, .modalBack{ display:none !important; }
+      #printRoot{ display:block !important; }
+      @page{ size: 100mm 150mm; margin: 0; }
+    }
+    #printRoot{ display:none; }
+
+    @media (max-width: 1020px){ .grid{ grid-template-columns: 1fr; } .labelOuter{ min-height: 420px; } }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="title">DX | Etiquetas Importadores (ZT411 · 10×15 cm)</div>
+    <div class="meta">
+      <span class="pill" id="pillUser">Sin sesión</span>
+      <span class="pill" id="pillRole">Rol: —</span>
+      <button class="btn ghost" id="btnLogout" style="display:none;">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="modalBack" id="loginBack">
+    <div class="modal">
+      <h2>Iniciar sesión</h2>
+      <div class="body">
+        <div class="hint">
+          Acceso permitido solo para:
+          <b>davidballas@oceantreasure.local</b> (Digitador) y
+          <b>jeffersonfigueroa@oceantreasure.local</b> (Administrador).
+        </div>
+        <div class="hr"></div>
+        <div class="row">
+          <div class="col">
+            <label>Email</label>
+            <input id="loginEmail" type="text" placeholder="usuario@oceantreasure.local" autocomplete="username" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label>Contraseña</label>
+            <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="small" style="margin-top:10px;">Si el usuario no está autorizado, el sistema cerrará sesión automáticamente.</div>
+      </div>
+      <div class="footer">
+        <button class="btn primary" id="btnLogin">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card"><div class="tabs" id="tabs"></div></div>
+
+    <div class="grid" style="margin-top:14px;">
+      <div class="card">
+        <h3>Controles de etiqueta</h3>
+        <div class="content">
+
+          <div class="row">
+            <div class="col">
+              <label>Escala del diseño (estirar / encoger)</label>
+              <input id="scaleRange" type="range" min="0.4" max="1.8" step="0.02" value="1" />
+              <div class="row" style="margin-top:8px;">
+                <button class="btn" id="btnScaleDown">−</button>
+                <button class="btn" id="btnScaleUp">+</button>
+                <button class="btn" id="btnScaleFit">Ajustar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label>Tamaño de texto (global)</label>
+              <input id="textRange" type="range" min="0.7" max="1.6" step="0.02" value="1" />
+              <div class="small">Escala textos sin perder nitidez (SVG).</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <div class="col">
+              <label>Secuencial</label>
+              <input id="inSec" type="text" placeholder="00001234" />
+            </div>
+            <div class="col" style="flex:0 0 170px; min-width:170px;">
+              <label>&nbsp;</label>
+              <button class="btn primary" id="btnApplySec">Ingresar secuencial</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label>Lote</label>
+              <input id="inLote" type="text" placeholder="0222" />
+            </div>
+            <div class="col">
+              <label>Fecha</label>
+              <input id="inFecha" type="date" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label>Talla</label>
+              <input id="inTalla" type="text" placeholder="21/25" />
+            </div>
+            <div class="col">
+              <label>Nota (opcional)</label>
+              <input id="inNota" type="text" placeholder="Opcional" />
+            </div>
+          </div>
+
+          <div class="row">
+            <button class="btn green" id="btnSave">Guardar en Firestore</button>
+            <button class="btn" id="btnPDF">PDF (10×15 alta definición)</button>
+            <button class="btn" id="btnPrint">Imprimir (ZT411)</button>
+          </div>
+
+          <div class="small">
+            <b>Calidad:</b> etiqueta en <b>SVG</b> (vectores) para mantener líneas y letras nítidas.
+            PDF a tamaño real <b>100×150 mm</b>.
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" id="templateAdminRow" style="display:none;">
+            <div class="col" style="min-width:240px;">
+              <label>Plantilla (admin)</label>
+              <input id="inTplName" type="text" placeholder="Nombre plantilla (opcional)" />
+              <div class="small">Para NANCY - Dongxiandi Holding ya viene una plantilla precargada desde tu Excel.</div>
+            </div>
+            <div class="col" style="min-width:240px;">
+              <label>Subir fondo (PNG/JPG/SVG → DataURL)</label>
+              <input id="inBgFile" type="file" accept=".png,.jpg,.jpeg,.svg" />
+            </div>
+            <div class="col" style="flex:0 0 210px; min-width:210px;">
+              <label>&nbsp;</label>
+              <button class="btn primary" id="btnSaveTemplate">Guardar plantilla actual</button>
+              <button class="btn" id="btnClearBg">Eliminar fondo</button>
+            </div>
+          </div>
+
+          <div class="row" id="nuevoAdminRow" style="display:none;">
+            <div class="col">
+              <label>Crear nuevo importador (tab "Nuevo")</label>
+              <input id="inNuevoNombre" type="text" placeholder="Ej: NUEVO - Importador X" />
+            </div>
+            <div class="col" style="flex:0 0 210px; min-width:210px;">
+              <label>&nbsp;</label>
+              <button class="btn" id="btnCrearNuevo">Crear pestaña</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Vista previa (tamaño real 10×15 cm)</h3>
+        <div class="previewWrap">
+          <div class="previewHeader">
+            <div class="hint">
+              Importador actual: <b id="lblImporter">—</b><br>
+              <span class="small">Para ZT411: imprime a escala 100% (sin “ajustar a página”).</span>
+            </div>
+            <div class="row" style="margin:0;">
+              <span class="pill" style="background:#eef2ff;border-color:#c7d2fe;color:#1f2937;" id="pillStatus">Listo</span>
+            </div>
+          </div>
+
+          <div class="labelOuter">
+            <div class="labelStage" id="labelStage">
+              <svg id="labelSVG" viewBox="0 0 1000 1500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <clipPath id="clipAll"><rect x="0" y="0" width="1000" height="1500"/></clipPath>
+                </defs>
+
+                <image id="bgImage" x="0" y="0" width="1000" height="1500" preserveAspectRatio="none" href="" style="display:none;" />
+                <rect id="borderRect" x="0" y="0" width="1000" height="1500" fill="none" stroke="#000" stroke-width="8" />
+
+                <!-- Generic layout (hidden when table template is active) -->
+                <g id="genericGroup">
+                  <text id="tImporter" x="40" y="90" class="svgText" font-size="54">IMPORTADOR</text>
+                  <line id="gLine1" x1="40" y1="115" x2="960" y2="115" stroke="#000" stroke-width="6" />
+                  <text id="tSec" x="960" y="70" class="svgText" font-size="46" text-anchor="end">SEC 00000000</text>
+                  <text id="tLote" x="40" y="200" class="svgText" font-size="52">LOTE: —</text>
+                  <text id="tFecha" x="40" y="270" class="svgText" font-size="46">FECHA: —</text>
+                  <text id="tTalla" x="40" y="340" class="svgText" font-size="56">TALLA: —</text>
+                  <text id="tNota" x="40" y="410" class="svgText" font-size="40" opacity="0.9">—</text>
+                  <rect id="gBarcodeBox" x="80" y="520" width="840" height="280" fill="none" stroke="#000" stroke-width="6" />
+                  <text id="gBarcodeText" x="500" y="670" class="svgText" font-size="46" text-anchor="middle">ÁREA CÓDIGO / QR</text>
+                  <line id="gLine2" x1="40" y1="1400" x2="960" y2="1400" stroke="#000" stroke-width="6" />
+                  <text id="tUser" x="40" y="1460" class="svgText" font-size="34">Guardado por: —</text>
+                </g>
+
+                <!-- Table template group (used for NANCY - Dongxiandi Holding) -->
+                <g id="tableGroup" style="display:none;"></g>
+              </svg>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="justify-content:space-between;">
+            <div class="hint">Historial (por importador) · se actualiza al guardar</div>
+            <div class="row" style="margin:0;"><button class="btn" id="btnRefresh">Actualizar</button></div>
+          </div>
+
+          <div class="tableWrap" style="margin-top:8px;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:140px;">Fecha</th>
+                  <th>Secuencial</th>
+                  <th>Lote</th>
+                  <th>Talla</th>
+                  <th>Usuario</th>
+                  <th style="width:220px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="histBody">
+                <tr><td colspan="6" class="small">Inicia sesión para cargar historial.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="small" style="margin-top:10px;">
+            Nota: para máxima seguridad, aplica también reglas de Firestore por rol (admin/digitador) en Firebase Console.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="printRoot">
+    <div style="width:100mm;height:150mm;">
+      <div id="printHost"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- PDF helpers -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+    /************************************************************
+     *  CONFIGURACIÓN FIREBASE (TU CONFIG)
+     ************************************************************/
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    /************************************************************
+     *  ACCESOS / ROLES
+     ************************************************************/
+    const ALLOWED = {
+      digitador: "davidballas@oceantreasure.local",
+      admin: "jeffersonfigueroa@oceantreasure.local",
+    };
+    function getRole(email){
+      if(!email) return null;
+      const e = String(email).toLowerCase();
+      if(e === ALLOWED.admin) return "admin";
+      if(e === ALLOWED.digitador) return "digitador";
+      return null;
+    }
+    function isAllowed(email){ return !!getRole(email); }
+
+    /************************************************************
+     *  IMPORTADORES (pestañas iniciales)
+     ************************************************************/
+    const DEFAULT_IMPORTERS = [
+      { id:"nancy_dongxiandi", name:"NANCY - Dongxiandi Holding" },
+      { id:"nancy_shenzhen_yueshi", name:"NANCY - Shenzhen Yueshi" },
+      { id:"criss_guangdong_hongbao", name:"CRISS - Guangdong Hongbao" },
+      { id:"criss_guang_dong_lvh", name:"CRISS - Guang Dong LvHuan" },
+      { id:"interatlantic", name:"InterAtlantic" },
+      { id:"ancora7", name:"Áncora 7" },
+      { id:"gambalia", name:"Gambalia" },
+      { id:"nuevo", name:"Nuevo" },
+    ];
+
+    /************************************************************
+     *  PLANTILLA PRECARGADA (DESDE TU EXCEL) SOLO PARA:
+     *    NANCY - Dongxiandi Holding
+     ************************************************************/
+    const EMBEDDED_TEMPLATES = {
+      "nancy_dongxiandi": {
+        tplType: "table_outer_v5",
+        rows: [["COMMODITY NAME\n(商品名称):", "FROZEN RAW VANNAMEI SHRIMPS HEAD-LESS SHELL-ON\n冻生去头南美白对虾"], ["SCIENTIFIC NAME\n(学名):", "LITOPENAEUS VANNAMEI\n南美白对虾"], ["INGREDIENTS\n(配料):", "VANNAMEI SHRIMP、WATER、SODIUM METABISULFITE\n(南美白虾、水、焦亚硫酸钠)"], ["SIZE\n(规格):", "{{TALLA}}"], ["PRODUCTION DATE (生产日期):", "{{FECHA_CN}}"], ["SHELF-LIFE  保质期:", "24 MONTHS (24个月)"], ["PRODUCTION LOT NO. (生产批号):", "{{LOTE}}"], ["STORAGE CONDITION \n(贮存条件):", "KEEP FROZEN -18℃ OR BELOW \n零下18度或以下冷冻保存"], ["PRODUCTION METHOD (生产方式):", "AQUACULTURE（养殖）"], ["FARMING AREA \n(养殖区域):", "GUAYAQUIL,ECUADOR\n(瓜亚基尔、厄瓜多尔)"], ["COUNTRY OF ORIGIN\n(原产国):", "ECUADOR\n(厄瓜多尔)"], ["COUNTRY OF DESTINATION\n(目的地):", "THE PEOPLE'S REPUBLIC OF CHINA\n(中华人民共和国)"], ["NAME AND ADDRESS OF PRODUCTION AND\nPROCESSING ENTERPRISES\n(生产加工企业名称和地址):", "OCEANTREASURE S.A. LOTIZACIÓN INDUSTRIAL LAS FERIAS-LOTE DE TERRENO\nNÚMERO 1A-4, MANZANA W PARROQUIA ELOY ALFARO - ECUADOR."], ["FACTORY REG NO\n(注册号):", "65394"], ["NAME AND ADDRESS OF COLD STORAGE\n(冷库名称和地址):", "OCEANTREASURE S.A. LOTIZACIÓN INDUSTRIAL LAS FERIAS-LOTE DE TERRENO\nNÚMERO 1A-4, MANZANA W PARROQUIA ELOY ALFARO - ECUADOR."], ["FACTORY REGISTRATION NO,IN CHINA \n在华工厂注册号:", "CECU18PP2209210007"], ["IMPORTER(进口商):", "懂鲜帝控股（浙江）有限公司"], ["IMPORTER'S ADDRESS(进口商地址):", "浙江省金华市义乌市义亭镇同义路1000 号1栋1楼115室"], ["PHONE OF IMPORTER(进口商联系方式):", "15657629988"], ["NET WEIGHT (净含量) :20千克\n(10x2千克)", ""], ["加工原料，非直接提供给消费者\nTHE PROCESSING RAW MATERIALS ARE NOT DIRECTLY PROVIDED TO CONSUMERS", ""]]
+      }
+    };
+
+    /************************************************************
+     *  UI STATE
+     ************************************************************/
+    let currentUser = null;
+    let currentRole = null;
+    let currentImporterId = DEFAULT_IMPORTERS[0].id;
+    let currentImporterName = DEFAULT_IMPORTERS[0].name;
+
+    let currentTemplate = {
+      bgDataUrl: null,
+      tplType: null,
+      rows: null,
+      version: 1,
+    };
+
+    let labelData = {
+      secuencial: "",
+      lote: "",
+      fecha: "",
+      talla: "",
+      nota: "",
+      savedBy: "",
+    };
+
+    const $ = (id)=>document.getElementById(id);
+
+    function toast(msg, ms=2500){
+      const t = $("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(()=>t.style.display="none", ms);
+    }
+    function setStatus(txt, kind=""){
+      const p = $("pillStatus");
+      p.textContent = txt;
+      if(kind==="ok"){ p.style.background="#dcfce7"; p.style.borderColor="#86efac"; p.style.color="#14532d"; }
+      else if(kind==="warn"){ p.style.background="#fef9c3"; p.style.borderColor="#fde047"; p.style.color="#713f12"; }
+      else if(kind==="bad"){ p.style.background="#fee2e2"; p.style.borderColor="#fecaca"; p.style.color="#7f1d1d"; }
+      else { p.style.background="#eef2ff"; p.style.borderColor="#c7d2fe"; p.style.color="#1f2937"; }
+    }
+
+    function padSec(s){
+      const raw = String(s||"").trim();
+      if(!raw) return "";
+      const digits = raw.replace(/\D/g,"");
+      return digits ? digits.padStart(8,"0") : raw;
+    }
+    function fmtDateISOToES(iso){
+      if(!iso) return "";
+      const [y,m,d] = iso.split("-");
+      if(!y||!m||!d) return iso;
+      return `${d}/${m}/${y}`;
+    }
+    function fmtDateISOToCN(iso){
+      if(!iso) return "";
+      const [y,m,d] = iso.split("-");
+      if(!y||!m||!d) return iso;
+      return `${y} 年 ${m} 月 ${d} 日`;
+    }
+    function normalizeText(s){ return String(s||"").trim(); }
+
+    /************************************************************
+     *  TABS
+     ************************************************************/
+    function renderTabs(extraDynamic=[]){
+      const tabs = $("tabs");
+      tabs.innerHTML = "";
+      const all = [...DEFAULT_IMPORTERS.filter(x=>x.id!=="nuevo"), ...extraDynamic, DEFAULT_IMPORTERS.find(x=>x.id==="nuevo")];
+
+      for(const imp of all){
+        const b = document.createElement("div");
+        b.className = "tab" + (imp.id===currentImporterId ? " active":"");
+        b.textContent = imp.name;
+        b.onclick = ()=>selectImporter(imp.id, imp.name);
+        tabs.appendChild(b);
+      }
+    }
+
+    async function selectImporter(id, name){
+      currentImporterId = id;
+      currentImporterName = name;
+      $("lblImporter").textContent = name;
+      setStatus("Cargando plantilla…");
+      await loadTemplateForImporter();
+      applyInputsToState();
+      renderLabel();
+      if(currentUser) await loadHistory();
+      $("nuevoAdminRow").style.display = (currentRole==="admin" && id==="nuevo") ? "flex" : "none";
+      await loadDynamicImportersAndRenderTabs();
+      setStatus("Listo");
+    }
+
+    /************************************************************
+     *  SVG RENDER
+     ************************************************************/
+    function setGenericVisible(v){
+      $("genericGroup").style.display = v ? "block" : "none";
+      $("tableGroup").style.display = v ? "none" : "block";
+    }
+
+    function applyTextScaleToSvgText(){
+      const ts = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--textScale")) || 1;
+      const applyScale = (el)=>{
+        const x = parseFloat(el.getAttribute("x")||"0");
+        const y = parseFloat(el.getAttribute("y")||"0");
+        el.setAttribute("transform", `translate(${x} ${y}) scale(${ts}) translate(${-x} ${-y})`);
+      };
+      document.querySelectorAll("#labelSVG .svgText").forEach(applyScale);
+    }
+
+    function renderGeneric(){
+      setGenericVisible(true);
+
+      const bg = $("bgImage");
+      if(currentTemplate.bgDataUrl){
+        bg.setAttribute("href", currentTemplate.bgDataUrl);
+        bg.style.display = "block";
+      }else{
+        bg.setAttribute("href", "");
+        bg.style.display = "none";
+      }
+
+      $("tImporter").textContent = currentImporterName || "IMPORTADOR";
+      $("tSec").textContent = labelData.secuencial ? `SEC ${labelData.secuencial}` : "SEC 00000000";
+      $("tLote").textContent  = `LOTE: ${labelData.lote || "—"}`;
+      $("tFecha").textContent = `FECHA: ${labelData.fecha ? fmtDateISOToES(labelData.fecha) : "—"}`;
+      $("tTalla").textContent = `TALLA: ${labelData.talla || "—"}`;
+      $("tNota").textContent  = labelData.nota ? labelData.nota : "—";
+      $("tUser").textContent  = `Guardado por: ${labelData.savedBy || (currentUser?.email || "—")}`;
+
+      applyTextScaleToSvgText();
+    }
+
+    function wrapSmart(text, maxUnits){
+      // unit count: ascii ~1, others ~2
+      const s = String(text||"").replace(/\r/g,"");
+      const lines = [];
+      const parts = s.split(/\n/);
+      for(const p of parts){
+        let line = "";
+        let units = 0;
+        const chars = Array.from(p);
+        for(const ch of chars){
+          const u = (ch.charCodeAt(0) <= 0x007f) ? 1 : 2;
+          if(units + u > maxUnits && line){
+            lines.push(line.trimEnd());
+            line = ch;
+            units = u;
+          } else {
+            line += ch;
+            units += u;
+          }
+        }
+        if(line.trim().length) lines.push(line.trimEnd());
+        if(p === "" && parts.length>1) lines.push("");
+      }
+      return lines.filter(x=>x!==null);
+    }
+
+    function svgTextBlock(x, y, lines, fontSize, cls, maxLines=10, lineGap=1.15, anchor="start"){
+      const safe = (t)=> String(t??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const out = [];
+      const use = lines.slice(0, maxLines);
+      for(let i=0;i<use.length;i++){ 
+        const dy = i===0 ? 0 : fontSize*lineGap;
+        out.push(`<tspan x="${x}" dy="${dy}">${safe(use[i])}</tspan>`);
+      }
+      return `<text x="${x}" y="${y}" class="${cls}" font-size="${fontSize}" text-anchor="${anchor}">${out.join("")}</text>`;
+    }
+
+    function renderTableOuter(){
+      setGenericVisible(false);
+
+      // background optional (none by default)
+      const bg = $("bgImage");
+      if(currentTemplate.bgDataUrl){
+        bg.setAttribute("href", currentTemplate.bgDataUrl);
+        bg.style.display = "block";
+      }else{
+        bg.setAttribute("href", "");
+        bg.style.display = "none";
+      }
+
+      const g = $("tableGroup");
+      const rows = currentTemplate.rows || [];
+      const sec = labelData.secuencial ? `SEC ${labelData.secuencial}` : "SEC 00000000";
+
+      // Geometry
+      const leftX = 40;
+      const rightX = 400;
+      const tableW = 920; // from 40 to 960
+      const splitX = 380;
+      const topY = 120;
+      const bottomMax = 1420;
+
+      const header = [];
+      header.push(`<text x="40" y="70" class="svgText" font-size="42">${escapeXml(currentImporterName)}</text>`);
+      header.push(`<text x="960" y="70" class="svgText" font-size="42" text-anchor="end">${escapeXml(sec)}</text>`);
+      header.push(`<line x1="40" y1="92" x2="960" y2="92" stroke="#000" stroke-width="5" />`);
+
+      // Table border
+      const parts = [];
+      parts.push(header.join(""));
+
+      // vertical lines
+      parts.push(`<rect x="40" y="${topY}" width="${tableW}" height="${bottomMax-topY}" fill="none" stroke="#000" stroke-width="4" />`);
+      parts.push(`<line x1="${splitX}" y1="${topY}" x2="${splitX}" y2="${bottomMax}" stroke="#000" stroke-width="3" />`);
+
+      let y = topY;
+      const pad = 14;
+      const baseLeft = 24;
+      const baseRight = 22;
+
+      for(const [L,R] of rows){
+        const isFooter = (!R || String(R).trim()==="");
+        const leftText = (L||"").trim();
+        let rightText = (R||"").trim();
+
+        // dynamic replacements
+        rightText = rightText
+          .replace("{TALLA}", labelData.talla || "—")
+          .replace("{LOTE}", labelData.lote || "—")
+          .replace("{FECHA_CN}", labelData.fecha ? fmtDateISOToCN(labelData.fecha) : "—");
+
+        const cellWLeftUnits = 26;   // wrapping units
+        const cellWRightUnits = 42;
+
+        if(isFooter){
+          const lines = wrapSmart(leftText, 70);
+          const font = 22;
+          const h = Math.max(52, (lines.length||1) * font * 1.2 + 22);
+          // row line
+          parts.push(`<line x1="40" y1="${y}" x2="960" y2="${y}" stroke="#000" stroke-width="3" />`);
+          // spanning text
+          parts.push(svgTextBlock(60, y + 34, lines, font, "tableTextR", 6, 1.2));
+          y += h;
+          if(y > bottomMax-10) break;
+          continue;
+        }
+
+        const lLines = wrapSmart(leftText, cellWLeftUnits);
+        const rLines = wrapSmart(rightText, cellWRightUnits);
+
+        const lFont = baseLeft;
+        const rFont = baseRight;
+
+        const linesCount = Math.max(lLines.length, rLines.length, 1);
+        const h = Math.max(58, linesCount * Math.max(lFont, rFont) * 1.15 + 20);
+
+        parts.push(`<line x1="40" y1="${y}" x2="960" y2="${y}" stroke="#000" stroke-width="3" />`);
+        parts.push(svgTextBlock(leftX + pad, y + 34, lLines, lFont, "tableTextL", 6, 1.15));
+        parts.push(svgTextBlock(rightX + pad, y + 34, rLines, rFont, "tableTextR", 8, 1.15));
+
+        y += h;
+        if(y > bottomMax-10) break;
+      }
+
+      // last bottom line
+      parts.push(`<line x1="40" y1="${Math.min(y, bottomMax)}" x2="960" y2="${Math.min(y, bottomMax)}" stroke="#000" stroke-width="3" />`);
+
+      // footer user
+      parts.push(`<text x="40" y="1470" class="svgText" font-size="28">Guardado por: ${escapeXml(labelData.savedBy || (currentUser?.email || "—"))}</text>`);
+
+      g.innerHTML = parts.join("");
+    }
+
+    function escapeXml(s){
+      return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function renderLabel(){
+      // Use embedded table template only for NANCY - Dongxiandi Holding
+      if(currentTemplate.tplType === "table_outer_v5"){
+        renderTableOuter();
+        return;
+      }
+      renderGeneric();
+    }
+
+    function getSVGString(){
+      const svg = $("labelSVG");
+      svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
+      const clone = svg.cloneNode(true);
+      return new XMLSerializer().serializeToString(clone);
+    }
+
+    function setLabelScale(v){
+      const x = Math.max(0.4, Math.min(1.8, Number(v||1)));
+      document.documentElement.style.setProperty("--labelScale", x.toFixed(2));
+      $("scaleRange").value = x.toFixed(2);
+    }
+    function setTextScale(v){
+      const x = Math.max(0.7, Math.min(1.6, Number(v||1)));
+      document.documentElement.style.setProperty("--textScale", x.toFixed(2));
+      $("textRange").value = x.toFixed(2);
+      renderLabel();
+    }
+
+    function applyInputsToState(){
+      labelData.secuencial = padSec($("inSec").value);
+      labelData.lote = normalizeText($("inLote").value);
+      labelData.fecha = $("inFecha").value || "";
+      labelData.talla = normalizeText($("inTalla").value);
+      labelData.nota = normalizeText($("inNota").value);
+      labelData.savedBy = currentUser?.email || "";
+    }
+
+    function fillInputsFromState(){
+      $("inSec").value = labelData.secuencial || "";
+      $("inLote").value = labelData.lote || "";
+      $("inFecha").value = labelData.fecha || "";
+      $("inTalla").value = labelData.talla || "";
+      $("inNota").value = labelData.nota || "";
+    }
+
+    /************************************************************
+     *  FIRESTORE
+     *    /importers/{importerId} { name }
+     *    /importers/{importerId}/template/main { tplType, rows, bgDataUrl, ... }
+     *    /importers/{importerId}/labels/{labelId} { ... svg ... }
+     ************************************************************/
+    function importerRef(id){ return db.collection("importers").doc(id); }
+    function templateRef(id){ return importerRef(id).collection("template").doc("main"); }
+    function labelsCol(id){ return importerRef(id).collection("labels"); }
+
+    async function ensureImporterDoc(id, name){
+      if(!id || id==="nuevo") return;
+      const ref = importerRef(id);
+      const snap = await ref.get();
+      if(!snap.exists){
+        await ref.set({ name: name, createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
+      } else {
+        await ref.set({ name: name }, { merge:true });
+      }
+    }
+
+    async function bootstrapTemplateIfMissing(){
+      // If template not in Firestore but we have embedded, use it; if admin, save it automatically once.
+      const emb = EMBEDDED_TEMPLATES[currentImporterId];
+      if(!emb) return;
+
+      // Only if firestore template is missing
+      try{
+        const snap = await templateRef(currentImporterId).get();
+        if(!snap.exists && currentRole==="admin" && currentUser){
+          await templateRef(currentImporterId).set({
+            tplType: emb.tplType,
+            rows: emb.rows,
+            bgDataUrl: null,
+            version: 1,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedBy: currentUser.email,
+            bootstrappedFrom: "embedded_excel_v5"
+          }, { merge:true });
+          toast("Plantilla NANCY-Dongxiandi guardada automáticamente en Firestore.");
+        }
+      }catch(e){ /* ignore */ }
+    }
+
+    async function loadTemplateForImporter(){
+      currentTemplate = { bgDataUrl:null, tplType:null, rows:null, version:1 };
+      if(currentImporterId==="nuevo") return;
+
+      try{
+        await ensureImporterDoc(currentImporterId, currentImporterName);
+
+        const snap = await templateRef(currentImporterId).get();
+        if(snap.exists){
+          const d = snap.data() || {};
+          currentTemplate.bgDataUrl = d.bgDataUrl || null;
+          currentTemplate.tplType = d.tplType || null;
+          currentTemplate.rows = d.rows || null;
+          currentTemplate.version = d.version || 1;
+          setStatus("Plantilla Firestore", "ok");
+          return;
+        }
+
+        // Firestore template missing: fallback to embedded (only NANCY - Dongxiandi Holding)
+        const emb = EMBEDDED_TEMPLATES[currentImporterId];
+        if(emb){
+          currentTemplate.tplType = emb.tplType;
+          currentTemplate.rows = emb.rows;
+          currentTemplate.bgDataUrl = null;
+          currentTemplate.version = 1;
+          setStatus("Plantilla local (Excel)", "ok");
+          // If admin, auto-save to Firestore
+          await bootstrapTemplateIfMissing();
+        } else {
+          setStatus("Sin plantilla", "warn");
+        }
+      }catch(err){
+        console.error(err);
+        setStatus("Error plantilla", "bad");
+        toast("No se pudo cargar plantilla (revisa permisos).");
+      }
+    }
+
+    
+async function clearBackground(){
+  if(currentRole!=="admin"){ toast("Solo administrador."); return; }
+  if(currentImporterId==="nuevo"){ toast("Selecciona un importador real."); return; }
+  currentTemplate.bgDataUrl = null;
+  const fi = $("inBgFile");
+  if(fi) fi.value = "";
+  renderLabel();
+  toast("Fondo eliminado (local). Para persistir, presiona 'Guardar plantilla actual'.");
+}
+
+async function saveTemplateForImporter(){
+      if(currentRole!=="admin"){ toast("Solo administrador puede guardar plantilla."); return; }
+      if(currentImporterId==="nuevo"){ toast("Selecciona un importador real."); return; }
+
+      setStatus("Guardando plantilla…");
+      try{
+        const tplName = normalizeText($("inTplName").value);
+        await ensureImporterDoc(currentImporterId, currentImporterName);
+        await templateRef(currentImporterId).set({
+          tplName: tplName || null,
+          bgDataUrl: currentTemplate.bgDataUrl || null,
+          tplType: currentTemplate.tplType || null,
+          rows: currentTemplate.rows || null,
+          version: (currentTemplate.version||1) + 1,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedBy: currentUser.email
+        }, { merge:true });
+        setStatus("Plantilla guardada", "ok");
+        toast("Plantilla guardada en Firestore.");
+      }catch(err){
+        console.error(err);
+        setStatus("Error plantilla", "bad");
+        toast("No se pudo guardar plantilla.");
+      }
+    }
+
+    async function saveLabel(){
+      if(!currentUser){ toast("Inicia sesión."); return; }
+      if(currentImporterId==="nuevo"){ toast("Selecciona un importador real antes de guardar."); return; }
+      applyInputsToState();
+      if(!labelData.secuencial){ toast("Ingresa un secuencial."); return; }
+
+      setStatus("Guardando…");
+      try{
+        await ensureImporterDoc(currentImporterId, currentImporterName);
+        const doc = {
+          importerId: currentImporterId,
+          importerName: currentImporterName,
+          secuencial: labelData.secuencial,
+          lote: labelData.lote || "",
+          fecha: labelData.fecha || "",
+          talla: labelData.talla || "",
+          nota: labelData.nota || "",
+          templateVersion: currentTemplate.version || 1,
+          tplType: currentTemplate.tplType || null,
+          svg: getSVGString(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdBy: currentUser.email
+        };
+        await labelsCol(currentImporterId).add(doc);
+        setStatus("Guardado", "ok");
+        toast("Etiqueta guardada y agregada al historial.");
+        await loadHistory();
+      }catch(err){
+        console.error(err);
+        setStatus("Error al guardar", "bad");
+        toast("No se pudo guardar (revisa reglas/permisos).");
+      }
+    }
+
+    async function loadHistory(){
+      const body = $("histBody");
+      body.innerHTML = `<tr><td colspan="6" class="small">Cargando…</td></tr>`;
+      if(!currentUser){ body.innerHTML = `<tr><td colspan="6" class="small">Inicia sesión para ver historial.</td></tr>`; return; }
+      if(currentImporterId==="nuevo"){ body.innerHTML = `<tr><td colspan="6" class="small">En pestaña "Nuevo" no hay historial.</td></tr>`; return; }
+
+      try{
+        const q = await labelsCol(currentImporterId).orderBy("createdAt","desc").limit(60).get();
+        if(q.empty){ body.innerHTML = `<tr><td colspan="6" class="small">Sin registros.</td></tr>`; return; }
+
+        body.innerHTML = "";
+        q.forEach(s=>{
+          const d = s.data() || {};
+          const tr = document.createElement("tr");
+          const dt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+          const fecha = dt ? dt.toLocaleString("es-EC", { hour12:false }) : "—";
+
+          tr.innerHTML = `
+            <td>${escapeHtml(fecha)}</td>
+            <td>${escapeHtml(d.secuencial||"")}</td>
+            <td>${escapeHtml(d.lote||"")}</td>
+            <td>${escapeHtml(d.talla||"")}</td>
+            <td>${escapeHtml(d.createdBy||"")}</td>
+            <td></td>
+          `;
+
+          const td = tr.querySelector("td:last-child");
+
+          const btnLoad = document.createElement("button");
+          btnLoad.className = "btn";
+          btnLoad.textContent = "Cargar";
+          btnLoad.onclick = ()=>loadLabelFromDoc(d);
+
+          const btnPdf = document.createElement("button");
+          btnPdf.className = "btn";
+          btnPdf.textContent = "PDF";
+          btnPdf.style.marginLeft = "6px";
+          btnPdf.onclick = async ()=>{ loadLabelFromDoc(d); await exportPDF(); };
+
+          td.appendChild(btnLoad);
+          td.appendChild(btnPdf);
+
+          if(currentRole==="admin"){
+            const btnDel = document.createElement("button");
+            btnDel.className = "btn danger";
+            btnDel.textContent = "Eliminar";
+            btnDel.style.marginLeft = "6px";
+            btnDel.onclick = ()=>deleteLabel(s.id);
+            td.appendChild(btnDel);
+          }
+
+          body.appendChild(tr);
+        });
+      }catch(err){
+        console.error(err);
+        body.innerHTML = `<tr><td colspan="6" class="small">Error cargando historial.</td></tr>`;
+        toast("No se pudo cargar historial.");
+      }
+    }
+
+    function loadLabelFromDoc(d){
+      labelData = {
+        secuencial: d.secuencial || "",
+        lote: d.lote || "",
+        fecha: d.fecha || "",
+        talla: d.talla || "",
+        nota: d.nota || "",
+        savedBy: d.createdBy || "",
+      };
+      fillInputsFromState();
+
+      if(d.svg){
+        try{
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(d.svg, "image/svg+xml");
+          const svgEl = doc.documentElement;
+          const current = $("labelSVG");
+          current.parentNode.replaceChild(document.importNode(svgEl, true), current);
+          const newSvg = document.querySelector("svg");
+          newSvg.id = "labelSVG";
+          if(!newSvg.getAttribute("viewBox")) newSvg.setAttribute("viewBox","0 0 1000 1500");
+          toast("Etiqueta cargada.");
+          return;
+        }catch(e){ console.warn("SVG load fallback", e); }
+      }
+      renderLabel();
+      toast("Etiqueta cargada.");
+    }
+
+    async function deleteLabel(id){
+      if(currentRole!=="admin"){ toast("Solo admin puede eliminar."); return; }
+      if(!confirm("¿Eliminar este registro?")) return;
+      try{ await labelsCol(currentImporterId).doc(id).delete(); toast("Eliminado."); await loadHistory(); }
+      catch(err){ console.error(err); toast("No se pudo eliminar."); }
+    }
+
+    async function loadDynamicImportersAndRenderTabs(){
+      const defaults = new Set(DEFAULT_IMPORTERS.map(x=>x.id));
+      let extras = [];
+      try{
+        const snaps = await db.collection("importers").get();
+        snaps.forEach(s=>{
+          if(defaults.has(s.id)) return;
+          const d = s.data()||{};
+          if(!d.name) return;
+          extras.push({ id:s.id, name:d.name });
+        });
+        extras.sort((a,b)=>a.name.localeCompare(b.name, "es"));
+      }catch(err){ /* ignore */ }
+      renderTabs(extras);
+      $("lblImporter").textContent = currentImporterName;
+    }
+
+    function readFileAsDataURL(file){
+      return new Promise((resolve, reject)=>{
+        const reader = new FileReader();
+        reader.onload = ()=>resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function exportPDF(){
+      try{
+        setStatus("Generando PDF…");
+        const stage = $("labelStage");
+        const canvas = await html2canvas(stage, {
+          backgroundColor: "#ffffff",
+          scale: 4,
+          useCORS: true
+        });
+        const imgData = canvas.toDataURL("image/png");
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [100, 150] });
+        pdf.addImage(imgData, "PNG", 0, 0, 100, 150, undefined, "FAST");
+
+        const sec = padSec($("inSec").value) || "00000000";
+        const name = `${currentImporterId}_${sec}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.pdf`;
+        pdf.save(name);
+        setStatus("PDF listo", "ok");
+      }catch(err){
+        console.error(err);
+        setStatus("Error PDF", "bad");
+        toast("No se pudo generar PDF.");
+      }
+    }
+
+    async function printLabel(){
+      try{
+        setStatus("Preparando impresión…");
+        const host = $("printHost");
+        host.innerHTML = "";
+        const svg = document.querySelector("#labelStage svg");
+        const clone = svg.cloneNode(true);
+        clone.style.width = "100mm";
+        clone.style.height = "150mm";
+        clone.style.display = "block";
+        host.appendChild(clone);
+        setTimeout(()=>{ window.print(); setStatus("Listo"); }, 60);
+      }catch(err){ console.error(err); toast("No se pudo imprimir."); }
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function wireUI(){
+      $("scaleRange").addEventListener("input", e=> setLabelScale(e.target.value));
+      $("btnScaleDown").onclick = ()=> setLabelScale((parseFloat($("scaleRange").value)||1) - 0.06);
+      $("btnScaleUp").onclick = ()=> setLabelScale((parseFloat($("scaleRange").value)||1) + 0.06);
+      $("btnScaleFit").onclick = ()=> setLabelScale(1);
+
+      $("textRange").addEventListener("input", e=> setTextScale(e.target.value));
+
+      ["inSec","inLote","inFecha","inTalla","inNota"].forEach(id=>{
+        $(id).addEventListener("input", ()=>{ applyInputsToState(); renderLabel(); });
+      });
+
+      $("btnApplySec").onclick = ()=>{
+        $("inSec").value = padSec($("inSec").value);
+        applyInputsToState(); renderLabel();
+        toast("Secuencial aplicado en esquina superior derecha.");
+      };
+
+      $("btnSave").onclick = saveLabel;
+      $("btnPDF").onclick = exportPDF;
+      $("btnPrint").onclick = printLabel;
+      $("btnRefresh").onclick = loadHistory;
+
+      $("btnSaveTemplate").onclick = saveTemplateForImporter;
+
+      
+      $("btnClearBg").onclick = clearBackground;
+$("inBgFile").addEventListener("change", async (e)=>{
+        const file = e.target.files?.[0];
+        if(!file) return;
+        try{
+          const dataUrl = await readFileAsDataURL(file);
+          currentTemplate.bgDataUrl = dataUrl;
+          renderLabel();
+          toast("Fondo cargado (aún no guardado).");
+        }catch(err){ console.error(err); toast("No se pudo leer el archivo."); }
+      });
+
+      $("btnCrearNuevo").onclick = createNewImporterFromNuevoTab;
+      $("btnLogout").onclick = ()=>auth.signOut();
+      $("btnLogin").onclick = doLogin;
+      $("loginPass").addEventListener("keydown", (e)=>{ if(e.key==="Enter") doLogin(); });
+    }
+
+    async function doLogin(){
+      const email = normalizeText($("loginEmail").value).toLowerCase();
+      const pass = $("loginPass").value;
+      if(!email || !pass){ toast("Email y contraseña."); return; }
+      setStatus("Autenticando…");
+      try{ await auth.signInWithEmailAndPassword(email, pass); }
+      catch(err){ console.error(err); setStatus("Login falló","bad"); toast("No se pudo iniciar sesión (credenciales)."); }
+    }
+
+    function showLogin(show){ $("loginBack").style.display = show ? "flex" : "none"; }
+
+    function applyUserToUI(){
+      $("pillUser").textContent = currentUser ? currentUser.email : "Sin sesión";
+      $("pillRole").textContent = "Rol: " + (currentRole || "—");
+      $("btnLogout").style.display = currentUser ? "inline-block" : "none";
+      $("templateAdminRow").style.display = (currentRole==="admin" && currentImporterId!=="nuevo") ? "flex" : "none";
+      $("nuevoAdminRow").style.display = (currentRole==="admin" && currentImporterId==="nuevo") ? "flex" : "none";
+    }
+
+    async function createNewImporterFromNuevoTab(){
+      if(currentRole!=="admin"){ toast("Solo admin."); return; }
+      const name = normalizeText($("inNuevoNombre").value);
+      if(!name){ toast("Escribe un nombre."); return; }
+      const id = name.toLowerCase().replace(/[^\w]+/g, "_").replace(/^_+|_+$/g,"").slice(0, 50) || ("imp_" + Date.now());
+      try{
+        await importerRef(id).set({
+          name,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdBy: currentUser.email
+        }, { merge:true });
+        toast("Importador creado. Selecciónalo en pestañas.");
+        $("inNuevoNombre").value = "";
+        await loadDynamicImportersAndRenderTabs();
+      }catch(err){ console.error(err); toast("No se pudo crear importador."); }
+    }
+
+    function initDefaults(){
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth()+1).padStart(2,"0");
+      const dd = String(now.getDate()).padStart(2,"0");
+      $("inFecha").value = `${yyyy}-${mm}-${dd}`;
+
+      $("lblImporter").textContent = currentImporterName;
+      setLabelScale(1);
+      setTextScale(1);
+      applyInputsToState();
+      renderLabel();
+    }
+
+    auth.onAuthStateChanged(async (user)=>{
+      if(user){
+        const role = getRole(user.email);
+        if(!role){
+          toast("Usuario no autorizado.");
+          await auth.signOut();
+          return;
+        }
+        currentUser = user;
+        currentRole = role;
+        showLogin(false);
+        applyUserToUI();
+        setStatus("Sincronizando…");
+        await loadDynamicImportersAndRenderTabs();
+        await loadTemplateForImporter();
+        renderLabel();
+        await loadHistory();
+        setStatus("Listo");
+      }else{
+        currentUser = null;
+        currentRole = null;
+        applyUserToUI();
+        showLogin(true);
+        $("histBody").innerHTML = `<tr><td colspan="6" class="small">Inicia sesión para ver historial.</td></tr>`;
+        setStatus("Sin sesión", "warn");
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      wireUI();
+      initDefaults();
+      renderTabs([]);
+      await selectImporter(currentImporterId, currentImporterName);
+    });
+  </script>
+</body>
+</html>
