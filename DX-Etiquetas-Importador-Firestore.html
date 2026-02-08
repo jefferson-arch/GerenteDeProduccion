@@ -2,1275 +2,325 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>DX — Etiquetas de Importador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Insertar Excel → Render</title>
+
+  <!-- ExcelJS (lee .xlsx + estilos básicos) -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+
   <style>
     :root{
-      --bg:#0b1220;
-      --panel:#0f172a;
-      --panel2:#0b1326;
-      --grid:#1f2a44;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-      --accent:#2563eb;
-      --danger:#ef4444;
-      --ok:#16a34a;
-      --white:#fff;
+      --bg:#0b1220; --panel:#0f172a; --line:rgba(255,255,255,.12);
+      --text:#e5e7eb; --muted:#9ca3af; --accent:#2563eb;
     }
-    *{box-sizing:border-box}
     body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-    header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:space-between;gap:12px}
-    header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:.2px}
-    header .right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .badge{font-size:12px;opacity:.9;padding:6px 10px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.06)}
-    .btn{appearance:none;border:0;border-radius:10px;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer}
+    header{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;justify-content:space-between}
+    h1{margin:0;font-size:15px;font-weight:900}
+    .wrap{max-width:1400px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .btn{border:0;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer}
     .btn.primary{background:var(--accent);color:#fff}
-    .btn.ghost{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.14)}
-    .btn.danger{background:var(--danger);color:#fff}
-    .btn.ok{background:var(--ok);color:#fff}
-    .btn:disabled{opacity:.45;cursor:not-allowed}
-    .wrap{max-width:1280px;margin:0 auto;padding:14px;display:grid;gap:12px}
-    .grid2{display:grid;grid-template-columns:420px 1fr;gap:12px}
-    @media(max-width:980px){ .grid2{grid-template-columns:1fr} }
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px}
-    .card h2{margin:0 0 10px;font-size:14px}
-    label{display:block;font-size:12px;opacity:.9;margin:10px 0 6px}
-    input, textarea, select{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:#fff;padding:10px 10px;font-size:13px;outline:none}
-    textarea{min-height:58px;resize:vertical}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    .help{font-size:12px;color:var(--muted);line-height:1.3;margin-top:6px}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);cursor:pointer;font-weight:800;font-size:12px}
-    .tab.active{background:rgba(37,99,235,.25);border-color:rgba(37,99,235,.55)}
-    .previewWrap{background:#fff;border-radius:14px;border:1px solid rgba(0,0,0,.12);padding:14px;overflow:auto}
-    .labelCanvas{display:flex;justify-content:center}
-    .labelBox{background:#fff;padding:10px;border:1px solid #000;position:relative;overflow:visible;}
-    .dyn{display:block;min-height:14px}
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-    .kpi{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .kpi .dot{width:10px;height:10px;border-radius:999px;background:var(--ok)}
-    .kpi .dot.warn{background:#f59e0b}
-    .kpi .dot.bad{background:var(--danger)}
+    .btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);color:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{color:var(--muted);font-size:12px;line-height:1.35}
 
-    .list{display:grid;gap:10px}
-    .list table{width:100%;border-collapse:collapse;font-size:12px}
-    .list th,.list td{padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}
-    .list th{opacity:.85;font-size:12px}
-    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.25);font-size:11px}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .mini{padding:7px 10px;border-radius:10px;font-weight:900;font-size:12px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.25);color:#fff;cursor:pointer}
-    .mini:hover{filter:brightness(1.05)}
-    .mini:disabled{opacity:.45;cursor:not-allowed}
-
-    /* LOGIN */
-    .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
-    .login .box{width:min(460px,100%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px}
-    .login h2{margin:0 0 10px;font-size:16px}
-    .err{margin-top:10px;color:#fecaca;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);padding:10px;border-radius:12px;display:none}
-
-    /* Plantilla editor */
-    .tplEditor{
-      background:rgba(0,0,0,.25);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:12px;
-      padding:10px;
-      margin-top:10px;
-    }
-    .tplEditor textarea{
-      min-height:170px;
-      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-      font-size:12px;
-      line-height:1.25;
-    }
-    .tplEditor .help{margin-top:8px}
-
-    /* PRINT */
-    @media print {
-      body{background:#fff}
-      header, .noPrint{display:none !important}
-      .grid2{grid-template-columns:1fr !important}
-      .grid2 > .card:first-child{display:none !important}
-      .grid2 > .card:last-child{border:none !important;background:#fff !important;padding:0 !important}
-      .wrap{padding:0 !important;max-width:none !important}
-      .previewWrap{border:none !important;padding:0 !important;margin:0 !important;overflow:visible !important}
-      .labelCanvas{justify-content:center !important}
-      .labelBox{
-        margin:0 auto !important;
-        padding:0 !important;
-        border:1px solid #000 !important;
-        background:#fff !important;
-      }
-      @page { size: A4 portrait; margin: 10mm; }
+    /* Preview */
+    .previewWrap{
+      background:#fff; color:#000;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.12);
+      padding:14px;
+      overflow:auto;
+      max-height:75vh;
     }
 
-    .seqBadge{
-      position:absolute; top:6px; right:8px;
-      font-size:12px; font-weight:900; color:#000;
-      padding:3px 8px; border:1px solid #000; background:#fff;
-      border-radius:6px;
-      display:none;
+    /* Tabla renderizada */
+    table.xl{
+      border-collapse:collapse;
+      table-layout:fixed;
+      width:max-content; /* permite ancho natural por columnas */
+      background:#fff;
     }
-
-    .labelStage{position:relative;transform-origin:top left}
+    table.xl td{
+      padding:2px 4px;
+      vertical-align:middle;
+      overflow:hidden;
+      white-space:nowrap; /* Excel default */
+    }
   </style>
-  <style id="dynPageStyle"></style>
 </head>
+
 <body>
-  <!-- LOGIN VIEW -->
-  <div id="loginView" class="login">
-    <div class="box">
-      <h2>OCEANTREASURE — DX Etiquetas</h2>
-      <div class="help">Acceso con correo y contraseña (Firebase). Todos los usuarios logueados pueden ver. Solo EDITORES pueden guardar/eliminar.</div>
-      <label>Correo</label>
-      <input id="email" type="email" autocomplete="username" placeholder="usuario@oceantreasure.local" />
-      <label>Contraseña</label>
-      <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" />
-      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
-        <button class="btn primary" id="btnLogin">INGRESAR</button>
-        <button class="btn ghost" id="btnDemo">Cargar plantilla (sin guardar)</button>
-      </div>
-      <div class="err" id="loginErr"></div>
+<header>
+  <h1>Renderizador Excel (.xlsx) — Vista fiel</h1>
+  <div class="row">
+    <button class="btn primary" id="btnPick">INSERTAR EXCEL</button>
+    <button class="btn ghost" id="btnClear">LIMPIAR</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="muted">
+      1) Presiona <b>INSERTAR EXCEL</b> y elige tu archivo .xlsx<br>
+      2) Se renderiza la <b>primera hoja</b> manteniendo estilos (bordes, colores, fuentes, alineación, merges, anchos/altos).<br>
+      Nota: elementos como gráficos/imagenes/figuras pueden no renderizarse igual.
     </div>
   </div>
 
-  <!-- APP VIEW -->
-  <div id="appView" style="display:none">
-    <header>
-      <div>
-        <h1>DX — Etiquetas de Importador (OUTER / INNER)</h1>
-        <div class="help" style="margin-top:4px">Genera, imprime y guarda etiquetas basadas en tu plantilla de Excel (HTML).</div>
-      </div>
-      <div class="right">
-        <span class="badge" id="userBadge">—</span>
-        <span class="badge" id="roleBadge">—</span>
-        <button class="btn ghost" id="btnLogout">SALIR</button>
-      </div>
-    </header>
-
-    <div class="wrap">
-      <div class="grid2">
-
-        <!-- FORM -->
-        <div class="card">
-          <h2>Datos de la etiqueta</h2>
-
-          <div class="tabs noPrint">
-            <button class="tab active" data-tpl="OUTER" id="tabOuter">OUTER</button>
-            <button class="tab" data-tpl="INNER" id="tabInner">INNER</button>
-            <button class="tab" data-tpl="TPL" id="tabTpl">Plantilla (Excel)</button>
-          </div>
-
-          <!-- Panel Plantilla -->
-          <div id="tplPanel" class="tplEditor noPrint" style="display:none">
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-              <div style="font-weight:900">Importar plantilla HTML (desde Excel)</div>
-              <div class="actions">
-                <button class="mini" id="btnLoadTpl">Cargar guardada</button>
-                <button class="mini" id="btnClearTpl">Limpiar</button>
-              </div>
-            </div>
-
-            <label style="margin-top:10px">Pega aquí el HTML de tu etiqueta (lo que exporta Excel)</label>
-            <textarea id="tplInput" placeholder="Pega aquí el HTML completo (table/div). Si viene con <style> o clases, también sirve."></textarea>
-
-            <div class="row" style="margin-top:10px">
-              <div>
-                <label>Modo placeholders</label>
-                <select id="tplMode">
-                  <option value="mustache">Convertir {{campo}} → dyn</option>
-                  <option value="none">No convertir (ya trae <span class='dyn'>)</option>
-                </select>
-                <div class="help">Recomendado: usa {{size}}, {{lotNo}}, {{productionDate}}, {{importerName}}, {{importerAddress}}, {{importerPhone}}, {{netWeightLine}}, {{factoryRegNo}}, {{factoryRegChina}}, {{producerAddress}}, {{coldStorageAddress}}, {{secuencial}}.</div>
-              </div>
-              <div>
-                <label>Acción</label>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-                  <button class="btn ok" id="btnApplyTpl" type="button">APLICAR A VISTA PREVIA</button>
-                  <button class="btn ghost" id="btnSaveTplLocal" type="button">GUARDAR EN ESTE PC</button>
-                </div>
-                <div class="help">Esto guarda la plantilla en el navegador (localStorage). Así la reutilizas para cualquier importador.</div>
-              </div>
-            </div>
-
-            <div class="help" style="margin-top:10px">
-              Tip Excel: lo más fiel es “Guardar como Página Web” y copiar el HTML de la tabla. Mientras más estilos inline traiga Excel, más 1:1 se verá.
-            </div>
-          </div>
-
-          <!-- Tamaño etiqueta (cm) -->
-          <div class="row3 noPrint" style="margin-top:10px" id="sizePanel">
-            <div>
-              <label>ANCHO ETIQUETA (cm)</label>
-              <input id="f_labelWcm" type="number" step="0.1" min="0" placeholder="Ej: 10" />
-            </div>
-            <div>
-              <label>ALTO ETIQUETA (cm)</label>
-              <input id="f_labelHcm" type="number" step="0.1" min="0" placeholder="Ej: 15" />
-            </div>
-            <div>
-              <label>AJUSTE</label>
-              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                <label style="margin:0;display:flex;gap:8px;align-items:center;font-size:12px;opacity:.95">
-                  <input id="chkKeepRatio" type="checkbox" checked style="width:auto" />
-                  Mantener proporción
-                </label>
-                <label style="margin:0;display:flex;gap:8px;align-items:center;font-size:12px;opacity:.95">
-                  <input id="chkPrintAsLabel" type="checkbox" checked style="width:auto" />
-                  Imprimir como etiqueta (tamaño cm)
-                </label>
-                <button class="mini" id="btnApplySize" type="button">APLICAR</button>
-                <button class="mini" id="btnResetSize" type="button">RESET</button>
-              </div>
-              <div class="help">Ejemplo: 10 × 15 cm. Se escala automáticamente la vista previa y la impresión.</div>
-            </div>
-          </div>
-
-          <!-- Campos -->
-          <div id="fieldsPanel">
-            <div class="row3">
-              <div>
-                <label>SIZE (规格)</label>
-                <input id="f_size" />
-              </div>
-              <div>
-                <label>PRODUCTION LOT NO. (生产批号)</label>
-                <input id="f_lotNo" />
-              </div>
-              <div>
-                <label>SECUENCIAL</label>
-                <input id="f_secuencial" placeholder="Ej: 4470" />
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>PRODUCTION DATE (生产日期)</label>
-                <input id="f_prodDate" placeholder="2026 年 01 月 22 日" />
-                <div class="help">Tip: si prefieres, escribe en formato “YYYY 年 MM 月 DD 日”.</div>
-              </div>
-              <div>
-                <label>NET WEIGHT (净含量)</label>
-                <textarea id="f_netWeight" style="min-height:64px"></textarea>
-              </div>
-            </div>
-
-            <label>NAME AND ADDRESS OF PRODUCTION AND PROCESSING ENTERPRISES (生产加工企业名称和地址)</label>
-            <textarea id="f_producerAddress"></textarea>
-
-            <div class="row">
-              <div>
-                <label>FACTORY REG NO (注册号)</label>
-                <input id="f_factoryRegNo" />
-              </div>
-              <div>
-                <label>FACTORY REGISTRATION NO, IN CHINA (在华工厂注册号)</label>
-                <input id="f_factoryRegChina" />
-              </div>
-            </div>
-
-            <label>NAME AND ADDRESS OF COLD STORAGE (冷库名称和地址)</label>
-            <textarea id="f_coldStorage"></textarea>
-
-            <div class="row">
-              <div>
-                <label>IMPORTER (进口商)</label>
-                <input id="f_importerName" />
-              </div>
-              <div>
-                <label>PHONE OF IMPORTER (进口商联系方式)</label>
-                <input id="f_importerPhone" />
-              </div>
-            </div>
-
-            <label>IMPORTER'S ADDRESS (进口商地址)</label>
-            <textarea id="f_importerAddress"></textarea>
-          </div>
-
-          <div class="toolbar noPrint" style="margin-top:12px">
-            <button class="btn ghost" id="btnNew">NUEVO</button>
-            <button class="btn ok" id="btnSave">GUARDAR</button>
-            <button class="btn danger" id="btnDelete">ELIMINAR</button>
-            <button class="btn primary" id="btnPrint">EXPORTAR PDF</button>
-            <button class="btn ghost" id="btnPng">EXPORTAR PNG</button>
-          </div>
-          <div class="help" id="statusLine" style="margin-top:10px">—</div>
-        </div>
-
-        <!-- PREVIEW + LIST -->
-        <div class="card">
-          <div class="kpi noPrint" style="justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="dot" id="dotConn"></div>
-              <div>
-                <div style="font-weight:900">Vista previa</div>
-                <div class="help">Se actualiza automáticamente mientras escribes.</div>
-              </div>
-            </div>
-            <div class="actions noPrint">
-              <span class="pill" id="docPill">Nuevo</span>
-              <span class="pill" id="tplPill">OUTER</span>
-            </div>
-          </div>
-
-          <div class="previewWrap">
-            <div class="labelCanvas">
-              <div class="labelBox" id="labelBox">
-                <div class="seqBadge" id="seqBadge"></div>
-
-                <div id="labelStage" class="labelStage">
-                  <!-- Contenedores de plantilla -->
-                  <div id="tplOuter" class="tpl"></div>
-                  <div id="tplInner" class="tpl" style="display:none"></div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <div class="noPrint" style="margin-top:12px">
-            <h2 style="margin:0 0 8px">Etiquetas guardadas</h2>
-            <div class="row">
-              <div>
-                <input id="search" placeholder="Buscar por LOTE, SECUENCIAL, SIZE, IMPORTER, FECHA..." />
-              </div>
-              <div class="actions" style="justify-content:flex-end">
-                <button class="mini" id="btnRefresh">Refrescar</button>
-              </div>
-            </div>
-
-            <div class="list" style="margin-top:10px;max-height:340px;overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:14px">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Template</th>
-                    <th>Size</th>
-                    <th>Lote</th>
-                    <th>Secuencial</th>
-                    <th>Importer</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="rows">
-                  <tr><td colspan="7" style="opacity:.75">Inicia sesión para cargar desde Firestore…</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="help" style="margin-top:10px">
-              Nota: En impresión, solo se imprime la etiqueta. Ajusta el zoom de impresión si necesitas más grande/pequeño.
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
+  <div class="card">
+    <div class="muted" id="status">Esperando archivo…</div>
   </div>
 
-  <!-- html2canvas para PNG -->
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <div class="previewWrap" id="preview">
+    <div class="muted">Aquí aparecerá tu Excel renderizado.</div>
+  </div>
+</div>
 
-  <!-- Firebase (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<input id="file" type="file" accept=".xlsx" style="display:none" />
 
-  <script>
-    // ===== Firebase Config (tu config) =====
-    const firebaseConfig = {
-      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
-      authDomain: "oceantreasure-app.firebaseapp.com",
-      projectId: "oceantreasure-app",
-      storageBucket: "oceantreasure-app.firebasestorage.app",
-      messagingSenderId: "553014659258",
-      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
-      measurementId: "G-HMMQKJY8NJ"
-    };
+<script>
+  const btnPick = document.getElementById("btnPick");
+  const btnClear = document.getElementById("btnClear");
+  const fileInp = document.getElementById("file");
+  const preview = document.getElementById("preview");
+  const statusEl = document.getElementById("status");
 
-    // ===== Lista de editores =====
-    const EDITORS = new Set([
-      "yanelavinueza@oceantreasure.local",
-      "jeffersonfigueroa@oceantreasure.local",
-      "milenalmeida@oceantreasure.local",
-      "aracellytomala@oceantreasure.local",
-      "keniacruz@oceantreasure.local",
-      "rrhh@oceantreasure.local",
-      "soporte@oceantreasure.local",
-      "liquidacionesdepago@oceantreasure.local",
-      "ordenesdeproduccion@oceantreasure.local"
-    ]);
+  btnPick.addEventListener("click", () => fileInp.click());
+  btnClear.addEventListener("click", () => {
+    preview.innerHTML = '<div class="muted">Aquí aparecerá tu Excel renderizado.</div>';
+    statusEl.textContent = "Esperando archivo…";
+    fileInp.value = "";
+  });
 
-    const DEFAULTS = {
-      "OUTER": {
-        size:"21/25",
-        productionDate:"2025 年 03 月 01 日",
-        lotNo:"COL25010301",
-        producerAddress:"",
-        factoryRegNo:"",
-        coldStorageAddress:"",
-        factoryRegChina:"",
-        importerName:"懂鲜帝控股（浙江）有限公司",
-        importerAddress:"浙江省金华市义乌市义亭镇同义路1000号1栋1楼115室",
-        importerPhone:"15657629988",
-        netWeightLine:"NET WEIGHT(净含量) :12千克\n(1X12千克)",
-        secuencial:""
-      },
-      "INNER": {
-        size:"21/25",
-        productionDate:"2025 年 03 月 01 日",
-        lotNo:"COL25010301",
-        producerAddress:"",
-        factoryRegNo:"",
-        coldStorageAddress:"",
-        factoryRegChina:"",
-        importerName:"懂鲜帝控股（浙江）有限公司",
-        importerAddress:"浙江省金华市义乌市义亭镇同义路1000号1栋1楼115室",
-        importerPhone:"15657629988",
-        netWeightLine:"NET WEIGHT(净含量) :12千克",
-        secuencial:""
-      }
-    };
-
-    // ===== Estado =====
-    let currentTpl = "OUTER";
-    let currentDocId = null;
-    let canWrite = false;
-
-    // ===== Init Firebase =====
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // ===== UI refs =====
-    const loginView = document.getElementById("loginView");
-    const appView   = document.getElementById("appView");
-    const loginErr  = document.getElementById("loginErr");
-
-    const userBadge = document.getElementById("userBadge");
-    const roleBadge = document.getElementById("roleBadge");
-    const dotConn   = document.getElementById("dotConn");
-    const statusLine= document.getElementById("statusLine");
-
-    const tplOuter = document.getElementById("tplOuter");
-    const tplInner = document.getElementById("tplInner");
-    const labelBox = document.getElementById("labelBox");
-    const labelStage = document.getElementById("labelStage");
-    const docPill  = document.getElementById("docPill");
-    const tplPill  = document.getElementById("tplPill");
-    const seqBadge = document.getElementById("seqBadge");
-
-    const rowsTbody = document.getElementById("rows");
-    const searchInp = document.getElementById("search");
-
-    // Panel Plantilla
-    const tabTpl = document.getElementById("tabTpl");
-    const tplPanel = document.getElementById("tplPanel");
-    const sizePanel = document.getElementById("sizePanel");
-    const fieldsPanel = document.getElementById("fieldsPanel");
-    const tplInput = document.getElementById("tplInput");
-    const tplMode = document.getElementById("tplMode");
-    const btnApplyTpl = document.getElementById("btnApplyTpl");
-    const btnSaveTplLocal = document.getElementById("btnSaveTplLocal");
-    const btnLoadTpl = document.getElementById("btnLoadTpl");
-    const btnClearTpl = document.getElementById("btnClearTpl");
-
-    // Tamaño etiqueta (cm)
-    const inpWcm = document.getElementById("f_labelWcm");
-    const inpHcm = document.getElementById("f_labelHcm");
-    const chkKeepRatio = document.getElementById("chkKeepRatio");
-    const chkPrintAsLabel = document.getElementById("chkPrintAsLabel");
-    const btnApplySize = document.getElementById("btnApplySize");
-    const btnResetSize = document.getElementById("btnResetSize");
-    const dynPageStyle = document.getElementById("dynPageStyle");
-
-    const f = {
-      size: document.getElementById("f_size"),
-      lotNo: document.getElementById("f_lotNo"),
-      productionDate: document.getElementById("f_prodDate"),
-      netWeightLine: document.getElementById("f_netWeight"),
-      producerAddress: document.getElementById("f_producerAddress"),
-      factoryRegNo: document.getElementById("f_factoryRegNo"),
-      coldStorageAddress: document.getElementById("f_coldStorage"),
-      factoryRegChina: document.getElementById("f_factoryRegChina"),
-      importerName: document.getElementById("f_importerName"),
-      importerAddress: document.getElementById("f_importerAddress"),
-      importerPhone: document.getElementById("f_importerPhone"),
-      secuencial: document.getElementById("f_secuencial"),
-    };
-
-    const btnSave   = document.getElementById("btnSave");
-    const btnDelete = document.getElementById("btnDelete");
-
-    // ===== Helpers =====
-    function escapeHtml(s){
-      return String(s ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;");
-    }
-
-    function setStatus(msg){
-      statusLine.textContent = msg || "—";
-    }
-
-    function setDocPill(){
-      docPill.textContent = currentDocId ? ("ID: " + currentDocId.slice(0,8) + "…") : "Nuevo";
-    }
-
-    function setWriteUI(){
-      btnSave.disabled = !canWrite;
-      btnDelete.disabled = !canWrite || !currentDocId;
-    }
-
-    function collectData(){
-      return {
-        template: currentTpl,
-        size: f.size.value.trim(),
-        productionDate: f.productionDate.value.trim(),
-        lotNo: f.lotNo.value.trim(),
-        secuencial: f.secuencial.value.trim(),
-        producerAddress: f.producerAddress.value.trim(),
-        factoryRegNo: f.factoryRegNo.value.trim(),
-        coldStorageAddress: f.coldStorageAddress.value.trim(),
-        factoryRegChina: f.factoryRegChina.value.trim(),
-        importerName: f.importerName.value.trim(),
-        importerAddress: f.importerAddress.value.trim(),
-        importerPhone: f.importerPhone.value.trim(),
-        netWeightLine: f.netWeightLine.value.trim(),
-      };
-    }
-
-    function applyToTemplate(root, data){
-      root.querySelectorAll(".dyn[data-field]").forEach(el => {
-        const key = el.getAttribute("data-field");
-        let val = data[key] ?? "";
-        el.innerHTML = escapeHtml(val).replaceAll("\n","<br>");
-      });
-    }
-
-    function normalizeImportedHtml(html){
-      // Limpieza básica: elimina <meta>, <title>, etc. si pegaron html completo
-      html = String(html || "");
-      html = html.replace(/<\s*meta[^>]*>/gi, "");
-      html = html.replace(/<\s*title[^>]*>.*?<\s*\/\s*title\s*>/gis, "");
-      html = html.replace(/<\s*script[^>]*>.*?<\s*\/\s*script\s*>/gis, "");
-      return html.trim();
-    }
-
-    // Convierte {{campo}} en <span class="dyn" data-field="campo"></span>
-    function mustacheToDyn(html){
-      return html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => {
-        return `<span class="dyn" data-field="${key}"></span>`;
-      });
-    }
-
-    function getTplStorageKey(tpl){ return "DX_TPL_HTML_" + tpl; }
-
-    function saveTplLocal(tpl, html){
-      try{
-        localStorage.setItem(getTplStorageKey(tpl), html);
-      }catch(e){}
-    }
-    function loadTplLocal(tpl){
-      try{
-        return localStorage.getItem(getTplStorageKey(tpl)) || "";
-      }catch(e){ return ""; }
-    }
-
-    function setTpl(tpl){
-      currentTpl = tpl;
-
-      document.getElementById("tabOuter").classList.toggle("active", tpl==="OUTER");
-      document.getElementById("tabInner").classList.toggle("active", tpl==="INNER");
-      document.getElementById("tabTpl").classList.toggle("active", tpl==="TPL");
-
-      const showTplPanel = (tpl === "TPL");
-      tplPanel.style.display = showTplPanel ? "" : "none";
-      sizePanel.style.display = showTplPanel ? "none" : "";
-      fieldsPanel.style.display = showTplPanel ? "none" : "";
-
-      tplOuter.style.display = (tpl==="OUTER") ? "" : "none";
-      tplInner.style.display = (tpl==="INNER") ? "" : "none";
-      tplPill.textContent = (tpl==="TPL") ? (currentTplBeforeTplPanel || "OUTER") : tpl;
-
-      // Al entrar a panel plantilla, cargamos la plantilla guardada de ese template activo real
-      if(showTplPanel){
-        const real = currentTplBeforeTplPanel || "OUTER";
-        tplInput.value = loadTplLocal(real) || "";
-      }else{
-        // si es nuevo, cargar defaults del template
-        if(!currentDocId){
-          loadDefaults(tpl);
-        }else{
-          renderPreview();
-        }
-      }
-    }
-
-    function loadDefaults(tpl){
-      const d = DEFAULTS[tpl] || {};
-      f.size.value = d.size || "";
-      f.productionDate.value = d.productionDate || "";
-      f.lotNo.value = d.lotNo || "";
-      f.secuencial.value = d.secuencial || "";
-      f.producerAddress.value = d.producerAddress || "";
-      f.factoryRegNo.value = d.factoryRegNo || "";
-      f.coldStorageAddress.value = d.coldStorageAddress || "";
-      f.factoryRegChina.value = d.factoryRegChina || "";
-      f.importerName.value = d.importerName || "";
-      f.importerAddress.value = d.importerAddress || "";
-      f.importerPhone.value = d.importerPhone || "";
-      f.netWeightLine.value = d.netWeightLine || "";
-      renderPreview();
-      setStatus("Plantilla cargada: " + tpl);
-    }
-
-    function ensureDefaultTemplateIfEmpty(){
-      // Si no hay plantilla importada guardada, usa una base mínima (tabla simple)
-      const baseOuter = loadTplLocal("OUTER");
-      const baseInner = loadTplLocal("INNER");
-      if(!baseOuter){
-        saveTplLocal("OUTER", `
-<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:760px;max-width:100%">
-  <tr><td style="border:2px solid #000;padding:6px;font-size:14px;font-weight:700">SIZE: {{size}}</td></tr>
-  <tr><td style="border:2px solid #000;border-top:0;padding:6px">LOT: {{lotNo}}</td></tr>
-  <tr><td style="border:2px solid #000;border-top:0;padding:6px">DATE: {{productionDate}}</td></tr>
-  <tr><td style="border:2px solid #000;border-top:0;padding:6px">IMPORTER: {{importerName}}</td></tr>
-  <tr><td style="border:2px solid #000;border-top:0;padding:6px">NET: {{netWeightLine}}</td></tr>
-</table>`.trim());
-      }
-      if(!baseInner){
-        saveTplLocal("INNER", loadTplLocal("OUTER"));
-      }
-    }
-
-    function mountTemplateFromStorage(){
-      ensureDefaultTemplateIfEmpty();
-
-      // Toma HTML de localStorage y lo monta en el DOM (OUTER / INNER)
-      const outHtml = loadTplLocal("OUTER");
-      const inHtml  = loadTplLocal("INNER");
-
-      tplOuter.innerHTML = outHtml;
-      tplInner.innerHTML = inHtml;
-
-      // Asegura que si dejaron {{}} sin convertir, aún se conviertan cuando se aplique
-      renderPreview();
-    }
-
-    function renderPreview(){
-      const data = collectData();
-
-      // Reemplaza dyn fields
-      applyToTemplate(tplOuter, data);
-      applyToTemplate(tplInner, data);
-
-      // Secuencial badge esquina superior derecha
-      const val = (data.secuencial || "").trim();
-      seqBadge.textContent = val;
-      seqBadge.style.display = val ? "" : "none";
-
-      try{ applyLabelSize(); }catch(e){}
-    }
-
-    function newDoc(){
-      currentDocId = null;
-      setDocPill();
-      setWriteUI();
-      loadDefaults(currentTpl);
-    }
-
-    // ===== Tamaño etiqueta (cm) =====
-    function getSizeInputs(){
-      const w = parseFloat((inpWcm.value || "").toString().replace(",", "."));
-      const h = parseFloat((inpHcm.value || "").toString().replace(",", "."));
-      return { wcm: isFinite(w) ? w : 0, hcm: isFinite(h) ? h : 0 };
-    }
-
-    function persistSize(){
-      try{
-        const {wcm,hcm} = getSizeInputs();
-        const payload = { wcm, hcm, keep: !!chkKeepRatio.checked, printAsLabel: !!chkPrintAsLabel.checked };
-        localStorage.setItem("DX_LABEL_SIZE_CM", JSON.stringify(payload));
-      }catch(e){}
-    }
-
-    function restoreSize(){
-      try{
-        const raw = localStorage.getItem("DX_LABEL_SIZE_CM");
-        if(!raw) return;
-        const p = JSON.parse(raw);
-        if(p && typeof p === "object"){
-          if(p.wcm) inpWcm.value = p.wcm;
-          if(p.hcm) inpHcm.value = p.hcm;
-          chkKeepRatio.checked = (p.keep !== false);
-          chkPrintAsLabel.checked = (p.printAsLabel !== false);
-        }
-      }catch(e){}
-    }
-
-    function updateDynPageStyle(){
-      const {wcm,hcm} = getSizeInputs();
-      const wantLabel = chkPrintAsLabel.checked && wcm>0 && hcm>0;
-      if(!dynPageStyle) return;
-
-      if(wantLabel){
-        dynPageStyle.textContent = `
-@page{ size:${wcm}cm ${hcm}cm; margin:0; }
-@media print{
-  html, body{ width:${wcm}cm; height:${hcm}cm; margin:0 !important; padding:0 !important; background:#fff !important; }
-  .wrap, .grid2, .card, .previewWrap, .labelCanvas{ margin:0 !important; padding:0 !important; border:none !important; background:#fff !important; }
-  #labelBox{
-    width:${wcm}cm !important; height:${hcm}cm !important;
-    padding:0 !important; border:1px solid #000 !important; background:#fff !important;
-    position:fixed !important; left:0 !important; top:0 !important; overflow:hidden !important;
+  function argbToCss(argb){
+    if(!argb) return "";
+    // ARGB = AARRGGBB o RRGGBB (según fuente)
+    let hex = String(argb).replace("#","").toUpperCase();
+    if(hex.length === 8) hex = hex.slice(2); // quita AA
+    if(hex.length !== 6) return "";
+    return "#" + hex;
   }
-}`.trim();
-      }else{
-        dynPageStyle.textContent = "";
-      }
+
+  function borderToCss(b){
+    if(!b) return "";
+    // estilo básico: thin/medium/thick/double/dotted/dashed
+    const styleMap = {
+      thin: "1px solid",
+      medium: "2px solid",
+      thick: "3px solid",
+      double: "3px double",
+      dotted: "1px dotted",
+      dashed: "1px dashed",
+      hair: "1px solid"
+    };
+    const st = styleMap[b.style] || "1px solid";
+    const col = argbToCss(b.color?.argb) || "#000000";
+    return `${st} ${col}`;
+  }
+
+  function pxFromColWidth(w){
+    // Excel width ~ caracteres. Aproximación a px:
+    // 1 unidad ~ 7px + padding
+    if(!w) return null;
+    return Math.max(20, Math.round(w * 7 + 12));
+  }
+
+  function pxFromRowHeight(h){
+    // Excel row height en points. 1pt ~ 1.333px
+    if(!h) return null;
+    return Math.max(12, Math.round(h * 1.333));
+  }
+
+  function buildMergeMap(ws){
+    // ws._merges es interno, pero funciona en ExcelJS
+    const map = new Map();
+    const merges = ws._merges || new Map();
+    merges.forEach((range) => {
+      // range es tipo "A1:C3"
+      const [start, end] = range.split(":");
+      map.set(start, end);
+    });
+    return map;
+  }
+
+  function cellAddress(row, col){
+    // ExcelJS tiene colToLetter interno; hacemos uno simple
+    let c = col, s = "";
+    while(c > 0){
+      const m = (c - 1) % 26;
+      s = String.fromCharCode(65 + m) + s;
+      c = Math.floor((c - 1) / 26);
+    }
+    return s + row;
+  }
+
+  function parseAddress(addr){
+    const m = String(addr).match(/^([A-Z]+)(\d+)$/);
+    if(!m) return null;
+    const letters = m[1];
+    const row = parseInt(m[2], 10);
+    let col = 0;
+    for(const ch of letters){
+      col = col * 26 + (ch.charCodeAt(0) - 64);
+    }
+    return {row, col};
+  }
+
+  function getSpan(startAddr, endAddr){
+    const a = parseAddress(startAddr);
+    const b = parseAddress(endAddr);
+    if(!a || !b) return {rowspan:1, colspan:1};
+    return { rowspan: (b.row - a.row + 1), colspan: (b.col - a.col + 1) };
+  }
+
+  async function renderExcel(arrayBuffer){
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(arrayBuffer);
+
+    const ws = wb.worksheets[0];
+    if(!ws){
+      preview.innerHTML = "<b>No hay hojas en este archivo.</b>";
+      return;
     }
 
-    function applyLabelSize(){
-      const {wcm,hcm} = getSizeInputs();
+    statusEl.textContent = `Renderizando: Hoja "${ws.name}"…`;
 
-      if(!(wcm>0 && hcm>0)){
-        labelBox.style.width = "";
-        labelBox.style.height = "";
-        labelBox.style.padding = "10px";
-        labelBox.style.overflow = "visible";
+    const mergeMap = buildMergeMap(ws);
 
-        labelStage.style.transform = "none";
-        labelStage.style.position = "relative";
-        labelStage.style.left = "";
-        labelStage.style.top  = "";
+    // Rango usado
+    const maxRow = ws.actualRowCount || ws.rowCount || 1;
+    const maxCol = ws.actualColumnCount || ws.columnCount || 1;
 
-        persistSize();
-        updateDynPageStyle();
-        return;
+    // Matriz para saltar celdas cubiertas por merges (no master)
+    const covered = new Set();
+
+    // Tabla
+    const table = document.createElement("table");
+    table.className = "xl";
+
+    // Colgroup (ancho columnas)
+    const colgroup = document.createElement("colgroup");
+    for(let c=1; c<=maxCol; c++){
+      const col = document.createElement("col");
+      const w = ws.getColumn(c).width;
+      const px = pxFromColWidth(w);
+      if(px) col.style.width = px + "px";
+      colgroup.appendChild(col);
+    }
+    table.appendChild(colgroup);
+
+    for(let r=1; r<=maxRow; r++){
+      const tr = document.createElement("tr");
+      const rowObj = ws.getRow(r);
+      const rh = pxFromRowHeight(rowObj.height);
+      if(rh) tr.style.height = rh + "px";
+
+      for(let c=1; c<=maxCol; c++){
+        const addr = cellAddress(r, c);
+        if(covered.has(addr)) continue;
+
+        const cell = ws.getCell(r, c);
+
+        const td = document.createElement("td");
+
+        // Merges
+        const mergeEnd = mergeMap.get(addr);
+        if(mergeEnd){
+          const {rowspan, colspan} = getSpan(addr, mergeEnd);
+          if(rowspan > 1) td.rowSpan = rowspan;
+          if(colspan > 1) td.colSpan = colspan;
+
+          // Marcar cubiertas (todas menos el master)
+          const a = parseAddress(addr), b = parseAddress(mergeEnd);
+          for(let rr=a.row; rr<=b.row; rr++){
+            for(let cc=a.col; cc<=b.col; cc++){
+              const a2 = cellAddress(rr, cc);
+              if(a2 !== addr) covered.add(a2);
+            }
+          }
+        }
+
+        // Valor (texto)
+        let value = cell.value;
+        // Si es RichText
+        if(value && typeof value === "object" && value.richText){
+          value = value.richText.map(x => x.text).join("");
+        }
+        // Fórmulas (muestra resultado si existe)
+        if(value && typeof value === "object" && value.formula){
+          value = value.result ?? "";
+        }
+        td.textContent = (value ?? "").toString();
+
+        // Estilos
+        const st = cell.style || {};
+
+        // Fuente
+        if(st.font){
+          const f = st.font;
+          if(f.name) td.style.fontFamily = f.name;
+          if(f.size) td.style.fontSize = f.size + "pt";
+          if(f.bold) td.style.fontWeight = "700";
+          if(f.italic) td.style.fontStyle = "italic";
+          if(f.underline) td.style.textDecoration = "underline";
+          const col = argbToCss(f.color?.argb);
+          if(col) td.style.color = col;
+        }
+
+        // Relleno (fill)
+        if(st.fill && st.fill.fgColor){
+          const bg = argbToCss(st.fill.fgColor.argb);
+          if(bg) td.style.background = bg;
+        }
+
+        // Alineación
+        if(st.alignment){
+          const al = st.alignment;
+          if(al.horizontal) td.style.textAlign = al.horizontal; // left/center/right
+          if(al.vertical) td.style.verticalAlign = al.vertical; // top/middle/bottom
+          if(al.wrapText) td.style.whiteSpace = "normal";
+        }
+
+        // Bordes
+        if(st.border){
+          const b = st.border;
+          if(b.top) td.style.borderTop = borderToCss(b.top);
+          if(b.right) td.style.borderRight = borderToCss(b.right);
+          if(b.bottom) td.style.borderBottom = borderToCss(b.bottom);
+          if(b.left) td.style.borderLeft = borderToCss(b.left);
+        }else{
+          // Si no hay bordes, no forzamos (Excel muchas veces tiene celdas sin borde)
+        }
+
+        tr.appendChild(td);
       }
-
-      labelBox.style.width  = wcm + "cm";
-      labelBox.style.height = hcm + "cm";
-      labelBox.style.padding = "0";
-      labelBox.style.overflow = "hidden";
-
-      labelStage.style.transform = "none";
-      labelStage.style.position = "absolute";
-      labelStage.style.left = "0px";
-      labelStage.style.top  = "0px";
-
-      const targetRect = labelBox.getBoundingClientRect();
-      const contentRect = labelStage.getBoundingClientRect();
-
-      const targetWpx = Math.max(1, targetRect.width);
-      const targetHpx = Math.max(1, targetRect.height);
-
-      const contentWpx = Math.max(1, contentRect.width);
-      const contentHpx = Math.max(1, contentRect.height);
-
-      const scaleX = targetWpx / contentWpx;
-      const scaleY = targetHpx / contentHpx;
-
-      let sx = scaleX, sy = scaleY;
-      if(chkKeepRatio.checked){
-        const s = Math.min(scaleX, scaleY);
-        sx = s; sy = s;
-      }
-
-      labelStage.style.transformOrigin = "top left";
-      labelStage.style.transform = `scale(${sx}, ${sy})`;
-
-      const stageW = contentWpx * sx;
-      const stageH = contentHpx * sy;
-
-      const left = Math.max(0, (targetWpx - stageW) / 2);
-      const top  = Math.max(0, (targetHpx - stageH) / 2);
-
-      labelStage.style.left = left + "px";
-      labelStage.style.top  = top + "px";
-
-      persistSize();
-      updateDynPageStyle();
+      table.appendChild(tr);
     }
 
-    // ===== Plantilla: importar y aplicar =====
-    let currentTplBeforeTplPanel = "OUTER";
+    preview.innerHTML = "";
+    preview.appendChild(table);
 
-    function openTplPanel(){
-      currentTplBeforeTplPanel = (currentTpl === "INNER") ? "INNER" : "OUTER";
-      tplPill.textContent = currentTplBeforeTplPanel;
-      setTpl("TPL");
-      setStatus("Panel Plantilla abierto (" + currentTplBeforeTplPanel + ").");
-    }
+    statusEl.textContent = `Listo ✅ Hoja "${ws.name}" renderizada.`;
+  }
 
-    function closeTplPanelBack(){
-      setTpl(currentTplBeforeTplPanel || "OUTER");
-    }
+  fileInp.addEventListener("change", async () => {
+    const file = fileInp.files?.[0];
+    if(!file) return;
 
-    function applyImportedTemplate(){
-      const real = currentTplBeforeTplPanel || "OUTER";
-      let html = normalizeImportedHtml(tplInput.value);
-
-      if(!html){
-        alert("Pega el HTML de Excel primero.");
-        return;
-      }
-
-      if(tplMode.value === "mustache"){
-        html = mustacheToDyn(html);
-      }
-
-      // Guardamos y montamos
-      saveTplLocal(real, html);
-      mountTemplateFromStorage();
-
-      // Volvemos a OUTER/INNER
-      closeTplPanelBack();
-
-      setStatus("Plantilla aplicada a " + real + ". (Vista previa actualizada).");
-      renderPreview();
-      requestAnimationFrame(() => applyLabelSize());
-    }
-
-    // ===== Login =====
-    document.getElementById("btnLogin").addEventListener("click", async () => {
-      loginErr.style.display="none";
-      const email = document.getElementById("email").value.trim();
-      const pass  = document.getElementById("pass").value;
-      try {
-        await auth.signInWithEmailAndPassword(email, pass);
-      } catch (e) {
-        loginErr.textContent = (e && e.message) ? e.message : "Error de login.";
-        loginErr.style.display="block";
-      }
-    });
-
-    document.getElementById("btnDemo").addEventListener("click", () => {
-      loginView.style.display = "none";
-      appView.style.display = "";
-      userBadge.textContent = "MODO DEMO (sin guardar)";
-      roleBadge.textContent = "Solo vista";
-      dotConn.classList.add("warn");
-      canWrite = false;
-      setWriteUI();
-
-      ensureDefaultTemplateIfEmpty();
-      mountTemplateFromStorage();
-
-      currentTpl = "OUTER";
-      currentDocId = null;
-      setDocPill();
-      loadDefaults("OUTER");
-      tplPill.textContent = "OUTER";
-
-      rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75">Modo demo: inicia sesión para ver/guardar en Firestore.</td></tr>';
-      setStatus("Modo demo activo (puedes imprimir/exportar PNG/PDF).");
-    });
-
-    document.getElementById("btnLogout").addEventListener("click", async () => {
-      try{ await auth.signOut(); }catch(e){}
-    });
-
-    auth.onAuthStateChanged(async (user) => {
-      if(!user){
-        appView.style.display="none";
-        loginView.style.display="";
-        document.getElementById("email").value="";
-        document.getElementById("pass").value="";
-        rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75">Inicia sesión para cargar desde Firestore…</td></tr>';
-        return;
-      }
-
-      loginView.style.display="none";
-      appView.style.display="";
-
-      const email = (user.email || "").toLowerCase();
-      userBadge.textContent = email || "Usuario";
-      canWrite = EDITORS.has(email);
-      roleBadge.textContent = canWrite ? "EDITOR (guardar permitido)" : "Solo vista";
-      dotConn.classList.toggle("warn", !canWrite);
-      dotConn.classList.toggle("bad", false);
-
-      setWriteUI();
-
-      ensureDefaultTemplateIfEmpty();
-      mountTemplateFromStorage();
-
-      currentTpl = "OUTER";
-      currentDocId = null;
-      setDocPill();
-      loadDefaults("OUTER");
-      tplPill.textContent = "OUTER";
-
-      await loadList();
-      setStatus("Conectado. Listo para generar etiquetas.");
-    });
-
-    // ===== Tabs =====
-    document.getElementById("tabOuter").addEventListener("click", () => {
-      if(currentTpl === "TPL") closeTplPanelBack();
-      currentTplBeforeTplPanel = "OUTER";
-      currentTpl = "OUTER";
-      tplPill.textContent = "OUTER";
-      tplOuter.style.display = "";
-      tplInner.style.display = "none";
-      document.getElementById("tabOuter").classList.add("active");
-      document.getElementById("tabInner").classList.remove("active");
-      document.getElementById("tabTpl").classList.remove("active");
-      tplPanel.style.display = "none";
-      sizePanel.style.display = "";
-      fieldsPanel.style.display = "";
-      if(!currentDocId) loadDefaults("OUTER"); else renderPreview();
-    });
-
-    document.getElementById("tabInner").addEventListener("click", () => {
-      if(currentTpl === "TPL") closeTplPanelBack();
-      currentTplBeforeTplPanel = "INNER";
-      currentTpl = "INNER";
-      tplPill.textContent = "INNER";
-      tplOuter.style.display = "none";
-      tplInner.style.display = "";
-      document.getElementById("tabOuter").classList.remove("active");
-      document.getElementById("tabInner").classList.add("active");
-      document.getElementById("tabTpl").classList.remove("active");
-      tplPanel.style.display = "none";
-      sizePanel.style.display = "";
-      fieldsPanel.style.display = "";
-      if(!currentDocId) loadDefaults("INNER"); else renderPreview();
-    });
-
-    tabTpl.addEventListener("click", () => openTplPanel());
-
-    // Plantilla botones
-    btnApplyTpl.addEventListener("click", applyImportedTemplate);
-    btnSaveTplLocal.addEventListener("click", () => {
-      const real = currentTplBeforeTplPanel || "OUTER";
-      let html = normalizeImportedHtml(tplInput.value);
-      if(!html){ alert("No hay HTML para guardar."); return; }
-      if(tplMode.value === "mustache") html = mustacheToDyn(html);
-      saveTplLocal(real, html);
-      setStatus("Plantilla guardada en este PC para " + real + ".");
-    });
-    btnLoadTpl.addEventListener("click", () => {
-      const real = currentTplBeforeTplPanel || "OUTER";
-      tplInput.value = loadTplLocal(real) || "";
-      setStatus("Plantilla cargada (local) para " + real + ".");
-    });
-    btnClearTpl.addEventListener("click", () => {
-      tplInput.value = "";
-      setStatus("Editor limpiado.");
-    });
-
-    // ===== Live updates =====
-    Object.values(f).forEach(el => {
-      el.addEventListener("input", () => renderPreview());
-    });
-
-    // ===== Tamaño etiqueta =====
-    restoreSize();
-    requestAnimationFrame(() => applyLabelSize());
-
-    btnApplySize.addEventListener("click", () => applyLabelSize());
-    btnResetSize.addEventListener("click", () => {
-      inpWcm.value = "";
-      inpHcm.value = "";
-      chkKeepRatio.checked = true;
-      applyLabelSize();
-    });
-
-    inpWcm.addEventListener("input", () => applyLabelSize());
-    inpHcm.addEventListener("input", () => applyLabelSize());
-    chkKeepRatio.addEventListener("change", () => applyLabelSize());
-    chkPrintAsLabel.addEventListener("change", () => updateDynPageStyle());
-
-    window.addEventListener("beforeprint", () => applyLabelSize());
-
-    // ===== Buttons =====
-    document.getElementById("btnNew").addEventListener("click", () => {
-      currentTpl = (currentTpl === "INNER") ? "INNER" : "OUTER";
-      currentTplBeforeTplPanel = currentTpl;
-      currentDocId = null;
-      setDocPill();
-      setWriteUI();
-      loadDefaults(currentTpl);
-      setStatus("Nuevo.");
-    });
-
-    document.getElementById("btnPrint").addEventListener("click", async () => {
-      await exportPdfExact();
-    });
-
-    document.getElementById("btnPng").addEventListener("click", async () => {
-      const target = document.getElementById("labelBox");
-      try {
-        const canvas = await html2canvas(target, {scale: 2, backgroundColor:"#ffffff"});
-        const a = document.createElement("a");
-        const data = collectData();
-        const safeLot = (data.lotNo || "ETIQUETA").replace(/[^a-zA-Z0-9-_]+/g, "_");
-        a.download = `DX_LABEL_${data.template}_${safeLot}.png`;
-        a.href = canvas.toDataURL("image/png");
-        a.click();
-        setStatus("PNG exportado.");
-      } catch (e) {
-        alert("No se pudo exportar PNG: " + (e?.message || e));
-      }
-    });
-
-    // ===== PDF exacto (cm) =====
-    async function exportPdfExact(){
-      const {wcm,hcm} = getSizeInputs();
-      if(!(wcm>0 && hcm>0)){
-        alert("Define ANCHO y ALTO en cm para generar PDF exacto.");
-        return;
-      }
-      try{ applyLabelSize(); }catch(e){}
-
-      const target = document.getElementById("labelBox");
-      const scale = 4;
-
+    statusEl.textContent = "Leyendo archivo…";
+    const reader = new FileReader();
+    reader.onload = async (e) => {
       try{
-        const canvas = await html2canvas(target, {
-          scale,
-          backgroundColor: "#ffffff",
-          useCORS: true
-        });
-
-        const imgData = canvas.toDataURL("image/png");
-
-        const { jsPDF } = window.jspdf;
-        const wmm = wcm * 10;
-        const hmm = hcm * 10;
-
-        const pdf = new jsPDF({
-          orientation: (wmm >= hmm) ? "landscape" : "portrait",
-          unit: "mm",
-          format: [wmm, hmm],
-          compress: true
-        });
-
-        pdf.addImage(imgData, "PNG", 0, 0, wmm, hmm, undefined, "FAST");
-
-        const data = collectData();
-        const safeLot = (data.lotNo || "ETIQUETA").replace(/[^a-zA-Z0-9-_]+/g, "_");
-        const safeSeq = (data.secuencial || "").replace(/[^a-zA-Z0-9-_]+/g, "_");
-        const name = `DX_LABEL_${data.template || "TPL"}_${safeLot}${safeSeq ? ("_"+safeSeq) : ""}_${wcm}x${hcm}cm.pdf`;
-
-        pdf.save(name);
-        setStatus("PDF generado (tamaño exacto).");
-      }catch(e){
-        alert("No se pudo generar el PDF: " + (e?.message || e));
+        await renderExcel(e.target.result);
+      }catch(err){
+        console.error(err);
+        statusEl.textContent = "Error al renderizar.";
+        preview.innerHTML = `<div style="color:#b91c1c;font-weight:800">No se pudo renderizar el Excel. Revisa consola o envíame ese archivo para ajustarlo.</div>`;
       }
-    }
-
-    // ===== Firestore CRUD =====
-    const COL = db.collection("DX_IMPORTER_LABELS");
-    async function saveDoc(){
-      if(!canWrite) return;
-
-      const user = auth.currentUser;
-      const email = (user?.email || "").toLowerCase();
-      const data = collectData();
-
-      if(!data.lotNo || !data.size){
-        alert("Completa al menos SIZE y LOTE para guardar.");
-        return;
-      }
-
-      const now = firebase.firestore.FieldValue.serverTimestamp();
-
-      try {
-        if(currentDocId){
-          await COL.doc(currentDocId).set({
-            ...data,
-            updatedAt: now,
-            updatedBy: email
-          }, {merge:true});
-          setStatus("Actualizado en Firestore.");
-        } else {
-          const ref = await COL.add({
-            ...data,
-            createdAt: now,
-            createdBy: email,
-            updatedAt: now,
-            updatedBy: email
-          });
-          currentDocId = ref.id;
-          setDocPill();
-          setWriteUI();
-          setStatus("Guardado en Firestore.");
-        }
-        await loadList();
-      } catch (e) {
-        alert("Error guardando: " + (e?.message || e));
-      }
-    }
-
-    async function deleteDoc(){
-      if(!canWrite || !currentDocId) return;
-      if(!confirm("¿Eliminar esta etiqueta?")) return;
-      try {
-        await COL.doc(currentDocId).delete();
-        setStatus("Eliminado.");
-        currentDocId = null;
-        setDocPill();
-        await loadList();
-      } catch (e) {
-        alert("Error eliminando: " + (e?.message || e));
-      }
-    }
-
-    btnSave.addEventListener("click", saveDoc);
-    btnDelete.addEventListener("click", deleteDoc);
-
-    // ===== List & search =====
-    let cacheList = [];
-
-    function fmtDate(ts){
-      try {
-        if(!ts) return "";
-        const d = ts.toDate ? ts.toDate() : (ts instanceof Date ? ts : null);
-        if(!d) return "";
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth()+1).padStart(2,"0");
-        const dd = String(d.getDate()).padStart(2,"0");
-        const hh = String(d.getHours()).padStart(2,"0");
-        const mi = String(d.getMinutes()).padStart(2,"0");
-        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
-      } catch {
-        return "";
-      }
-    }
-
-    function matchesSearch(item, q){
-      if(!q) return true;
-      q = q.toLowerCase();
-      const hay = [
-        item.template, item.size, item.lotNo, item.secuencial, item.importerName, item.productionDate, item.importerPhone
-      ].map(x => String(x||"").toLowerCase()).join(" | ");
-      return hay.includes(q);
-    }
-
-    function renderList(){
-      const q = searchInp.value.trim().toLowerCase();
-      const items = cacheList.filter(it => matchesSearch(it, q));
-
-      if(!items.length){
-        rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75">Sin resultados.</td></tr>';
-        return;
-      }
-
-      rowsTbody.innerHTML = items.map(it => {
-        return `
-          <tr>
-            <td>${escapeHtml(fmtDate(it.updatedAt) || fmtDate(it.createdAt))}</td>
-            <td><span class="pill">${escapeHtml(it.template || "")}</span></td>
-            <td>${escapeHtml(it.size || "")}</td>
-            <td style="font-weight:900">${escapeHtml(it.lotNo || "")}</td>
-            <td>${escapeHtml(it.secuencial || "")}</td>
-            <td>${escapeHtml(it.importerName || "")}</td>
-            <td>
-              <div class="actions">
-                <button class="mini" data-act="load" data-id="${it.id}">Cargar</button>
-                <button class="mini" data-act="dup" data-id="${it.id}">Duplicar</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    async function loadList(){
-      if(!auth.currentUser) return;
-
-      try {
-        const snap = await COL.orderBy("updatedAt","desc").limit(150).get();
-        cacheList = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-        renderList();
-        dotConn.classList.remove("bad");
-      } catch (e) {
-        try {
-          const snap2 = await COL.orderBy("createdAt","desc").limit(150).get();
-          cacheList = snap2.docs.map(d => ({ id:d.id, ...d.data() }));
-          renderList();
-          dotConn.classList.remove("bad");
-        } catch (e2) {
-          dotConn.classList.add("bad");
-          rowsTbody.innerHTML = '<tr><td colspan="7" style="opacity:.75">No se pudo leer Firestore (revisa permisos / conexión).</td></tr>';
-          console.error(e2);
-        }
-      }
-    }
-
-    document.getElementById("btnRefresh").addEventListener("click", loadList);
-    searchInp.addEventListener("input", renderList);
-
-    rowsTbody.addEventListener("click", async (e) => {
-      const btn = e.target.closest("button[data-act]");
-      if(!btn) return;
-      const act = btn.getAttribute("data-act");
-      const id  = btn.getAttribute("data-id");
-      const item = cacheList.find(x => x.id === id);
-      if(!item) return;
-
-      function fillFromItem(it){
-        f.size.value = it.size || "";
-        f.productionDate.value = it.productionDate || "";
-        f.lotNo.value = it.lotNo || "";
-        f.secuencial.value = it.secuencial || "";
-        f.producerAddress.value = it.producerAddress || "";
-        f.factoryRegNo.value = it.factoryRegNo || "";
-        f.coldStorageAddress.value = it.coldStorageAddress || "";
-        f.factoryRegChina.value = it.factoryRegChina || "";
-        f.importerName.value = it.importerName || "";
-        f.importerAddress.value = it.importerAddress || "";
-        f.importerPhone.value = it.importerPhone || "";
-        f.netWeightLine.value = it.netWeightLine || "";
-      }
-
-      if(act === "load"){
-        currentDocId = id;
-        setDocPill();
-        setWriteUI();
-
-        // cambia template (OUTER/INNER) y carga data
-        if((item.template || "OUTER") === "INNER"){
-          document.getElementById("tabInner").click();
-        }else{
-          document.getElementById("tabOuter").click();
-        }
-
-        fillFromItem(item);
-        renderPreview();
-        setStatus("Documento cargado.");
-        window.scrollTo({top:0,behavior:"smooth"});
-      }
-
-      if(act === "dup"){
-        currentDocId = null;
-        setDocPill();
-        setWriteUI();
-
-        if((item.template || "OUTER") === "INNER"){
-          document.getElementById("tabInner").click();
-        }else{
-          document.getElementById("tabOuter").click();
-        }
-
-        fillFromItem(item);
-        renderPreview();
-        setStatus("Duplicado listo. (Presiona GUARDAR para crear uno nuevo).");
-        window.scrollTo({top:0,behavior:"smooth"});
-      }
-    });
-
-    // ===== Boot =====
-    ensureDefaultTemplateIfEmpty();
-    mountTemplateFromStorage();
-    setDocPill();
-    setWriteUI();
-  </script>
+    };
+    reader.readAsArrayBuffer(file);
+  });
+</script>
 </body>
 </html>
