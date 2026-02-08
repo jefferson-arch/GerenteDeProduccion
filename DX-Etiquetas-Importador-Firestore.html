@@ -1,0 +1,1071 @@
+<!doctype html>
+<!-- DX - Etiquetas Importadores (Zebra ZT411 10x15cm) -->
+<!-- BUILD_DX_ETIQUETAS_IMPORTADOR v1.2.0 2026-02-08 -->
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>DX | Etiquetas Importadores 10x15</title>
+
+  <link rel="icon" href="favicon.ico?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --ink:#e9eefc;
+      --muted:#aab6de;
+      --line:rgba(255,255,255,.12);
+      --blue:#1e88e5;
+      --green:#2e7d32;
+      --red:#c62828;
+      --shadow: 0 8px 30px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(30,136,229,.25), transparent 55%),
+                  radial-gradient(900px 600px at 110% 10%, rgba(46,125,50,.18), transparent 50%),
+                  var(--bg);
+      color: var(--ink);
+    }
+    header{
+      position: sticky;
+      top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(11,18,32,.72);
+      border-bottom: 1px solid var(--line);
+    }
+    .bar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:12px 16px; max-width: 1380px; margin: 0 auto;
+    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.4px; }
+    .brand .tag{ font-weight:800; font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); color: var(--muted); }
+    .right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .pill{ border:1px solid var(--line); background: rgba(255,255,255,.06); padding:6px 10px; border-radius: 999px; color: var(--muted); font-size:12px; }
+
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.08);
+      color:#fff;
+      padding:8px 12px;
+      border-radius: 10px;
+      font-weight:800;
+      transition:.12s ease;
+      user-select:none;
+      text-decoration:none;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); }
+    .btn:active{ transform: translateY(0px); }
+    .btn.primary{ background: rgba(30,136,229,.18); border-color: rgba(30,136,229,.45); }
+    .btn.primary:hover{ background: rgba(30,136,229,.28); }
+    .btn.good{ background: rgba(46,125,50,.18); border-color: rgba(46,125,50,.45); }
+    .btn.good:hover{ background: rgba(46,125,50,.28); }
+    .btn.danger{ background: rgba(198,40,40,.18); border-color: rgba(198,40,40,.50); }
+    .btn.danger:hover{ background: rgba(198,40,40,.28); }
+    .btn[disabled]{ opacity:.45; cursor:not-allowed; transform:none; }
+
+    main{ max-width: 1380px; margin: 14px auto 40px; padding: 0 16px; }
+    .grid{ display:grid; grid-template-columns: 440px 1fr; gap:14px; align-items:start; }
+    @media (max-width: 1020px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{ padding:12px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .card .hd h2{ margin:0; font-size:14px; letter-spacing:.2px; }
+    .card .bd{ padding: 12px; }
+
+    .tabs{
+      display:flex; flex-wrap:wrap; gap:8px;
+      padding:12px; border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.15);
+    }
+    .tab{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:#fff;
+      padding:8px 10px;
+      border-radius: 10px;
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+      transition:.12s ease;
+      user-select:none;
+    }
+    .tab:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
+    .tab.active{ background: rgba(30,136,229,.28); border-color: rgba(30,136,229,.55); }
+
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px; }
+    label{ display:block; font-size:12px; color: var(--muted); margin: 0 0 6px 0; font-weight:800; }
+    input, textarea{
+      width:100%;
+      padding:9px 10px;
+      border-radius: 10px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      color:#fff;
+      outline:none;
+      font-weight:800;
+      font-family: var(--sans);
+    }
+    textarea{ resize: vertical; min-height: 58px; }
+    input::placeholder{ color: rgba(255,255,255,.35); font-weight:700; }
+
+    .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top: 8px; }
+    .hint{ font-size:12px; color: var(--muted); line-height: 1.35; margin-top: 8px; }
+
+    .previewWrap{ display:flex; justify-content:center; align-items:flex-start; padding: 12px; overflow:auto; max-height: 74vh; }
+    .stage{ padding: 10px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+    .sheetWrap{ transform-origin: top center; }
+
+    /* ======= ETIQUETA 10x15 ======= */
+    .labelSheet{
+      width: 100mm;
+      height: 150mm;
+      background: #fff;
+      position: relative;
+      overflow:hidden;
+      border: 0.2mm solid rgba(0,0,0,.60);
+    }
+
+    .seqCorner{
+      position:absolute;
+      top: 2.3mm;
+      right: 2.6mm;
+      font-family: "Times New Roman", "SimSun", serif;
+      font-size: 9pt;
+      font-weight: 800;
+      color:#000;
+      z-index: 5;
+    }
+
+    table.labelTbl{
+      position:absolute;
+      left: 2.0mm;
+      top: 5.8mm;
+      width: calc(100mm - 4.0mm);
+      height: 141.8mm;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-family: "Times New Roman", "SimSun", serif;
+      color:#000;
+    }
+    table.labelTbl td{
+      border: 0.18mm solid rgba(0,0,0,.55);
+      padding: 1.2mm 1.2mm;
+      vertical-align: top;
+      line-height: 1.10;
+      word-break: break-word;
+      white-space: pre-wrap;
+      font-weight: 400; /* por defecto (inglés normal) */
+    }
+    td.leftCol{ width: 44.4%; }
+    td.rightCol{ width: 55.6%; }
+
+    /* Chino en negrita */
+    .cjk{ font-weight: 800; }
+
+    .zoomRow{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+    .zoomRow span{ font-family: var(--mono); font-size:12px; color: var(--muted); }
+    .range{ width: 170px; }
+
+    .status{ margin-top:10px; font-size:12px; color: var(--muted); line-height:1.35; min-height: 18px; }
+    .ok{ color: #9df5b1; }
+    .bad{ color: #ffb4b4; }
+    .warn{ color: #ffe1a1; }
+
+    .histTable{ width:100%; border-collapse: collapse; font-size:12px; margin-top: 10px; }
+    .histTable th, .histTable td{ border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
+    .histTable th{ text-align:left; color: var(--muted); font-weight:900; font-size:11px; }
+    .histTable td{ color: rgba(255,255,255,.92); font-weight:800; }
+    .mono{ font-family: var(--mono); }
+    .muted{ color: var(--muted); font-weight:800; }
+
+    .histActions{ display:flex; gap:6px; flex-wrap:wrap; }
+    .tiny{ padding:6px 8px; border-radius: 10px; font-size:11px; font-weight:900; }
+
+    .overlay{ position: fixed; inset:0; background: rgba(0,0,0,.60); display:none; align-items:center; justify-content:center; padding: 16px; z-index: 999; }
+    .modal{ width: min(520px, 96vw); background: #0f172a; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow:hidden; }
+    .modal .mhd{ padding: 12px; border-bottom: 1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .modal .mhd strong{ font-size:14px; }
+    .modal .mbd{ padding: 12px; }
+    .modal .mbd .row{ grid-template-columns: 1fr; }
+    .note{ font-size:12px; color: var(--muted); line-height:1.35; }
+
+    @media print{
+      @page { size: 100mm 150mm; margin: 0; }
+      html, body { width: 100mm; height: 150mm; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+      header, main { display:none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="bar">
+      <div class="brand">
+        DX | Etiquetas Importadores <span class="tag">ZT411 10×15 cm</span>
+      </div>
+      <div class="right">
+        <span id="rolePill" class="pill">Desconectado</span>
+        <button id="btnLoginOpen" class="btn primary" type="button">Iniciar sesión</button>
+        <button id="btnLogout" class="btn" type="button" style="display:none;">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="tabs" id="tabs"></div>
+    </div>
+
+    <div class="grid" style="margin-top:14px;">
+      <div class="card">
+        <div class="hd">
+          <h2>Datos de etiqueta</h2>
+          <button id="btnFit" class="btn" type="button">Ajustar 10×15</button>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Secuencial (esquina superior derecha)</label>
+              <input id="inpSeq" placeholder="00000014" maxlength="20" />
+            </div>
+            <div>
+              <label>Lote</label>
+              <input id="inpLot" placeholder="0222" maxlength="30" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Fecha Producción (texto)</label>
+              <input id="inpProdDate" placeholder="2025 年 03 月 01 日" maxlength="60" />
+            </div>
+            <div>
+              <label>Talla</label>
+              <input id="inpSize" placeholder="21/25" maxlength="20" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Net Weight (línea 1)</label>
+              <input id="inpNW1" placeholder="20千克" maxlength="30" />
+            </div>
+            <div>
+              <label>Net Weight (línea 2)</label>
+              <input id="inpNW2" placeholder="10x2千克" maxlength="30" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Importador</label>
+              <input id="inpImpName" placeholder="Nombre importador" maxlength="120" />
+            </div>
+            <div>
+              <label>Teléfono importador</label>
+              <input id="inpImpPhone" placeholder="15657629988" maxlength="40" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div style="grid-column: 1 / -1;">
+              <label>Dirección importador</label>
+              <textarea id="inpImpAddr" placeholder="Dirección importador"></textarea>
+            </div>
+          </div>
+
+          <div class="row">
+            <div style="grid-column: 1 / -1;">
+              <label>Densidad de texto (para que TODO entre en 10×15)</label>
+              <input id="rngDensity" class="range" type="range" min="70" max="110" value="100" />
+              <div class="hint">Si un importador trae texto más largo, baja a 90%/85% y todo entra sin perder nitidez.</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="btnAutoFit" class="btn" type="button">Auto-ajustar texto</button>
+            <button id="btnSave" class="btn good" type="button">Guardar en Firestore</button>
+            <button id="btnPdf" class="btn primary" type="button">PDF (10×15 HD)</button>
+            <button id="btnPrint" class="btn" type="button">Imprimir (ZT411)</button>
+          </div>
+
+          <div class="hint">
+            • Al imprimir: tamaño <b>100mm × 150mm</b>, escala <b>100%</b>, sin “Ajustar a página”.<br>
+            • El PDF se genera con el diálogo de impresión (vector, máxima nitidez).
+          </div>
+
+          <div id="status" class="status"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd">
+          <h2>Vista previa 10×15</h2>
+          <div class="zoomRow">
+            <span>Zoom:</span>
+            <input id="rngZoom" class="range" type="range" min="40" max="160" value="100" />
+            <span id="zoomTxt">100%</span>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="previewWrap">
+            <div class="stage" id="stage">
+              <div class="sheetWrap" id="sheetWrap">
+                <div class="labelSheet" id="labelSheet">
+                  <div class="seqCorner" id="seqCorner">SEC: —</div>
+                  <table class="labelTbl" id="labelTbl"></table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="hint">Tip: puedes hacer scroll dentro de esta vista previa para ver la etiqueta completa.</div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="hd">
+          <h2>Historial de etiquetas guardadas</h2>
+          <div class="actions" style="margin:0;">
+            <input id="inpFind" placeholder="Buscar por secuencial..." style="width:220px;" />
+            <button id="btnRefresh" class="btn" type="button">Actualizar</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="hint">
+            En el historial puedes: <b>Cargar</b> (editar/visualizar), <b>PDF</b>, <b>Imprimir</b>.
+            <span id="delHint" style="display:none;">• <b>Eliminar</b> disponible solo para administrador.</span>
+          </div>
+
+          <table class="histTable">
+            <thead>
+              <tr>
+                <th style="width:170px;">Fecha/Hora</th>
+                <th style="width:110px;">Sec</th>
+                <th style="width:90px;">Lote</th>
+                <th style="width:90px;">Talla</th>
+                <th style="width:150px;">Net Weight</th>
+                <th style="width:230px;">Usuario</th>
+                <th style="width:260px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="histBody"></tbody>
+          </table>
+
+          <div class="status" id="histStatus"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="overlay" id="loginOverlay">
+    <div class="modal">
+      <div class="mhd">
+        <strong>Iniciar sesión</strong>
+        <button id="btnLoginClose" class="btn" type="button">Cerrar</button>
+      </div>
+      <div class="mbd">
+        <div class="row">
+          <div>
+            <label>Email</label>
+            <input id="loginEmail" placeholder="usuario@oceantreasure.local" autocomplete="username" />
+          </div>
+          <div>
+            <label>Contraseña</label>
+            <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="actions">
+          <button id="btnDoLogin" class="btn primary" type="button">Entrar</button>
+        </div>
+        <p class="note" style="margin-top:10px;">
+          Acceso permitido únicamente a:<br>
+          • davidballas@oceantreasure.local (Digitador)<br>
+          • jeffersonfigueroa@oceantreasure.local (Administrador)<br>
+          • disenador@oceantreasure.local (Diseñador)
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const ALLOWED = {
+      "davidballas@oceantreasure.local": "DIGITADOR",
+      "jeffersonfigueroa@oceantreasure.local": "ADMIN",
+      "disenador@oceantreasure.local": "DISENADOR",
+    };
+    const ADMIN_EMAIL = "jeffersonfigueroa@oceantreasure.local";
+
+    const TABS = [
+      { key:"nancy_dongxiandi",  name:"NANCY - Dongxiandi Holdings" },
+      { key:"nancy_yueshi",      name:"NANCY - Shenzhen Yueshi" },
+      { key:"criss_hongbao",     name:"CRISS - Guangdong Hongbao" },
+      { key:"criss_lvh",         name:"CRISS - Guang Dong LvHuan" },
+      { key:"interatlantic",     name:"InterAtlantic" },
+      { key:"ancora7",           name:"Áncora 7" },
+      { key:"gambalia",          name:"Gambalia" },
+      { key:"nuevo",             name:"Nuevo" },
+    ];
+
+    // Plantilla base (extraída del XLSX actualizado) — alturas ajustadas a 141.8mm para que entre TODO en 10x15
+    const BASE_TEMPLATE_ROWS = [{"r": 1, "left": "COMMODITY NAME (商品名称):", "right": "FROZEN RAW VANNAMEI SHRIMPS HEAD-LESS SHELL-ON 冻生去头南美白对虾", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 6.3}, {"r": 2, "left": "SCIENTIFIC NAME (学名):", "right": "LITOPENAEUS VANNAMEI\n南美白对虾", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 6.3}, {"r": 3, "left": "INGREDIENTS (配料):", "right": "VANNAMEI SHRIMP、WATER、SODIUM METABISULFITE (南美白虾、水、焦亚硫酸钠)", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 6.3}, {"r": 4, "left": "SIZE (规格):", "right": "21/25", "merge": false, "leftBold": true, "rightBold": true, "leftPt": 10.08, "rightPt": 16.56, "leftAlign": "left", "rightAlign": "left", "heightMm": 5.099}, {"r": 5, "left": "PRODUCTION DATE (生产日期):", "right": "2025 年 03 月 01 日", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 3.177}, {"r": 6, "left": "SHELF-LIFE  保质期:", "right": "24 MONTHS (24个月)", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 3.177}, {"r": 7, "left": "PRODUCTION LOT NO. (生产批号):", "right": "0222", "merge": false, "leftBold": false, "rightBold": true, "leftPt": 10.08, "rightPt": 16.56, "leftAlign": "left", "rightAlign": "left", "heightMm": 5.099}, {"r": 8, "left": "STORAGE CONDITION  (贮存条件):", "right": "KEEP FROZEN -18℃ OR BELOW 零下18度或以下冷冻保存", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 7.448}, {"r": 9, "left": "PRODUCTION METHOD (生产方式):", "right": "AQUACULTURE（养殖）", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 3.177}, {"r": 10, "left": "FARMING AREA (养殖区域):", "right": "GUAYAQUIL,ECUADOR (瓜亚基尔、厄瓜多尔)", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 3.177}, {"r": 11, "left": "COUNTRY OF ORIGIN (原产国):", "right": "ECUADOR (厄瓜多尔)", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 3.177}, {"r": 12, "left": "COUNTRY OF DESTINATION (目的地):", "right": "THE PEOPLE'S REPUBLIC OF CHINA (中华人民共和国)", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 7.448}, {"r": 13, "left": "NAME AND ADDRESS OF PRODUCTION AND\nPROCESSING ENTERPRISES (生产加工企业名称和地址):", "right": "OCEANTREASURE S.A.                                                                                                                                                                                                                                                                                                                                                                                            LOTIZACIÓN INDUSTRIAL LAS FERIAS-LOTE DE TERRENO\nNÚMERO 1A-4, MANZANA W PARROQUIA ELOY ALFARO - ECUADOR.", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 16.711}, {"r": 14, "left": "FACTORY REG NO (注册号):", "right": "65394", "merge": false, "leftBold": false, "rightBold": true, "leftPt": 10.08, "rightPt": 16.92, "leftAlign": "left", "rightAlign": "left", "heightMm": 5.285}, {"r": 15, "left": "NAME AND ADDRESS OF COLD STORAGE (冷库名称和地址):", "right": "OCEANTREASURE S.A.                                                                                                                                                                                                                                                                                                                                                                                            LOTIZACIÓN INDUSTRIAL LAS FERIAS-LOTE DE TERRENO\nNÚMERO 1A-4, MANZANA W PARROQUIA ELOY ALFARO - ECUADOR.", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 16.711}, {"r": 16, "left": "FACTORY REGISTRATION NO,IN CHINA \n在华工厂注册号:", "right": "CECU18PP2209210007", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 9.45}, {"r": 17, "left": "IMPORTER(进口商):", "right": "懂鲜帝控股（浙江）有限公司", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 3.177}, {"r": 18, "left": "IMPORTER'S ADDRESS(进口商地址):", "right": "浙江省金华市义乌市义亭镇同义路1000 号1栋1楼115室", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 6.3}, {"r": 19, "left": "PHONE OF IMPORTER(进口商联系方式):", "right": "15657629988", "merge": false, "leftBold": false, "rightBold": false, "leftPt": 10.08, "rightPt": 10.08, "leftAlign": "left", "rightAlign": "left", "heightMm": 6.3}, {"r": 20, "left": "NET WEIGHT (净含量) :20千克\n(10x2千克)", "right": null, "merge": true, "leftBold": true, "rightBold": false, "leftPt": 16.56, "rightPt": 1.98, "leftAlign": "center", "rightAlign": "left", "heightMm": 10.464}, {"r": 21, "left": "加工原料，非直接提供给消费者\nTHE PROCESSING RAW MATERIALS ARE NOT DIRECTLY PROVIDED TO CONSUMERS", "right": null, "merge": true, "leftBold": true, "rightBold": false, "leftPt": 10.08, "rightPt": 1.98, "leftAlign": "center", "rightAlign": "left", "heightMm": 7.528}];
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, deleteDoc, doc, serverTimestamp,
+      query, orderBy, limit, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let currentRole = null;
+    let activeTab = TABS[0];
+    let unsubHist = null;
+
+    const state = {
+      seq: "",
+      lot: "0222",
+      prodDate: "2025 年 03 月 01 日",
+      size: "21/25",
+      nw1: "20千克",
+      nw2: "10x2千克",
+      impName: "",
+      impAddr: "",
+      impPhone: "",
+      textScale: 1.00, // 0.70 - 1.10
+    };
+
+    const elTabs = document.getElementById("tabs");
+    const rolePill = document.getElementById("rolePill");
+    const btnLoginOpen = document.getElementById("btnLoginOpen");
+    const btnLogout = document.getElementById("btnLogout");
+
+    const loginOverlay = document.getElementById("loginOverlay");
+    const btnLoginClose = document.getElementById("btnLoginClose");
+    const btnDoLogin = document.getElementById("btnDoLogin");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginPass = document.getElementById("loginPass");
+
+    const inpSeq = document.getElementById("inpSeq");
+    const inpLot = document.getElementById("inpLot");
+    const inpProdDate = document.getElementById("inpProdDate");
+    const inpSize = document.getElementById("inpSize");
+    const inpNW1 = document.getElementById("inpNW1");
+    const inpNW2 = document.getElementById("inpNW2");
+    const inpImpName = document.getElementById("inpImpName");
+    const inpImpAddr = document.getElementById("inpImpAddr");
+    const inpImpPhone = document.getElementById("inpImpPhone");
+    const rngDensity = document.getElementById("rngDensity");
+
+    const btnAutoFit = document.getElementById("btnAutoFit");
+    const btnSave = document.getElementById("btnSave");
+    const btnPdf = document.getElementById("btnPdf");
+    const btnPrint = document.getElementById("btnPrint");
+    const btnFit = document.getElementById("btnFit");
+
+    const status = document.getElementById("status");
+    const seqCorner = document.getElementById("seqCorner");
+    const labelTbl = document.getElementById("labelTbl");
+
+    const rngZoom = document.getElementById("rngZoom");
+    const zoomTxt = document.getElementById("zoomTxt");
+    const sheetWrap = document.getElementById("sheetWrap");
+    const stage = document.getElementById("stage");
+
+    const histBody = document.getElementById("histBody");
+    const histStatus = document.getElementById("histStatus");
+    const delHint = document.getElementById("delHint");
+    const inpFind = document.getElementById("inpFind");
+    const btnRefresh = document.getElementById("btnRefresh");
+
+    function setStatus(msg, kind="") {
+      status.className = "status " + (kind||"");
+      status.textContent = msg || "";
+    }
+    function setHistStatus(msg, kind="") {
+      histStatus.className = "status " + (kind||"");
+      histStatus.textContent = msg || "";
+    }
+
+    function openLogin() {
+      loginOverlay.style.display = "flex";
+      loginEmail.focus();
+    }
+    function closeLogin() {
+      loginOverlay.style.display = "none";
+    }
+
+    function escapeHtml(s) {
+      return (s??"").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;");
+    }
+
+    // Convierte texto en HTML: inglés normal, chino en negrita
+    function bilingualHTML(text) {
+      const s = (text ?? "").toString();
+      if(!s) return "";
+      // rangos CJK: Han, Hiragana/Katakana, Hangul, CJK Symbols
+      const re = /([\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uac00-\ud7af\u3000-\u303f]+)/g;
+      return escapeHtml(s).replace(re, '<span class="cjk">$1</span>').replaceAll("\n","<br>");
+    }
+
+    function mustLogin() {
+      if(!currentUser) {
+        setStatus("Debes iniciar sesión.", "warn");
+        openLogin();
+        return true;
+      }
+      return false;
+    }
+    function isAdmin() {
+      return (currentUser?.email||"").toLowerCase() === ADMIN_EMAIL;
+    }
+    function fmtDate(ts) {
+      try {
+        if(!ts) return "—";
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleString("es-EC", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", second:"2-digit" });
+      } catch(e) {
+        return "—";
+      }
+    }
+
+    function buildRowText(r, side, srcState) {
+      const base = BASE_TEMPLATE_ROWS.find(x => x.r === r);
+      if(!base) return "";
+      const s = srcState || state;
+
+      if(r === 4 && side === "right") return s.size || "";
+      if(r === 5 && side === "right") return s.prodDate || "";
+      if(r === 7 && side === "right") return s.lot || "";
+      if(r === 17 && side === "right") return s.impName || "";
+      if(r === 18 && side === "right") return s.impAddr || "";
+      if(r === 19 && side === "right") return s.impPhone || "";
+
+      if(r === 20 && side === "left") {
+        const nw1 = (s.nw1 || "").trim();
+        const nw2 = (s.nw2 || "").trim();
+        return `NET WEIGHT (净含量) :${nw1}\n(${nw2})`;
+      }
+
+      return side === "left" ? (base.left||"") : (base.right||"");
+    }
+
+    function renderLabel() {
+      seqCorner.textContent = "SEC: " + (state.seq?.trim() ? state.seq.trim() : "—");
+      labelTbl.innerHTML = "";
+      const scale = Math.max(0.70, Math.min(1.10, state.textScale || 1));
+
+      for(const row of BASE_TEMPLATE_ROWS) {
+        const tr = document.createElement("tr");
+        tr.style.height = row.heightMm + "mm";
+
+        if(row.merge) {
+          const td = document.createElement("td");
+          td.colSpan = 2;
+          td.innerHTML = bilingualHTML(buildRowText(row.r, "left"));
+          td.style.fontSize = (row.leftPt * scale) + "pt";
+          td.style.textAlign = (row.leftAlign || "left");
+          if(row.r === 20) {
+            td.style.fontWeight = "700";
+            td.style.lineHeight = "1.0";
+          }
+          tr.appendChild(td);
+        } else {
+          const tdL = document.createElement("td");
+          tdL.className = "leftCol";
+          tdL.innerHTML = bilingualHTML(buildRowText(row.r, "left"));
+          tdL.style.fontSize = (row.leftPt * scale) + "pt";
+          tdL.style.textAlign = row.leftAlign || "left";
+
+          const tdR = document.createElement("td");
+          tdR.className = "rightCol";
+          tdR.innerHTML = bilingualHTML(buildRowText(row.r, "right") ?? "");
+          tdR.style.fontSize = (row.rightPt * scale) + "pt";
+          tdR.style.textAlign = row.rightAlign || "left";
+
+          tr.appendChild(tdL);
+          tr.appendChild(tdR);
+        }
+        labelTbl.appendChild(tr);
+      }
+    }
+
+    function bindInputs() {
+      inpSeq.value = state.seq;
+      inpLot.value = state.lot;
+      inpProdDate.value = state.prodDate;
+      inpSize.value = state.size;
+      inpNW1.value = state.nw1;
+      inpNW2.value = state.nw2;
+      inpImpName.value = state.impName;
+      inpImpAddr.value = state.impAddr;
+      inpImpPhone.value = state.impPhone;
+      rngDensity.value = Math.round((state.textScale || 1) * 100);
+    }
+    function readInputsToState() {
+      state.seq = inpSeq.value.trim();
+      state.lot = inpLot.value.trim();
+      state.prodDate = inpProdDate.value.trim();
+      state.size = inpSize.value.trim();
+      state.nw1 = inpNW1.value.trim();
+      state.nw2 = inpNW2.value.trim();
+      state.impName = inpImpName.value.trim();
+      state.impAddr = inpImpAddr.value.trim();
+      state.impPhone = inpImpPhone.value.trim();
+      state.textScale = (parseInt(rngDensity.value, 10) || 100) / 100;
+    }
+    function setInputsEnabled(enabled) {
+      const dis = !enabled;
+      [inpSeq, inpLot, inpProdDate, inpSize, inpNW1, inpNW2, inpImpName, inpImpAddr, inpImpPhone, rngDensity].forEach(el => el.disabled = dis);
+      [btnAutoFit, btnSave, btnPdf, btnPrint, btnFit, rngZoom, btnRefresh, inpFind].forEach(el => el.disabled = dis);
+    }
+
+    function renderTabs() {
+      elTabs.innerHTML = "";
+      for(const t of TABS) {
+        const b = document.createElement("div");
+        b.className = "tab" + (t.key === activeTab.key ? " active" : "");
+        b.textContent = t.name;
+        b.onclick = () => {
+          activeTab = t;
+          renderTabs();
+          setStatus("", "");
+          subscribeHistory();
+          renderLabel();
+          fitToStage();
+        };
+        elTabs.appendChild(b);
+      }
+    }
+
+    btnLoginOpen.onclick = openLogin;
+    btnLoginClose.onclick = closeLogin;
+    loginOverlay.addEventListener("click", (e)=>{ if(e.target === loginOverlay) closeLogin(); });
+
+    btnDoLogin.onclick = async () => {
+      const email = loginEmail.value.trim();
+      const pass = loginPass.value;
+      if(!email || !pass) {
+        setStatus("Ingresa email y contraseña.", "warn");
+        return;
+      }
+      setStatus("Iniciando sesión...", "");
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        closeLogin();
+      } catch(err) {
+        console.error(err);
+        setStatus("Login falló: " + (err?.message || err), "bad");
+      }
+    };
+
+    btnLogout.onclick = async () => {
+      try { await signOut(auth); } catch(e) { console.error(e); }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if(!user) {
+        currentRole = null;
+        rolePill.textContent = "Desconectado";
+        btnLoginOpen.style.display = "inline-flex";
+        btnLogout.style.display = "none";
+        delHint.style.display = "none";
+        setInputsEnabled(false);
+        if(unsubHist) { unsubHist(); unsubHist=null; }
+        setHistStatus("Inicia sesión para ver el historial.", "warn");
+        return;
+      }
+
+      const email = (user.email || "").toLowerCase();
+      if(!ALLOWED[email]) {
+        await signOut(auth);
+        setStatus("Acceso denegado para: " + email, "bad");
+        openLogin();
+        return;
+      }
+
+      currentRole = ALLOWED[email];
+      rolePill.textContent = `${currentRole} • ${email}`;
+      btnLoginOpen.style.display = "none";
+      btnLogout.style.display = "inline-flex";
+      delHint.style.display = isAdmin() ? "inline" : "none";
+      setInputsEnabled(true);
+
+      setStatus("Sesión iniciada.", "ok");
+      subscribeHistory();
+    });
+
+    function labelPayload() {
+      return {
+        seq: state.seq,
+        lot: state.lot,
+        prodDate: state.prodDate,
+        size: state.size,
+        nw1: state.nw1,
+        nw2: state.nw2,
+        importerName: state.impName,
+        importerAddress: state.impAddr,
+        importerPhone: state.impPhone,
+        textScale: state.textScale || 1,
+        tabKey: activeTab.key,
+        tabName: activeTab.name,
+        templateVersion: "DX-LABEL-V8",
+      };
+    }
+
+    async function saveLabel() {
+      if(mustLogin()) return;
+      readInputsToState();
+      renderLabel();
+
+      if(!state.seq) {
+        setStatus("El Secuencial es obligatorio.", "warn");
+        inpSeq.focus();
+        return;
+      }
+
+      try {
+        setStatus("Guardando en Firestore...", "");
+        const col = collection(db, "dx_labels");
+        const payload = {
+          ...labelPayload(),
+          createdBy: currentUser.email.toLowerCase(),
+          createdAt: serverTimestamp(),
+        };
+        const res = await addDoc(col, payload);
+        setStatus("Guardado OK. ID: " + res.id, "ok");
+        // refresco manual (por si reglas retrasan snapshot)
+        subscribeHistory();
+      } catch(err) {
+        console.error(err);
+        setStatus("No se pudo guardar (revisa reglas/permiso): " + (err?.message||err), "bad");
+      }
+    }
+
+    // ✅ Historial sin índice compuesto (evita error de Firestore index)
+    function subscribeHistory() {
+      if(!currentUser) return;
+
+      if(unsubHist) { unsubHist(); unsubHist=null; }
+      setHistStatus("Cargando historial...", "");
+
+      const col = collection(db, "dx_labels");
+      const qy = query(col, orderBy("createdAt", "desc"), limit(300));
+
+      unsubHist = onSnapshot(qy, (snap) => {
+        const find = inpFind.value.trim().toLowerCase();
+        const rows = [];
+        snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+
+        const forTab = rows.filter(x => x.tabKey === activeTab.key);
+        const filtered = find ? forTab.filter(x => (x.seq||"").toString().toLowerCase().includes(find)) : forTab;
+
+        renderHistory(filtered);
+        setHistStatus(`Registros: ${filtered.length} (Tab: ${activeTab.name})`, "ok");
+      }, (err) => {
+        console.error(err);
+        setHistStatus("Error de historial: " + (err?.message||err), "bad");
+      });
+    }
+
+    function renderHistory(items) {
+      histBody.innerHTML = "";
+      if(!items.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 7;
+        td.className = "muted";
+        td.textContent = "Sin registros para esta pestaña.";
+        tr.appendChild(td);
+        histBody.appendChild(tr);
+        return;
+      }
+
+      for(const it of items) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono">${escapeHtml(fmtDate(it.createdAt))}</td>
+          <td class="mono">${escapeHtml(it.seq || "—")}</td>
+          <td class="mono">${escapeHtml(it.lot || "—")}</td>
+          <td class="mono">${escapeHtml(it.size || "—")}</td>
+          <td class="mono">${escapeHtml(((it.nw1||"") + (it.nw2 ? (" ("+it.nw2+")") : "")).trim() || "—")}</td>
+          <td>${escapeHtml(it.createdBy || "—")}</td>
+          <td></td>
+        `;
+
+        const tdAct = tr.lastElementChild;
+        const wrap = document.createElement("div");
+        wrap.className = "histActions";
+
+        const bLoad = document.createElement("button");
+        bLoad.className = "btn tiny";
+        bLoad.textContent = "Cargar";
+        bLoad.onclick = () => loadFromHistory(it);
+        wrap.appendChild(bLoad);
+
+        const bPdf = document.createElement("button");
+        bPdf.className = "btn tiny primary";
+        bPdf.textContent = "PDF";
+        bPdf.onclick = () => openPrintWindow(it);
+        wrap.appendChild(bPdf);
+
+        const bPr = document.createElement("button");
+        bPr.className = "btn tiny";
+        bPr.textContent = "Imprimir";
+        bPr.onclick = () => openPrintWindow(it);
+        wrap.appendChild(bPr);
+
+        if(isAdmin()) {
+          const bDel = document.createElement("button");
+          bDel.className = "btn tiny danger";
+          bDel.textContent = "Eliminar";
+          bDel.onclick = () => doDelete(it);
+          wrap.appendChild(bDel);
+        }
+
+        tdAct.appendChild(wrap);
+        histBody.appendChild(tr);
+      }
+    }
+
+    function loadFromHistory(it) {
+      state.seq = it.seq || "";
+      state.lot = it.lot || "";
+      state.prodDate = it.prodDate || "";
+      state.size = it.size || "";
+      state.nw1 = it.nw1 || "";
+      state.nw2 = it.nw2 || "";
+      state.impName = it.importerName || "";
+      state.impAddr = it.importerAddress || "";
+      state.impPhone = it.importerPhone || "";
+      state.textScale = it.textScale || 1;
+
+      bindInputs();
+      renderLabel();
+      fitToStage();
+      setStatus("Etiqueta cargada desde historial.", "ok");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function doDelete(it) {
+      if(!isAdmin()) return;
+      if(!confirm("¿Eliminar este registro?\nSec: " + (it.seq||"—"))) return;
+
+      try {
+        setHistStatus("Eliminando...", "");
+        await deleteDoc(doc(db, "dx_labels", it.id));
+        setHistStatus("Eliminado.", "ok");
+      } catch(err) {
+        console.error(err);
+        setHistStatus("No se pudo eliminar: " + (err?.message||err), "bad");
+      }
+    }
+
+    function buildStandaloneLabelHTML(d) {
+      const scale = Math.max(0.70, Math.min(1.10, d.textScale || 1));
+
+      const renderCell = (txt) => bilingualHTML(txt);
+
+      const rowsHtml = BASE_TEMPLATE_ROWS.map(r => {
+        const getTxt = (side) => {
+          if(r.r === 4 && side === "right") return d.size || "";
+          if(r.r === 5 && side === "right") return d.prodDate || "";
+          if(r.r === 7 && side === "right") return d.lot || "";
+          if(r.r === 17 && side === "right") return d.importerName || "";
+          if(r.r === 18 && side === "right") return d.importerAddress || "";
+          if(r.r === 19 && side === "right") return d.importerPhone || "";
+          if(r.r === 20 && side === "left") {
+            const nw1 = (d.nw1 || "").trim();
+            const nw2 = (d.nw2 || "").trim();
+            return `NET WEIGHT (净含量) :${nw1}\n(${nw2})`;
+          }
+          return side==="left" ? (r.left||"") : (r.right||"");
+        };
+
+        if(r.merge) {
+          const txt = renderCell(getTxt("left"));
+          return `<tr style="height:${r.heightMm}mm"><td colspan="2" style="font-size:${(r.leftPt*scale)}pt;text-align:${r.leftAlign||"left"};">${txt}</td></tr>`;
+        }
+        const ltxt = renderCell(getTxt("left"));
+        const rtxt = renderCell(getTxt("right") ?? "");
+        return `<tr style="height:${r.heightMm}mm">
+          <td style="width:44.4%;font-size:${(r.leftPt*scale)}pt;text-align:${r.leftAlign||"left"};font-weight:400;">${ltxt}</td>
+          <td style="width:55.6%;font-size:${(r.rightPt*scale)}pt;text-align:${r.rightAlign||"left"};font-weight:400;">${rtxt}</td>
+        </tr>`;
+      }).join("");
+
+      const seq = escapeHtml(d.seq || "—");
+      return `<!doctype html><html><head><meta charset="utf-8"/>
+<style>
+  @page { size: 100mm 150mm; margin:0; }
+  html, body { width:100mm; height:150mm; margin:0; padding:0; background:#fff; }
+  .labelSheet { width:100mm; height:150mm; position:relative; background:#fff; overflow:hidden; border: 0.2mm solid rgba(0,0,0,.60); }
+  .seqCorner { position:absolute; top:2.3mm; right:2.6mm; font-family:"Times New Roman","SimSun",serif; font-size:9pt; font-weight:800; color:#000; }
+  table {
+    position:absolute; left:2.0mm; top:5.8mm;
+    width: calc(100mm - 4.0mm);
+    height: 141.8mm;
+    border-collapse: collapse; table-layout: fixed;
+    font-family:"Times New Roman","SimSun",serif; color:#000;
+  }
+  td { border: 0.18mm solid rgba(0,0,0,.55); padding: 1.2mm 1.2mm; vertical-align: top; line-height:1.10; word-break: break-word; white-space: pre-wrap; font-weight:400; }
+  .cjk{ font-weight: 800; }
+</style></head>
+<body>
+<div class="labelSheet">
+  <div class="seqCorner">SEC: ${seq}</div>
+  <table>${rowsHtml}</table>
+</div>
+<script>window.onload=()=>setTimeout(()=>window.print(),60);<\/script>
+</body></html>`;
+    }
+
+    function openPrintWindow(fromHist) {
+      if(mustLogin()) return;
+      readInputsToState();
+
+      const d = fromHist ? {
+        seq: fromHist.seq, lot: fromHist.lot, prodDate: fromHist.prodDate, size: fromHist.size,
+        nw1: fromHist.nw1, nw2: fromHist.nw2,
+        importerName: fromHist.importerName, importerAddress: fromHist.importerAddress, importerPhone: fromHist.importerPhone,
+        textScale: fromHist.textScale || 1
+      } : labelPayload();
+
+      const w = window.open("", "_blank");
+      if(!w) {
+        setStatus("El navegador bloqueó el popup. Habilita ventanas emergentes.", "warn");
+        return;
+      }
+      w.document.open();
+      w.document.write(buildStandaloneLabelHTML(d));
+      w.document.close();
+    }
+
+    function applyZoom(pct) {
+      const z = Math.max(40, Math.min(160, pct));
+      sheetWrap.style.transform = `scale(${z/100})`;
+      zoomTxt.textContent = z + "%";
+      rngZoom.value = z;
+    }
+
+    function fitToStage() {
+      sheetWrap.style.transform = "scale(1)";
+      const rectStage = stage.getBoundingClientRect();
+      const rectSheet = document.getElementById("labelSheet").getBoundingClientRect();
+      const pad = 26;
+      const s = Math.min((rectStage.width - pad) / rectSheet.width, (rectStage.height - pad) / rectSheet.height);
+      const pct = Math.floor(s * 100);
+      applyZoom(Math.max(50, Math.min(140, pct)));
+    }
+
+    function hasOverflow() {
+      // chequea si algún td está desbordando su alto (texto cortado)
+      const tds = labelTbl.querySelectorAll("td");
+      for(const td of tds) {
+        if(td.scrollHeight - td.clientHeight > 1) return true;
+      }
+      return false;
+    }
+
+    async function autoFitText() {
+      readInputsToState();
+      let scale = state.textScale || 1.0;
+      renderLabel();
+
+      // Si hay overflow, bajamos la densidad paso a paso
+      for(let i=0; i<25; i++) {
+        if(!hasOverflow()) {
+          setStatus("Auto-ajuste OK: " + Math.round(scale*100) + "%", "ok");
+          rngDensity.value = Math.round(scale*100);
+          state.textScale = scale;
+          return;
+        }
+        scale = Math.max(0.70, +(scale - 0.02).toFixed(2));
+        state.textScale = scale;
+        rngDensity.value = Math.round(scale*100);
+        renderLabel();
+        await new Promise(r => setTimeout(r, 0));
+      }
+      setStatus("Auto-ajuste aplicado: " + Math.round(state.textScale*100) + "% (si aún falta, reduce manual).", "warn");
+    }
+
+    [inpSeq, inpLot, inpProdDate, inpSize, inpNW1, inpNW2, inpImpName, inpImpAddr, inpImpPhone].forEach(el => {
+      el.addEventListener("input", () => {
+        readInputsToState();
+        renderLabel();
+      });
+    });
+    rngDensity.addEventListener("input", () => {
+      readInputsToState();
+      renderLabel();
+    });
+
+    btnAutoFit.onclick = autoFitText;
+    btnSave.onclick = saveLabel;
+    btnPdf.onclick = () => openPrintWindow(null);
+    btnPrint.onclick = () => openPrintWindow(null);
+    btnFit.onclick = () => fitToStage();
+
+    rngZoom.oninput = () => applyZoom(parseInt(rngZoom.value, 10));
+    inpFind.addEventListener("input", () => subscribeHistory());
+    btnRefresh.onclick = () => subscribeHistory();
+
+    // Exponer funciones para consola (lo que pediste)
+    window.DX = {
+      setDensity: (pct) => { rngDensity.value = pct; readInputsToState(); renderLabel(); },
+      autoFit: () => autoFitText(),
+      fitPreview: () => fitToStage(),
+      getState: () => ({...state, tabKey: activeTab.key, tabName: activeTab.name}),
+    };
+
+    function initDefaults() {
+      bindInputs();
+      renderLabel();
+      renderTabs();
+      applyZoom(100);
+      setInputsEnabled(false);
+      setHistStatus("Inicia sesión para ver el historial.", "warn");
+      setStatus("Listo. Inicia sesión para usar el sistema.", "warn");
+      setTimeout(() => fitToStage(), 100);
+    }
+    initDefaults();
+  </script>
+</body>
+</html>
