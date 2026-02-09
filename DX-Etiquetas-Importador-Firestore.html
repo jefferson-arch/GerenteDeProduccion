@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- DX - Etiquetas Importadores (Zebra ZT411 10x15cm) -->
-<!-- BUILD_DX_ETIQUETAS_IMPORTADOR v1.3.5 2026-02-08 -->
+<!-- BUILD_DX_ETIQUETAS_IMPORTADOR v1.3.6 2026-02-08 -->
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -761,7 +761,7 @@
   <div class="seqCorner">SEC: ${seq}</div>
   <table>${rowsHtml}</table>
 </div>
-<script>window.__DX_PAYLOAD__=${JSON.stringify(d).replace(/<\/script>/gi,'<\\/script>')};</script>
+<script>window.__DX_PAYLOAD__=${JSON.stringify(d).replace(/</g,'\\u003c')};<\/script>
 <script>window.onload=()=>{
   const s=document.querySelector('.labelSheet');
   const d=window.__DX_PAYLOAD__||{};
