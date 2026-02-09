@@ -828,9 +828,9 @@
 
         let scale = state.textScale || 1.0;
         let lh = state.cellLH || 1.05;
-        let pv = state.cellPadV || 1.0;
-        let ph = state.cellPadH || 1.1;
-        let bd = state.cellBorder || 0.18;
+        let pv = state.cellPadV || 0.75;
+        let ph = state.cellPadH || 0.85;
+        let bd = state.cellBorder || 0.16;
 
         const apply = async () => {
           state.textScale = scale;
