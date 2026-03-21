@@ -469,8 +469,8 @@ const firebaseConfig = {
       const [planta, setPlanta] = useState(11599);
       const [basura, setBasura] = useState(28);
 
-      const [pesoAkg, setPesoAkg] = useState(1.98);
-      const [pesoBkg, setPesoBkg] = useState(1.98);
+      const [pesoAkg, setPesoAkg] = useState(2.00);
+      const [pesoBkg, setPesoBkg] = useState(2.00);
       const [pesoClbs, setPesoClbs] = useState(5.0);
 
       const zeroAll = useMemo(()=>Object.fromEntries(ALL_TALLAS.map(t=>[t,0])), []);
@@ -486,7 +486,7 @@ const firebaseConfig = {
         for (const t of ALL_TALLAS){
           const base = DEFAULT_PRICES[t] || {};
           const A = base.A ?? (TALLAS_A_B.includes(t) ? 0 : undefined);
-          const B = TALLAS_A_B.includes(t) ? (A ?? 0) - 0.2 : undefined;
+          const B = TALLAS_A_B.includes(t) ? (A ?? 0) - 0.3 : undefined;
           const C = base.C ?? (TALLAS_C.includes(t) ? 0 : undefined);
           out[t] = { A, B, C };
         }
@@ -968,7 +968,7 @@ const firebaseConfig = {
             rows={rows}
           />
           <div className="muted" style={{marginTop:8}}>
-            En el Excel, PRECIO B normalmente es A - 0,20. Aquí lo puedes editar si deseas.
+            En el Excel, PRECIO B normalmente es A - 0,30. Aquí lo puedes editar si deseas.
           </div>
         </div>
       );
