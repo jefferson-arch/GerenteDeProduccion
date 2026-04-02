@@ -2110,7 +2110,7 @@ async function onSecuencialChanged(idx, value, showAlert){
       const numP = dispRows.length || 0;
       const pesadaC = subtotal2Total || 0;
 
-      elevadoEntero = (pesoCola > 0) ? (pesoCola / 0.66) : 0;
+      elevadoEntero = (pesoCola > 0) ? (pesoCola / 0.65) : 0;
       cabezaPosible = (pesoCola > 0) ? (elevadoEntero - pesoCola) : 0;
       descuentoTotal = cabezaPosible - pesadaC;
       descuentoIndividual = (numP > 0) ? (descuentoTotal / numP) : 0;
