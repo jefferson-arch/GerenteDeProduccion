@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SSL | Sistema de Soporte de Liquidaciones</title>
+<link rel="icon" href="favicon.ico?v=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --bg:#f6f5f2;
+  --panel:#fcfbf8;
+  --panel2:#f4efe6;
+  --panel3:#eef4f2;
+  --line:#cfc8bc;
+  --text:#2d2a26;
+  --muted:#72685b;
+  --accent:#8c6f5a;
+  --soft:#dfeae5;
+  --soft2:#efe1dc;
+  --good:#295f4e;
+  --warn:#9b5b4b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#f7f5f1,#f1eee8);font-family:"Times New Roman",serif;color:var(--text)}
+.wrap{max-width:1700px;margin:14px auto;padding:10px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);padding:10px 14px}
+.title{font-size:26px;font-weight:700;letter-spacing:.2px}
+.subtitle{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid #bcae9c;background:linear-gradient(180deg,#fff,#f2ebe2);padding:8px 12px;font-family:inherit;font-size:14px;cursor:pointer}
+button:hover{filter:brightness(.98)}
+.grid-top{display:grid;grid-template-columns:1.35fr .9fr .8fr;gap:10px;margin-top:10px}
+.panel{background:var(--panel);border:1px solid var(--line);padding:10px}
+.panel h3{margin:0 0 8px;font-size:18px}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+input{width:100%;border:1px solid #bdb4a7;background:#fff;padding:5px 6px;font-family:inherit;font-size:16px}
+input.num{text-align:right}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.kpi{border:1px solid var(--line);padding:10px;background:var(--panel2);min-height:86px}
+.kpi .lab{font-size:13px;color:var(--muted)}
+.kpi .val{font-size:25px;font-weight:700;text-align:center;padding-top:8px}
+.note{font-size:12px;color:var(--muted)}
+.main{display:grid;grid-template-columns:1.18fr .82fr;gap:10px;margin-top:10px}
+.table-wrap{overflow:auto;border:1px solid var(--line);background:var(--panel)}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid var(--line);padding:4px 5px;font-size:14px;vertical-align:middle}
+th{background:var(--panel2);font-size:13px}
+.compact th,.compact td{padding:3px 4px}
+.center{text-align:center}
+.right{text-align:right}
+.small{font-size:12px;color:var(--muted)}
+.section-title{padding:6px 8px;background:var(--soft);border:1px solid var(--line);border-bottom:none;font-weight:700}
+.gray{background:#f8f7f4}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.res-box{border:1px solid var(--line);background:var(--panel);padding:10px}
+.res-box h4{margin:0 0 8px;font-size:18px}
+.mono{font-variant-numeric:tabular-nums}
+.foot{margin-top:10px;font-size:12px;color:var(--muted)}
+.total-line{font-weight:700;background:var(--panel3)}
+.accent{color:var(--accent)}
+.good{color:var(--good)}
+.warn{color:var(--warn)}
+@media (max-width:1200px){.grid-top,.main,.summary-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <div class="title">SSL Sistema de Soporte de Liquidaciones</div>
+      <div class="subtitle">Entero USA y Sobrante | diseño compacto gerencial</div>
+    </div>
+    <div class="actions">
+      <button id="btnCalc">Calcular</button>
+      <button id="btnGuardar">Guardar borrador</button>
+      <button id="btnPdfEntero">PDF Entero</button>
+      <button id="btnPdfSobrante">PDF Sobrante</button>
+    </div>
+  </div>
+
+  <div class="grid-top">
+    <div class="panel">
+      <h3>Datos generales</h3>
+      <div class="form-grid">
+        <div class="field"><label>Proveedor</label><input id="proveedor" value=""></div>
+        <div class="field"><label>Secuencial</label><input id="secuencial" class="num" value=""></div>
+        <div class="field"><label>Fecha</label><input id="fecha" value=""></div>
+        <div class="field"><label>Piscina</label><input id="piscina" value=""></div>
+        <div class="field"><label>Controlador</label><input id="controlador" value=""></div>
+        <div class="field"><label>Peso remitido</label><input id="pesoRemitido" class="num" value="0"></div>
+        <div class="field"><label>Peso guía / recibido</label><input id="pesoGuia" class="num" value="0"></div>
+        <div class="field"><label>Basura total</label><input id="basuraTotal" class="num" value="0"></div>
+        <div class="field"><label>Costo inicial</label><input id="costoInicial" class="num" value="0"></div>
+        <div class="field"><label>Comisión 30%</label><input id="comision30" class="num" value="0"></div>
+        <div class="field"><label>Planta</label><input id="plantaCosto" class="num" value="0"></div>
+        <div class="field"><label>Peso acordado</label><input id="pesoAcordado" class="num" value="0"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Indicadores</h3>
+      <div class="kpis">
+        <div class="kpi"><div class="lab">Peso planta</div><div class="val mono" id="kpiPesoPlanta">0,00</div></div>
+        <div class="kpi"><div class="lab">Rendimiento entero</div><div class="val mono" id="kpiRendEntero">0,00%</div></div>
+        <div class="kpi"><div class="lab">$ a pagar entero</div><div class="val mono" id="kpiPagar">0,00</div></div>
+        <div class="kpi"><div class="lab">$ a recibir</div><div class="val mono" id="kpiRecibir">0,00</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Control de bines</h3>
+      <div class="form-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="field"><label>Bines</label><input id="bines" class="num" value="0"></div>
+        <div class="field"><label>Libras</label><input id="binesLibras" class="num" value="0"></div>
+        <div class="field"><label>Peso</label><input id="binesPeso" class="num" value="0"></div>
+        <div class="field"><label>Diferencia control</label><input id="diferenciaControl" class="num" value="0"></div>
+      </div>
+      <div class="note" style="margin-top:8px">K3, O3 y S3 son pesos de empaque ingresados por usuario. K, O y S se calculan como unidades × peso del empaque × 2,2.</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div>
+      <div class="section-title">Liquidación de Entero</div>
+      <div class="table-wrap">
+        <table id="tblEntero" class="compact">
+          <thead>
+            <tr>
+              <th>Talla entero</th>
+              <th>Libras USA</th>
+              <th>% Empacado</th>
+              <th>% Libras</th>
+              <th>Libras empacadas</th>
+              <th>Kilos</th>
+              <th>Precio entero</th>
+              <th>Dólares a pagar</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="total-line"><td>EMPACADO</td><td id="tEmpacadoB" class="right mono"></td><td class="right mono">100,00%</td><td id="tPctLibras" class="right mono"></td><td id="tLibrasEmp" class="right mono"></td><td></td><td class="right">$ A PAGAR</td><td id="tPagar" class="right mono"></td></tr>
+            <tr><td>SOBRANTE</td><td><input id="sobranteConteo" class="num" value="0"></td><td></td><td id="pctSobrante" class="right mono"></td><td id="librasSobrante" class="right mono"></td><td colspan="3"></td></tr>
+            <tr><td>BASURA</td><td><input id="basuraConteo" class="num" value="0"></td><td></td><td id="pctBasura" class="right mono"></td><td id="librasBasura" class="right mono"></td><td colspan="3"></td></tr>
+            <tr class="total-line"><td>USA</td><td id="usaTotalB" class="right mono"></td><td></td><td class="right mono">100,00%</td><td id="usaTotalLibras" class="right mono"></td><td colspan="3"></td></tr>
+            <tr><td>COLA USA</td><td colspan="3"></td><td id="colaUsa" class="right mono"></td><td colspan="3"></td></tr>
+            <tr><td>COLA SOB</td><td colspan="3"></td><td id="colaSob" class="right mono"></td><td colspan="3"></td></tr>
+            <tr><td>COLA TOTAL</td><td colspan="3"></td><td id="colaTotal" class="right mono"></td><td colspan="3"></td></tr>
+            <tr><td>COLA EMP</td><td colspan="3"></td><td id="colaEmp" class="right mono"></td><td colspan="3"></td></tr>
+            <tr class="total-line"><td>COLA FAVOR</td><td colspan="3"></td><td id="colaFavor" class="right mono"></td><td colspan="3"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">Liquidación de Cola y Sobrante</div>
+      <div class="table-wrap">
+        <table id="tblCola" class="compact">
+          <thead>
+            <tr>
+              <th>Talla cola</th><th>Unid. A</th><th>Peso emp. A</th><th>Libras A</th><th>Precio A</th><th>Valor A</th>
+              <th>Unid. B</th><th>Peso emp. B</th><th>Libras B</th><th>Precio B</th><th>Valor B</th>
+              <th>Unid. Sob</th><th>Peso emp. Sob</th><th>Libras Sob</th><th>Precio Sob</th><th>Valor Sob</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="total-line"><td>TOTALES</td><td id="totUnidA" class="right mono"></td><td></td><td id="totLibrasA" class="right mono"></td><td></td><td id="totValA" class="right mono"></td><td id="totUnidB" class="right mono"></td><td></td><td id="totLibrasB" class="right mono"></td><td></td><td id="totValB" class="right mono"></td><td id="totUnidS" class="right mono"></td><td></td><td id="totLibrasS" class="right mono"></td><td></td><td id="totValS" class="right mono"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="res-box">
+      <h4>Resumen económico</h4>
+      <table>
+        <tr><td>Costo inicial</td><td class="right mono" id="rCostoInicial">0,00</td></tr>
+        <tr><td>Costo final</td><td class="right mono" id="rCostoFinal">0,00</td></tr>
+        <tr><td class="good">Dólares</td><td class="right mono good" id="rDolares">0,00</td></tr>
+        <tr><td class="accent">Comisión 30%</td><td class="right mono accent" id="rComision">0,00</td></tr>
+        <tr><td class="warn">Planta</td><td class="right mono warn" id="rPlanta">0,00</td></tr>
+      </table>
+    </div>
+    <div class="res-box">
+      <h4>Cierre</h4>
+      <table>
+        <tr><td>$ A RECIBIR</td><td class="right mono" id="cRecibir">0,00</td></tr>
+        <tr><td>$ A PAGAR</td><td class="right mono" id="cPagar">0,00</td></tr>
+        <tr><td>DIFERENCIA</td><td class="right mono" id="cDif">0,00</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot">Modelo basado en tu hoja “GESTION DE PAGO”. PDF Entero genera solo el resumen de entero. PDF Sobrante genera las clases A, B y C, siguiendo tu referencia visual.</div>
+</div>
+
+<script>
+const ENTERO_ROWS = [
+  {t:'10-20', p:4.60}, {t:'20-30', p:4.60}, {t:'30-40', p:3.65}, {t:'40-50', p:3.25}, {t:'50-60', p:3.10},
+  {t:'60-70', p:2.80}, {t:'70-80', p:2.70}, {t:'80-100', p:2.60}, {t:'100-120', p:2.00}, {t:'120-150', p:1.90}
+];
+const COLA_ROWS = [
+  {t:'16-20', pa:2.70, pb:2.40, ps:1.25},
+  {t:'21-25', pa:2.40, pb:2.10, ps:1.30},
+  {t:'26-30', pa:2.30, pb:2.00, ps:1.20},
+  {t:'31-35', pa:2.15, pb:1.85, ps:1.10},
+  {t:'36-40', pa:2.05, pb:1.75, ps:1.00},
+  {t:'41-50', pa:1.95, pb:1.65, ps:0.90},
+  {t:'51-60', pa:1.80, pb:1.50, ps:0.80},
+  {t:'61-70', pa:1.60, pb:1.30, ps:0.70},
+  {t:'71-90', pa:1.40, pb:1.10, ps:0.60},
+  {t:'91-110', pa:0.90, pb:0.60, ps:0.50},
+  {t:'BVS', pa:0.30, pb:0.30, ps:0.30},
+];
+const f2 = n => (Number(n)||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fp = n => (Number(n)||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+const num = v => Number(String(v).replace(/\./g,'').replace(',','.')) || Number(v) || 0;
+
+function build(){
+  const tbE = document.querySelector('#tblEntero tbody');
+  tbE.innerHTML='';
+  ENTERO_ROWS.forEach((r,i)=>{
+    tbE.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${r.t}</td>
+        <td><input id="eu${i}" class="num" value="0"></td>
+        <td id="ep${i}" class="right mono">0,00%</td>
+        <td id="el${i}" class="right mono">0,00%</td>
+        <td id="ee${i}" class="right mono">0,00</td>
+        <td id="ek${i}" class="right mono">0,00</td>
+        <td><input id="eprec${i}" class="num" value="${r.p.toFixed(2)}"></td>
+        <td id="ed${i}" class="right mono">0,00</td>
+      </tr>`);
+  });
+  const tbC = document.querySelector('#tblCola tbody');
+  tbC.innerHTML='';
+  COLA_ROWS.forEach((r,i)=>{
+    tbC.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${r.t}</td>
+        <td><input id="ca${i}" class="num" value="0"></td>
+        <td>${i===0?'<input id="pesoA" class="num" value="2.00">':''}</td>
+        <td id="cla${i}" class="right mono">0,00</td>
+        <td><input id="cpa${i}" class="num" value="${r.pa.toFixed(2)}"></td>
+        <td id="cva${i}" class="right mono">0,00</td>
+        <td><input id="cb${i}" class="num" value="0"></td>
+        <td>${i===0?'<input id="pesoB" class="num" value="2.00">':''}</td>
+        <td id="clb${i}" class="right mono">0,00</td>
+        <td><input id="cpb${i}" class="num" value="${r.pb.toFixed(2)}"></td>
+        <td id="cvb${i}" class="right mono">0,00</td>
+        <td><input id="cs${i}" class="num" value="0"></td>
+        <td>${i===0?'<input id="pesoS" class="num" value="2.00">':''}</td>
+        <td id="cls${i}" class="right mono">0,00</td>
+        <td><input id="cps${i}" class="num" value="${r.ps.toFixed(2)}"></td>
+        <td id="cvs${i}" class="right mono">0,00</td>
+      </tr>`);
+  });
+}
+
+function calc(){
+  const pesoGuia = num(document.getElementById('pesoGuia').value);
+  const basuraTotal = num(document.getElementById('basuraTotal').value);
+  const pesoPlanta = Math.max(pesoGuia - basuraTotal,0);
+  document.getElementById('kpiPesoPlanta').textContent = f2(pesoPlanta);
+
+  let usaConteo=0;
+  ENTERO_ROWS.forEach((r,i)=> usaConteo += num(document.getElementById('eu'+i).value));
+  const sobranteConteo = num(document.getElementById('sobranteConteo').value);
+  const basuraConteo = num(document.getElementById('basuraConteo').value);
+  const totalConteo = usaConteo + sobranteConteo + basuraConteo;
+
+  let totalPagar=0, totalEmpacadoLibras=0;
+  ENTERO_ROWS.forEach((r,i)=>{
+    const librasUSA = num(document.getElementById('eu'+i).value);
+    const pctEmp = usaConteo? (librasUSA/usaConteo*100):0;
+    const pctLibras = totalConteo? (librasUSA/totalConteo):0;
+    const librasEmp = pesoPlanta * pctLibras; // E = peso planta * % libras
+    const kilos = librasEmp/2.2;
+    const precio = num(document.getElementById('eprec'+i).value);
+    const dol = kilos * precio;
+    totalPagar += dol;
+    totalEmpacadoLibras += librasEmp;
+    document.getElementById('ep'+i).textContent = fp(pctEmp);
+    document.getElementById('el'+i).textContent = fp(pctLibras*100);
+    document.getElementById('ee'+i).textContent = f2(librasEmp);
+    document.getElementById('ek'+i).textContent = f2(kilos);
+    document.getElementById('ed'+i).textContent = f2(dol);
+  });
+
+  const pctSob = totalConteo? sobranteConteo/totalConteo*100:0;
+  const pctBas = totalConteo? basuraConteo/totalConteo*100:0;
+  const librasSob = pesoPlanta*(pctSob/100);
+  const librasBas = pesoPlanta*(pctBas/100);
+  document.getElementById('tEmpacadoB').textContent = f2(usaConteo);
+  document.getElementById('tPctLibras').textContent = fp(totalConteo? usaConteo/totalConteo*100:0);
+  document.getElementById('tLibrasEmp').textContent = f2(totalEmpacadoLibras);
+  document.getElementById('tPagar').textContent = f2(totalPagar);
+  document.getElementById('pctSobrante').textContent = fp(pctSob);
+  document.getElementById('librasSobrante').textContent = f2(librasSob);
+  document.getElementById('pctBasura').textContent = fp(pctBas);
+  document.getElementById('librasBasura').textContent = f2(librasBas);
+  document.getElementById('usaTotalB').textContent = f2(totalConteo);
+  document.getElementById('usaTotalLibras').textContent = f2(pesoPlanta);
+
+  const pesoA = num((document.getElementById('pesoA')||{}).value||2);
+  const pesoB = num((document.getElementById('pesoB')||{}).value||2);
+  const pesoS = num((document.getElementById('pesoS')||{}).value||2);
+  let unidA=0,lA=0,vA=0, unidB=0,lB=0,vB=0, unidS=0,lS=0,vS=0;
+  COLA_ROWS.forEach((r,i)=>{
+    const a = num(document.getElementById('ca'+i).value), b=num(document.getElementById('cb'+i).value), s=num(document.getElementById('cs'+i).value);
+    const la = a*pesoA*2.2, lb = b*pesoB*2.2, ls = s*pesoS*2.2;
+    const va = la*num(document.getElementById('cpa'+i).value);
+    const vb = lb*num(document.getElementById('cpb'+i).value);
+    const vs = ls*num(document.getElementById('cps'+i).value);
+    unidA+=a; lA+=la; vA+=va; unidB+=b; lB+=lb; vB+=vb; unidS+=s; lS+=ls; vS+=vs;
+    document.getElementById('cla'+i).textContent=f2(la);
+    document.getElementById('cva'+i).textContent=f2(va);
+    document.getElementById('clb'+i).textContent=f2(lb);
+    document.getElementById('cvb'+i).textContent=f2(vb);
+    document.getElementById('cls'+i).textContent=f2(ls);
+    document.getElementById('cvs'+i).textContent=f2(vs);
+  });
+  document.getElementById('totUnidA').textContent=f2(unidA); document.getElementById('totLibrasA').textContent=f2(lA); document.getElementById('totValA').textContent=f2(vA);
+  document.getElementById('totUnidB').textContent=f2(unidB); document.getElementById('totLibrasB').textContent=f2(lB); document.getElementById('totValB').textContent=f2(vB);
+  document.getElementById('totUnidS').textContent=f2(unidS); document.getElementById('totLibrasS').textContent=f2(lS); document.getElementById('totValS').textContent=f2(vS);
+
+  const colaUsa = totalEmpacadoLibras * 0.66;
+  const colaSob = lS;
+  const colaTotal = colaUsa + colaSob;
+  const colaEmp = lA + lB + lS;
+  const colaFavor = colaTotal - colaEmp;
+  const rendEntero = pesoPlanta? totalEmpacadoLibras/pesoPlanta*100:0;
+
+  document.getElementById('colaUsa').textContent=f2(colaUsa);
+  document.getElementById('colaSob').textContent=f2(colaSob);
+  document.getElementById('colaTotal').textContent=f2(colaTotal);
+  document.getElementById('colaEmp').textContent=f2(colaEmp);
+  document.getElementById('colaFavor').textContent=f2(colaFavor);
+  document.getElementById('kpiRendEntero').textContent=fp(rendEntero);
+  document.getElementById('kpiPagar').textContent=f2(totalPagar);
+  document.getElementById('kpiRecibir').textContent=f2(vA+vB);
+
+  const costoInicial = num(document.getElementById('costoInicial').value);
+  const costoFinal = totalPagar;
+  const dolares = costoInicial - costoFinal;
+  const comision = num(document.getElementById('comision30').value) || dolares*0.30;
+  const planta = num(document.getElementById('plantaCosto').value) || (dolares-comision);
+  const recibir = vA+vB;
+  const pagar = totalPagar + vS;
+  const dif = recibir - pagar;
+
+  document.getElementById('rCostoInicial').textContent=f2(costoInicial);
+  document.getElementById('rCostoFinal').textContent=f2(costoFinal);
+  document.getElementById('rDolares').textContent=f2(dolares);
+  document.getElementById('rComision').textContent=f2(comision);
+  document.getElementById('rPlanta').textContent=f2(planta);
+  document.getElementById('cRecibir').textContent=f2(recibir);
+  document.getElementById('cPagar').textContent=f2(pagar);
+  document.getElementById('cDif').textContent=f2(dif);
+
+  saveLocal();
+}
+
+function saveLocal(){
+  const data={};
+  document.querySelectorAll('input').forEach(i=>data[i.id]=i.value);
+  localStorage.setItem('ssl_liq_v2', JSON.stringify(data));
+}
+function loadLocal(){
+  const data=JSON.parse(localStorage.getItem('ssl_liq_v2')||'{}');
+  document.querySelectorAll('input').forEach(i=>{ if(data[i.id]!==undefined) i.value=data[i.id]; });
+}
+
+function pdfEntero(){
+  calc();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  doc.setFont('times','normal');
+  doc.setFontSize(14);
+  doc.text('SSL Sistema de Soporte de Liquidaciones', 105, 12, {align:'center'});
+  const proveedor=document.getElementById('proveedor').value||'-';
+  const sec=document.getElementById('secuencial').value||'-';
+  const piscina=document.getElementById('piscina').value||'-';
+  const rows1 = [
+    ['PROVEEDOR', proveedor], ['SECUENCIAL', sec], ['PISCINA', piscina], ['PESO GUIA', f2(num(document.getElementById('pesoRemitido').value))],
+    ['RECIBIDO', f2(num(document.getElementById('pesoGuia').value))], ['BASURA', f2(num(document.getElementById('basuraTotal').value))], ['PESO PLANTA', document.getElementById('usaTotalLibras').textContent],
+    ['EMPACADO', document.getElementById('tLibrasEmp').textContent], ['RENDIMIENTO', document.getElementById('kpiRendEntero').textContent], ['SOBRANTE', document.getElementById('librasSobrante').textContent]
+  ];
+  doc.autoTable({startY:18, theme:'plain', styles:{font:'times',fontSize:11,lineColor:[0,0,0],lineWidth:.2,cellPadding:1.8}, body:rows1, columnStyles:{0:{fontStyle:'bold',cellWidth:52},1:{halign:'right'}}});
+  doc.setFont('times','bold'); doc.setFontSize(18); doc.text('ENTERO', 105, doc.lastAutoTable.finalY + 12, {align:'center'});
+  const body=[];
+  ENTERO_ROWS.forEach((r,i)=>{ const lib=document.getElementById('ee'+i).textContent; if(num(lib)>0) body.push([r.t, lib]); });
+  body.push([{content:'',styles:{lineWidth:0}}, {content:document.getElementById('tLibrasEmp').textContent, styles:{textColor:[44,88,120], fontStyle:'normal'}}]);
+  doc.autoTable({startY:doc.lastAutoTable.finalY+16, head:[['TALLAS','LIBRAS']], body, theme:'plain', styles:{font:'times',fontSize:11,lineColor:[0,0,0],lineWidth:.2,cellPadding:2}, headStyles:{fontStyle:'bold'}, columnStyles:{1:{halign:'right'}}});
+  doc.save(`${proveedor||'PROVEEDOR'}_${sec||'0000'}_ENTERO.pdf`);
+}
+
+function pdfSobrante(){
+  calc();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  doc.setFont('times','normal');
+  doc.setFontSize(14);
+  doc.text('SSL Sistema de Soporte de Liquidaciones', 105, 12, {align:'center'});
+  const proveedor=document.getElementById('proveedor').value||'-';
+  const sec=document.getElementById('secuencial').value||'-';
+  const piscina=document.getElementById('piscina').value||'-';
+  const rows1 = [
+    ['PROVEEDOR', proveedor], ['SECUENCIAL', sec], ['PISCINA', piscina], ['PESO GUIA', document.getElementById('librasSobrante').textContent], ['RECIBIDO', document.getElementById('librasSobrante').textContent],
+    ['BASURA', f2(num(document.getElementById('basuraTotal').value))], ['PESO PLANTA', f2(num(document.getElementById('librasSobrante').textContent)-num(document.getElementById('basuraTotal').value))], ['EMPACADO', document.getElementById('totLibrasA').textContent], ['RENDIMIENTO', (num(document.getElementById('librasSobrante').textContent)-num(document.getElementById('basuraTotal').value))? fp(num(document.getElementById('totLibrasA').textContent)/(num(document.getElementById('librasSobrante').textContent)-num(document.getElementById('basuraTotal').value))*100):'0,00%']
+  ];
+  doc.autoTable({startY:18, theme:'grid', styles:{font:'times',fontSize:10.5,lineColor:[0,0,0],lineWidth:.2,cellPadding:2}, body:rows1, columnStyles:{0:{fontStyle:'bold',cellWidth:52},1:{halign:'right'}}});
+  function classRows(kind){
+    const out=[];
+    COLA_ROWS.forEach((r,i)=>{
+      let u,l;
+      if(kind==='A'){u=num(document.getElementById('ca'+i).value); l=num(document.getElementById('cla'+i).textContent)}
+      if(kind==='B'){u=num(document.getElementById('cb'+i).value); l=num(document.getElementById('clb'+i).textContent)}
+      if(kind==='C'){u=num(document.getElementById('cs'+i).value); l=num(document.getElementById('cls'+i).textContent)}
+      if(u>0 || l>0) out.push([r.t, f2(u), f2(l)]);
+    });
+    return out.length? out:[[ '-', '-', '-' ]];
+  }
+  let y=doc.lastAutoTable.finalY+10;
+  [['CLASE "A"', classRows('A'), 'CAJAS', document.getElementById('totLibrasA').textContent], ['CLASE "B"', classRows('B'), 'CAJAS', document.getElementById('totLibrasB').textContent], ['CLASE "C"', classRows('C'), 'FUNDAS', document.getElementById('totLibrasS').textContent]].forEach(([title,body,label,total])=>{
+    doc.setFont('times','normal'); doc.setFontSize(12); doc.text(title,105,y,{align:'center'});
+    doc.autoTable({startY:y+4, head:[['TALLAS',label,'LIBRAS']], body, theme:'grid', styles:{font:'times',fontSize:10.5,lineColor:[0,0,0],lineWidth:.2,cellPadding:2}, headStyles:{fontStyle:'bold'}, columnStyles:{1:{halign:'right'},2:{halign:'right'}}, foot:[[`Total ${title.replace(/"/g,'').replace('CLASE ','clase ')}`,'',total]], footStyles:{fontStyle:'normal'}});
+    y=doc.lastAutoTable.finalY+12;
+  });
+  doc.save(`${proveedor||'PROVEEDOR'}-${sec||'0000'}_SOBRANTE.pdf`);
+}
+
+build();
+loadLocal();
+calc();
+document.addEventListener('input', e=>{ if(e.target.matches('input')) calc(); });
+document.getElementById('btnCalc').onclick=calc;
+document.getElementById('btnGuardar').onclick=()=>{ saveLocal(); alert('Borrador guardado.'); };
+document.getElementById('btnPdfEntero').onclick=pdfEntero;
+document.getElementById('btnPdfSobrante').onclick=pdfSobrante;
+</script>
+</body>
+</html>
