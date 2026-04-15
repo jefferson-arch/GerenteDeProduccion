@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SSL | Sistema de Soporte de Liquidaciones</title>
+<link rel="icon" href="favicon.ico?v=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#f6f5f2;
+  --panel:#fcfbf8;
+  --panel2:#f4efe6;
+  --panel3:#eef4f2;
+  --line:#cfc8bc;
+  --text:#2d2a26;
+  --muted:#72685b;
+  --accent:#8c6f5a;
+  --soft:#dfeae5;
+  --soft2:#efe1dc;
+  --good:#295f4e;
+  --warn:#9b5b4b;
+  --head:#e7efe9;
+  --cell:#f8f6f2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#f7f5f1,#f1eee8);font-family:"Times New Roman",serif;color:var(--text)}
+.wrap{max-width:1700px;margin:14px auto;padding:10px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);padding:10px 14px}
+.title{font-size:26px;font-weight:700;letter-spacing:.2px}
+.subtitle{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.user-chip{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);background:linear-gradient(180deg,#fff,#f7f1e8);font-size:13px}
+.user-chip .lab{color:var(--muted)}
+.user-chip .val{font-weight:700}
+
+button{border:1px solid #bcae9c;background:linear-gradient(180deg,#fff,#f2ebe2);padding:8px 12px;font-family:inherit;font-size:14px;cursor:pointer}
+button:hover{filter:brightness(.98)}
+.grid-top{display:grid;grid-template-columns:1.35fr .9fr .8fr;gap:10px;margin-top:8px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);padding:8px}
+.panel h3{margin:0 0 6px;font-size:16px}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:1px}
+input{width:100%;border:1px solid #bdb4a7;background:#fff;padding:3px 5px;font-family:inherit;font-size:14px}
+input[readonly]{background:#f7f4ee}
+input.num{text-align:right}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.kpi{border:1px solid var(--line);padding:8px;background:var(--panel2);min-height:72px}
+.kpi .lab{font-size:12px;color:var(--muted)}
+.kpi .val{font-size:22px;font-weight:700;text-align:center;padding-top:4px}
+
+
+.note{font-size:12px;color:var(--muted)}
+.main{display:grid;grid-template-columns:1.18fr .82fr;gap:10px;margin-top:10px}
+.table-wrap{width:100%;overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);background:var(--panel)}
+.table-wrap::-webkit-scrollbar{height:8px}
+.table-wrap::-webkit-scrollbar-thumb{background:#c9c1b5;border-radius:10px}
+.table-wrap::-webkit-scrollbar-track{background:#ece7df}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid var(--line);padding:4px 5px;font-size:14px;vertical-align:middle}
+th{background:var(--panel2);font-size:13px}
+.compact th,.compact td{padding:3px 4px}
+.center{text-align:center}
+.right{text-align:right}
+.small{font-size:12px;color:var(--muted)}
+.section-title{padding:6px 8px;background:var(--soft);border:1px solid var(--line);border-bottom:none;font-weight:700}
+.gray{background:#f8f7f4}
+
+
+
+.mono{font-variant-numeric:tabular-nums}
+
+.total-line{font-weight:700;background:var(--panel3)}
+.accent{color:var(--accent)}
+.good{color:var(--good)}
+.warn{color:var(--warn)}
+.bines-box{display:block}
+.bines-table{width:100%;border-collapse:collapse;table-layout:fixed;background:var(--panel)}
+.bines-table th,.bines-table td{border:1px solid var(--line);padding:3px 4px;font-size:12px;text-align:center;vertical-align:middle}
+.bines-table th{background:var(--panel2);font-size:11px}
+.bines-table input{width:100%;padding:3px 4px;font-size:12px;border:1px solid #bdb4a7;background:#fff;text-align:right;font-family:inherit}
+
+
+/* ===== TABLAS COMPACTAS GERENCIALES ===== */
+.tabla-liquidacion,
+.tabla-cola{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  background:var(--cell);
+}
+.tabla-liquidacion th,
+.tabla-liquidacion td,
+.tabla-cola th,
+.tabla-cola td{
+  border:1px solid var(--line);
+  padding:3px 4px;
+  font-size:11px;
+  line-height:1.1;
+  text-align:center;
+  vertical-align:middle;
+  color:var(--text);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.tabla-liquidacion th,
+.tabla-cola th{
+  background:var(--head);
+  font-size:10.5px;
+  font-weight:700;
+}
+.tabla-liquidacion input,
+.tabla-cola input,
+.tabla-liquidacion select,
+.tabla-cola select{
+  width:100%;
+  min-width:0;
+  height:22px;
+  padding:2px 3px;
+  font-size:10px;
+  border:1px solid #cfc7bb;
+  background:#fff;
+  color:#2f2a24;
+  box-sizing:border-box;
+  text-align:right;
+}
+.tabla-liquidacion input:focus,
+.tabla-cola input:focus,
+.tabla-liquidacion select:focus,
+.tabla-cola select:focus{
+  outline:none;
+  border-color:#a79d8d;
+  box-shadow:0 0 0 1px rgba(167,157,141,.15);
+}
+.tabla-liquidacion td:first-child,
+.tabla-cola td:first-child{font-weight:700;text-align:left}
+
+/* ENTERO */
+.tabla-liquidacion th:nth-child(1), .tabla-liquidacion td:nth-child(1){width:72px}
+.tabla-liquidacion th:nth-child(2), .tabla-liquidacion td:nth-child(2){width:72px}
+.tabla-liquidacion th:nth-child(3), .tabla-liquidacion td:nth-child(3){width:54px}
+.tabla-liquidacion th:nth-child(4), .tabla-liquidacion td:nth-child(4){width:54px}
+.tabla-liquidacion th:nth-child(5), .tabla-liquidacion td:nth-child(5){width:78px}
+.tabla-liquidacion th:nth-child(6), .tabla-liquidacion td:nth-child(6){width:58px}
+.tabla-liquidacion th:nth-child(7), .tabla-liquidacion td:nth-child(7){width:64px}
+.tabla-liquidacion th:nth-child(8), .tabla-liquidacion td:nth-child(8){width:82px}
+
+/* COLA / SOBRANTE */
+.tabla-cola th:nth-child(1), .tabla-cola td:nth-child(1){width:72px}
+.tabla-cola th:nth-child(2), .tabla-cola td:nth-child(2){width:44px}
+.tabla-cola th:nth-child(3), .tabla-cola td:nth-child(3){width:48px}
+.tabla-cola th:nth-child(4), .tabla-cola td:nth-child(4){width:58px}
+.tabla-cola th:nth-child(5), .tabla-cola td:nth-child(5){width:46px}
+.tabla-cola th:nth-child(6), .tabla-cola td:nth-child(6){width:62px}
+.tabla-cola th:nth-child(7), .tabla-cola td:nth-child(7){width:44px}
+.tabla-cola th:nth-child(8), .tabla-cola td:nth-child(8){width:48px}
+.tabla-cola th:nth-child(9), .tabla-cola td:nth-child(9){width:58px}
+.tabla-cola th:nth-child(10), .tabla-cola td:nth-child(10){width:46px}
+.tabla-cola th:nth-child(11), .tabla-cola td:nth-child(11){width:62px}
+.tabla-cola th:nth-child(12), .tabla-cola td:nth-child(12){width:50px}
+.tabla-cola th:nth-child(13), .tabla-cola td:nth-child(13){width:50px}
+.tabla-cola th:nth-child(14), .tabla-cola td:nth-child(14){width:60px}
+.tabla-cola th:nth-child(15), .tabla-cola td:nth-child(15){width:48px}
+.tabla-cola th:nth-child(16), .tabla-cola td:nth-child(16){width:64px}
+
+
+/* Ajuste fino de la tabla Cola/Sobrante */
+.peso-head th{
+  background:#edf3ef;
+  font-size:11px;
+  padding:5px 8px;
+  text-align:center;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+}
+.peso-inline{
+  display:inline-block !important;
+  width:86px !important;
+  height:26px !important;
+  margin-left:8px;
+  padding:2px 6px !important;
+  font-size:12px !important;
+  text-align:right;
+  border:1px solid #cfc7bb;
+  background:#fff;
+}
+.cola-wrap{overflow-x:auto;overflow-y:hidden}
+.tabla-cola-unificada{
+  table-layout:fixed;
+  width:auto;
+  min-width:980px;
+}
+.tabla-cola-unificada th,
+.tabla-cola-unificada td{
+  font-size:10.5px;
+  padding:2px 3px;
+}
+.tabla-cola-unificada thead tr:nth-child(2) th{
+  white-space:normal;
+  line-height:1.05;
+  overflow:visible;
+  text-overflow:clip;
+}
+.tabla-cola-unificada tbody td,
+.tabla-cola-unificada tfoot td{
+  white-space:nowrap;
+}
+.tabla-cola-unificada input{height:22px;padding:1px 3px;font-size:10.5px}
+.tabla-cola-unificada th:nth-child(1), .tabla-cola-unificada td:nth-child(1){width:56px;min-width:56px;max-width:56px}
+.tabla-cola-unificada th:nth-child(2), .tabla-cola-unificada td:nth-child(2),
+.tabla-cola-unificada th:nth-child(6), .tabla-cola-unificada td:nth-child(6),
+.tabla-cola-unificada th:nth-child(10), .tabla-cola-unificada td:nth-child(10){width:46px;min-width:46px;max-width:46px}
+.tabla-cola-unificada th:nth-child(3), .tabla-cola-unificada td:nth-child(3),
+.tabla-cola-unificada th:nth-child(7), .tabla-cola-unificada td:nth-child(7),
+.tabla-cola-unificada th:nth-child(11), .tabla-cola-unificada td:nth-child(11){width:86px;min-width:86px;max-width:86px}
+.tabla-cola-unificada th:nth-child(4), .tabla-cola-unificada td:nth-child(4),
+.tabla-cola-unificada th:nth-child(8), .tabla-cola-unificada td:nth-child(8),
+.tabla-cola-unificada th:nth-child(12), .tabla-cola-unificada td:nth-child(12){width:54px;min-width:54px;max-width:54px}
+.tabla-cola-unificada th:nth-child(5), .tabla-cola-unificada td:nth-child(5),
+.tabla-cola-unificada th:nth-child(9), .tabla-cola-unificada td:nth-child(9),
+.tabla-cola-unificada th:nth-child(13), .tabla-cola-unificada td:nth-child(13){width:76px;min-width:76px;max-width:76px}
+.top-compact .panel{min-height:auto}
+.top-compact .panel .form-grid{align-items:start}
+.top-compact .panel .kpis{align-content:start}
+.gramaje-box{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+.gramaje-title{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 4px}
+.gramaje-table{width:100%;border-collapse:collapse;table-layout:fixed;background:var(--panel)}
+.gramaje-table th,.gramaje-table td{border:1px solid var(--line);padding:2px 4px;font-size:11px;text-align:right;vertical-align:middle}
+.gramaje-table th{background:var(--panel2);font-size:10.5px;text-align:center}
+.gramaje-table td:first-child,.gramaje-table td:nth-child(2){text-align:center}
+.gramaje-kpi{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;align-items:center}
+.gramaje-kpi .lab{font-size:11px;color:var(--muted);font-weight:700}
+.gramaje-kpi .val{min-width:84px;text-align:center;border:1px solid var(--line);background:#dff0d8;padding:4px 8px;font-size:16px;font-weight:700;color:#1d6f42}
+.gramaje-hide{display:none;}
+.auth-overlay{position:fixed;inset:0;background:rgba(246,245,242,.98);display:flex;align-items:center;justify-content:center;z-index:99999}
+.auth-card{width:min(420px,92vw);background:var(--panel);border:1px solid var(--line);padding:18px;box-shadow:0 18px 40px rgba(0,0,0,.12)}
+.auth-card h2{margin:0 0 8px;font-size:24px}
+.auth-card p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.auth-card .field{margin-bottom:10px}
+.auth-msg{min-height:18px;color:var(--warn);font-size:12px;margin-top:8px}
+.hidden{display:none !important}
+.history-overlay{position:fixed;inset:0;background:rgba(0,0,0,.26);display:none;align-items:center;justify-content:center;z-index:99998}
+.history-overlay.show{display:flex}
+.history-modal{width:min(1100px,96vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid var(--line);padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.18)}
+.history-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.history-title{font-size:22px;font-weight:700}
+.history-table{width:100%;border-collapse:collapse}
+.history-table th,.history-table td{border:1px solid var(--line);padding:6px 8px;font-size:13px}
+.history-table th{background:var(--panel2)}
+.history-actions{display:flex;gap:6px;flex-wrap:wrap}
+.history-actions button{padding:5px 8px;font-size:12px}
+.app-locked .wrap{filter:blur(2px);pointer-events:none;user-select:none}
+@media (max-width:1200px){.grid-top,.main,.summary-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <div class="title">SSL Sistema de Soporte de Liquidaciones</div>
+      <div class="subtitle">Entero USA y Sobrante | diseño compacto gerencial</div>
+    </div>
+    <div class="header-right">
+      <div class="user-chip">
+        <span class="lab">Usuario:</span>
+        <span class="val" id="loggedUserText">Sin sesión</span>
+      </div>
+      <div class="actions">
+        <button id="btnNuevo">NUEVO</button>
+        <button id="btnGuardar">GUARDAR</button>
+        <button id="btnHistorial">HISTORIAL</button>
+        <button id="btnPdfEntero">PDF Entero</button>
+        <button id="btnPdfSobrante">PDF Sobrante</button>
+        <button id="btnHeaderLogout" class="hidden" type="button">CERRAR SESIÓN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-top top-compact">
+    <div class="panel">
+      <h3>Datos generales</h3>
+      <div class="form-grid">
+        <div class="field"><label>Proveedor</label><input id="proveedor" value=""></div>
+        <div class="field"><label>Secuencial</label><input id="secuencial" class="num" value=""></div>
+        <div class="field"><label>Fecha</label><input id="fecha" value="" readonly></div>
+        <div class="field"><label>Piscina</label><input id="piscina" value=""></div>
+        <div class="field"><label>Controlador</label><input id="controlador" value=""></div>
+        <div class="field"><label>Peso remitido</label><input id="pesoRemitido" class="num" value="0"></div>
+        <div class="field"><label>Peso guía / recibido</label><input id="pesoGuia" class="num" value="0"></div>
+        <div class="field"><label>Peso Promedio</label><input id="pesoPromedio" class="num" value="0" readonly></div>
+        <input id="basuraTotal" type="hidden" value="0">
+      </div>
+      <div class="gramaje-box">
+        <div class="gramaje-title">GRAMAJE LIQUIDACIÓN</div>
+        <table class="gramaje-table">
+          <thead>
+            <tr><th>CONTEO</th><th>GRAMAJE</th><th>MASA</th></tr>
+          </thead>
+          <tbody>
+            <tr id="gr15"><td>15</td><td>66,67</td><td id="gm15">-</td></tr>
+            <tr id="gr25"><td>25</td><td>40,00</td><td id="gm25">-</td></tr>
+            <tr id="gr35"><td>35</td><td>28,57</td><td id="gm35">-</td></tr>
+            <tr id="gr45"><td>45</td><td>22,22</td><td id="gm45">-</td></tr>
+            <tr id="gr55"><td>55</td><td>18,18</td><td id="gm55">-</td></tr>
+            <tr id="gr65"><td>65</td><td>15,38</td><td id="gm65">-</td></tr>
+            <tr id="gr75"><td>75</td><td>13,33</td><td id="gm75">-</td></tr>
+            <tr id="gr85"><td>85</td><td>11,76</td><td id="gm85">-</td></tr>
+            <tr id="gr90"><td>90</td><td>11,11</td><td id="gm90">-</td></tr>
+            <tr id="gr110"><td>110</td><td>9,09</td><td id="gm110">-</td></tr>
+          </tbody>
+        </table>
+        <div class="gramaje-kpi">
+          <div class="lab">GRAMAJE LIQUIDACIÓN</div>
+          <div class="val mono" id="gramajeLiquidacionVal">0,00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel">
+      <h3>Indicadores</h3>
+      <div class="kpis">
+        <div class="kpi"><div class="lab">Peso planta</div><div class="val mono" id="kpiPesoPlanta">0,00</div></div>
+        <div class="kpi"><div class="lab">Rendimiento entero</div><div class="val mono" id="kpiRendEntero">0,00%</div></div>
+        <div class="kpi"><div class="lab">$ a pagar Entero + Sobrante</div><div class="val mono" id="kpiPagar">0,00</div></div>
+        <div class="kpi"><div class="lab">$ a recibir</div><div class="val mono" id="kpiRecibir">0,00</div></div>
+        <div class="kpi"><div class="lab">Diferencia $</div><div class="val mono" id="kpiDif">0,00</div></div>
+        <div class="kpi"><div class="lab">Cola a favor</div><div class="val mono" id="kpiColaFavor">0,00</div></div>
+      </div>
+    </div>
+    <div class="panel panel">
+      <h3>Control de bines</h3>
+      <div class="bines-box">
+        <table class="bines-table" id="tblBinesCtrl">
+          <thead>
+            <tr><th>BINES</th><th>LIBRAS</th><th>PESO</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><input id="bin1" class="num" value="0"></td><td><input id="lib1" class="num" value="0"></td><td id="peso1" class="right mono">0,00</td></tr>
+            <tr><td><input id="bin2" class="num" value="0"></td><td><input id="lib2" class="num" value="0"></td><td id="peso2" class="right mono">0,00</td></tr>
+            <tr><td><input id="bin3" class="num" value="0"></td><td><input id="lib3" class="num" value="0"></td><td id="peso3" class="right mono">0,00</td></tr>
+            <tr><td><input id="bin4" class="num" value="0"></td><td><input id="lib4" class="num" value="0"></td><td id="peso4" class="right mono">0,00</td></tr>
+            <tr><td><input id="bin5" class="num" value="0"></td><td><input id="lib5" class="num" value="0"></td><td id="peso5" class="right mono">0,00</td></tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-line"><td id="bines" class="right mono">0,00</td><td></td><td id="binesPeso" class="right mono">0,00</td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div>
+      <div class="section-title">Liquidación de Entero</div>
+      <div class="table-wrap">
+        <table id="tblEntero" class="compact tabla-liquidacion">
+          <thead>
+            <tr>
+              <th>Talla entero</th>
+              <th>Libras USA</th>
+              <th>% Empacado</th>
+              <th>% Libras</th>
+              <th>Libras empacadas</th>
+              <th>Kilos</th>
+              <th>Precio entero</th>
+              <th>Dólares a pagar</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="total-line"><td>EMPACADO</td><td id="tEmpacadoB" class="right mono"></td><td class="right mono">100,00%</td><td id="tPctLibras" class="right mono"></td><td id="tLibrasEmp" class="right mono"></td><td></td><td class="right">$ A PAGAR</td><td id="tPagar" class="right mono"></td></tr>
+            <tr><td>SOBRANTE</td><td><input id="sobranteConteo" class="num" value="0"></td><td></td><td id="pctSobrante" class="right mono"></td><td id="librasSobrante" class="right mono"></td><td colspan="3"></td></tr>
+            <tr><td>BASURA</td><td><input id="basuraConteo" class="num" value="0"></td><td></td><td id="pctBasura" class="right mono"></td><td id="librasBasura" class="right mono"></td><td colspan="3"></td></tr>
+            <tr class="total-line"><td>USA</td><td id="usaTotalB" class="right mono"></td><td></td><td class="right mono">100,00%</td><td id="usaTotalLibras" class="right mono"></td><td colspan="3"></td></tr>
+            <tr><td colspan="4">COLA USA</td><td id="colaUsa" class="right mono" colspan="4"></td></tr>
+            <tr><td colspan="4">COLA SOB</td><td id="colaSob" class="right mono" colspan="4"></td></tr>
+            <tr><td colspan="4">COLA TOTAL</td><td id="colaTotal" class="right mono" colspan="4"></td></tr>
+            <tr><td colspan="4">COLA EMP</td><td id="colaEmp" class="right mono" colspan="4"></td></tr>
+            <tr class="total-line"><td colspan="4">COLA FAVOR</td><td id="colaFavor" class="right mono" colspan="4"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">Liquidación de Cola y Sobrante</div>
+      <div class="table-wrap cola-wrap">
+        <table id="tblCola" class="compact tabla-cola tabla-cola-unificada">
+          <colgroup>
+            <col style="width:56px">
+            <col style="width:46px"><col style="width:86px"><col style="width:54px"><col style="width:76px">
+            <col style="width:46px"><col style="width:86px"><col style="width:54px"><col style="width:76px">
+            <col style="width:46px"><col style="width:86px"><col style="width:54px"><col style="width:76px">
+          </colgroup>
+          <thead>
+            <tr class="peso-head">
+              <th></th>
+              <th colspan="4">Clase A — Peso empaque <input id="pesoA" class="num peso-inline" value="2.00"></th>
+              <th colspan="4">Clase B — Peso empaque <input id="pesoB" class="num peso-inline" value="2.00"></th>
+              <th colspan="4">Sobrante — Peso empaque <input id="pesoS" class="num peso-inline" value="2.00"></th>
+            </tr>
+            <tr>
+              <th>Talla cola</th><th>Unid. A</th><th>Libras A</th><th>Precio A</th><th>Valor A</th>
+              <th>Unid. B</th><th>Libras B</th><th>Precio B</th><th>Valor B</th>
+              <th>Unid. Sob</th><th>Libras Sob</th><th>Precio Sob</th><th>Valor Sob</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="total-line"><td>TOTALES</td><td id="totUnidA" class="right mono"></td><td id="totLibrasA" class="right mono"></td><td></td><td id="totValA" class="right mono"></td><td id="totUnidB" class="right mono"></td><td id="totLibrasB" class="right mono"></td><td></td><td id="totValB" class="right mono"></td><td id="totUnidS" class="right mono"></td><td id="totLibrasS" class="right mono"></td><td></td><td id="totValS" class="right mono"></td></tr>
+          </tfoot>
+        </table>
+        <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+          <table style="width:260px; border-collapse:collapse; font-size:11px;">
+            <tr>
+              <td style="border:none; padding:3px 6px; text-align:left;">BASURA</td>
+              <td style="border:none; padding:3px 6px; width:100px;">
+                <input id="basuraS" class="num" value="0" style="width:100%; height:22px; padding:2px 4px; font-size:11px; text-align:right; border:1px solid #cfc7bb; background:#fff;">
+              </td>
+            </tr>
+            <tr>
+              <td style="border:none; padding:3px 6px; text-align:left;">PLANTA</td>
+              <td id="plantaSVal" class="right mono" style="border:none; padding:3px 6px;">0,00</td>
+            </tr>
+            <tr>
+              <td style="border:none; padding:3px 6px; text-align:left;">REND</td>
+              <td id="rendSVal" class="right mono" style="border:none; padding:3px 6px;">0,00%</td>
+            </tr>
+          </table>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  
+
+<div class="history-overlay" id="historyOverlay">
+  <div class="history-modal">
+    <div class="history-head">
+      <div class="history-title">Historial de liquidaciones</div>
+      <button type="button" id="btnCerrarHistorial">CERRAR</button>
+    </div>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Secuencial</th>
+          <th>Proveedor</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>Acceso SSL</h2>
+    <p>Solo el usuario autorizado puede ingresar al sistema.</p>
+    <div class="field">
+      <label>Correo</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="jeffersonfigueroa@oceantreasure.local">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Ingrese su contraseña">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button type="button" id="btnLogin">INGRESAR</button>
+      <button type="button" id="btnLogout" class="hidden">SALIR</button>
+    </div>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const ENTERO_ROWS = [
+  {t:'10-20', p:4.60}, {t:'20-30', p:4.60}, {t:'30-40', p:3.65}, {t:'40-50', p:3.25}, {t:'50-60', p:3.10},
+  {t:'60-70', p:2.80}, {t:'70-80', p:2.70}, {t:'80-100', p:2.60}, {t:'100-120', p:2.00}, {t:'120-150', p:1.90}
+];
+const COLA_ROWS = [
+  {t:'16-20', pa:2.70, pb:2.40, ps:1.25},
+  {t:'21-25', pa:2.40, pb:2.10, ps:1.30},
+  {t:'26-30', pa:2.30, pb:2.00, ps:1.20},
+  {t:'31-35', pa:2.15, pb:1.85, ps:1.10},
+  {t:'36-40', pa:2.05, pb:1.75, ps:1.00},
+  {t:'41-50', pa:1.95, pb:1.65, ps:0.90},
+  {t:'51-60', pa:1.80, pb:1.50, ps:0.80},
+  {t:'61-70', pa:1.60, pb:1.30, ps:0.70},
+  {t:'71-90', pa:1.40, pb:1.10, ps:0.60},
+  {t:'91-110', pa:0.90, pb:0.60, ps:0.50},
+  {t:'BVS', pa:0.30, pb:0.30, ps:0.30},
+];
+const f2 = n => (Number(n)||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fm = n => '$ ' + f2(n);
+const fp = n => (Number(n)||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+const num = v => {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+  let s = String(v ?? '').trim();
+  if (!s) return 0;
+  s = s.replace(/\$/g,'').replace(/\s+/g,'');
+  const hasComma = s.includes(',');
+  const dotCount = (s.match(/\./g) || []).length;
+  if (hasComma && s.includes('.')) {
+    s = s.replace(/\./g,'').replace(',', '.');
+  } else if (hasComma) {
+    s = s.replace(',', '.');
+  } else if (dotCount > 1) {
+    s = s.replace(/\./g,'');
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+};
+
+function formatLongDateES(date = new Date()){
+  return date.toLocaleDateString('es-EC', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+function setSystemDate(){
+  const fechaEl = document.getElementById('fecha');
+  if (fechaEl) fechaEl.value = formatLongDateES(new Date());
+}
+
+
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+  authDomain: "oceantreasure-app.firebaseapp.com",
+  projectId: "oceantreasure-app",
+  storageBucket: "oceantreasure-app.firebasestorage.app",
+  messagingSenderId: "553014659258",
+  appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+  measurementId: "G-HMMQKJY8NJ"
+};
+
+const ALLOWED_EMAIL = 'jeffersonfigueroa@oceantreasure.local';
+const FIRESTORE_COLLECTION = 'ssl_soporte_liquidaciones';
+let db = null;
+let auth = null;
+let currentUser = null;
+let currentDocId = null;
+
+function initFirebase(){
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+}
+
+function setAuthMessage(msg=''){
+  const el = document.getElementById('authMsg');
+  if (el) el.textContent = msg;
+}
+
+function lockApp(locked){
+  document.body.classList.toggle('app-locked', locked);
+  const ov = document.getElementById('authOverlay');
+  if (ov) ov.classList.toggle('hidden', !locked);
+}
+
+async function handleLogin(){
+  const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+  const password = document.getElementById('loginPassword')?.value || '';
+  if (!email || !password) {
+    setAuthMessage('Ingrese correo y contraseña.');
+    return;
+  }
+  try{
+    setAuthMessage('Validando acceso...');
+    await auth.signInWithEmailAndPassword(email, password);
+  }catch(err){
+    setAuthMessage(err?.message || 'No se pudo iniciar sesión.');
+  }
+}
+
+async function handleLogout(){
+  try { await auth.signOut(); } catch(e){}
+}
+
+function bindAuthState(){
+  auth.onAuthStateChanged(async user=>{
+    if(!user){
+      currentUser = null;
+      currentDocId = null;
+      lockApp(true);
+      document.getElementById('btnLogout')?.classList.add('hidden');
+      document.getElementById('btnHeaderLogout')?.classList.add('hidden');
+      const userLbl = document.getElementById('loggedUserText');
+      if (userLbl) userLbl.textContent = 'Sin sesión';
+      setAuthMessage('');
+      return;
+    }
+
+    const email = (user.email || '').toLowerCase();
+    if(email !== ALLOWED_EMAIL){
+      setAuthMessage('Usuario sin autorización para este sistema.');
+      await auth.signOut();
+      return;
+    }
+
+    currentUser = user;
+    lockApp(false);
+    document.getElementById('btnLogout')?.classList.remove('hidden');
+    document.getElementById('btnHeaderLogout')?.classList.remove('hidden');
+    const userLbl = document.getElementById('loggedUserText');
+    if (userLbl) userLbl.textContent = email;
+    setAuthMessage('');
+    await loadHistory();
+  });
+}
+
+function captureCurrentData(){
+  const data = {};
+  document.querySelectorAll('input').forEach(i=>{
+    if(i.id) data[i.id] = i.value;
+  });
+  return data;
+}
+
+function applyDataToForm(data){
+  if(!data) return;
+  document.querySelectorAll('input').forEach(i=>{
+    if(i.id && data[i.id] !== undefined && !i.readOnly) i.value = data[i.id];
+  });
+  const fechaEl = document.getElementById('fecha');
+  if (fechaEl && data.fecha) fechaEl.value = data.fecha;
+  calc();
+}
+
+function resetForNew(){
+  currentDocId = null;
+  document.querySelectorAll('input').forEach(el=>{
+    if(!el.id || el.type==='hidden' || el.id==='fecha' || el.readOnly) return;
+
+    if(['proveedor','secuencial','piscina','controlador'].includes(el.id)){ el.value=''; return; }
+    if(['pesoRemitido','pesoGuia','sobranteConteo','basuraConteo','bin1','bin2','bin3','bin4','bin5','lib1','lib2','lib3','lib4','lib5','basuraS'].includes(el.id) || /^eu\d+$/.test(el.id) || /^ca\d+$/.test(el.id) || /^cb\d+$/.test(el.id) || /^cs\d+$/.test(el.id)){
+      el.value='0';
+      return;
+    }
+    if(['pesoA','pesoB','pesoS'].includes(el.id)){ el.value='2.00'; return; }
+    if(/^eprec\d+$/.test(el.id)){
+      const idx = Number(el.id.replace('eprec',''));
+      el.value = Number(ENTERO_ROWS[idx]?.p ?? 0).toFixed(2);
+      return;
+    }
+    if(/^cpa\d+$/.test(el.id)){
+      const idx = Number(el.id.replace('cpa',''));
+      el.value = Number(COLA_ROWS[idx]?.pa ?? 0).toFixed(2);
+      return;
+    }
+    if(/^cpb\d+$/.test(el.id)){
+      const idx = Number(el.id.replace('cpb',''));
+      el.value = Number(COLA_ROWS[idx]?.pb ?? 0).toFixed(2);
+      return;
+    }
+    if(/^cps\d+$/.test(el.id)){
+      const idx = Number(el.id.replace('cps',''));
+      el.value = Number(COLA_ROWS[idx]?.ps ?? 0).toFixed(2);
+      return;
+    }
+  });
+  setSystemDate();
+  calc();
+}
+
+async function saveToCloud(){
+  if(!currentUser || !db){
+    alert('Debe iniciar sesión.');
+    return;
+  }
+  calc();
+  const payload = {
+    secuencial: (document.getElementById('secuencial')?.value || '').trim(),
+    proveedor: (document.getElementById('proveedor')?.value || '').trim(),
+    fecha: (document.getElementById('fecha')?.value || '').trim(),
+    piscina: (document.getElementById('piscina')?.value || '').trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    createdBy: currentUser.email,
+    data: captureCurrentData()
+  };
+
+  if(!payload.secuencial){
+    alert('Ingrese el secuencial antes de guardar.');
+    return;
+  }
+
+  try{
+    if(currentDocId){
+      await db.collection(FIRESTORE_COLLECTION).doc(currentDocId).set(payload, {merge:true});
+    }else{
+      const snap = await db.collection(FIRESTORE_COLLECTION).where('secuencial', '==', payload.secuencial).limit(1).get();
+      if(!snap.empty){
+        currentDocId = snap.docs[0].id;
+        await db.collection(FIRESTORE_COLLECTION).doc(currentDocId).set(payload, {merge:true});
+      }else{
+        payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        const ref = await db.collection(FIRESTORE_COLLECTION).add(payload);
+        currentDocId = ref.id;
+      }
+    }
+    await loadHistory();
+    alert('Liquidación guardada en la nube.');
+  }catch(err){
+    alert('No se pudo guardar en Firestore: ' + (err?.message || err));
+  }
+}
+
+async function loadHistory(){
+  if(!currentUser || !db) return;
+  const body = document.getElementById('historyBody');
+  if(body) body.innerHTML = '<tr><td colspan="4" style="text-align:center">Cargando...</td></tr>';
+  try{
+    const snap = await db.collection(FIRESTORE_COLLECTION).orderBy('updatedAt', 'desc').get();
+    renderHistoryRows(snap.docs.map(doc=>({id:doc.id, ...doc.data()})));
+  }catch(err){
+    try{
+      const snap2 = await db.collection(FIRESTORE_COLLECTION).get();
+      const arr = snap2.docs.map(doc=>({id:doc.id, ...doc.data()})).sort((a,b)=>{
+        const av = a.updatedAt?.seconds || 0;
+        const bv = b.updatedAt?.seconds || 0;
+        return bv - av;
+      });
+      renderHistoryRows(arr);
+    }catch(err2){
+      if(body) body.innerHTML = '<tr><td colspan="4" style="text-align:center">No se pudo cargar historial.</td></tr>';
+    }
+  }
+}
+
+function renderHistoryRows(rows){
+  const body = document.getElementById('historyBody');
+  if(!body) return;
+  body.innerHTML = '';
+  if(!rows.length){
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center">No hay liquidaciones guardadas.</td></tr>';
+    return;
+  }
+  rows.forEach(item=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.secuencial || '-'}</td>
+      <td>${item.proveedor || '-'}</td>
+      <td>${item.fecha || '-'}</td>
+      <td>
+        <div class="history-actions">
+          <button type="button" data-open="${item.id}">ABRIR</button>
+          <button type="button" data-edit="${item.id}">EDITAR</button>
+          <button type="button" data-del="${item.id}">ELIMINAR</button>
+        </div>
+      </td>`;
+    body.appendChild(tr);
+  });
+}
+
+async function openHistory(){
+  await loadHistory();
+  document.getElementById('historyOverlay')?.classList.add('show');
+}
+
+function closeHistory(){
+  document.getElementById('historyOverlay')?.classList.remove('show');
+}
+
+async function openHistoryItem(id){
+  if(!db) return;
+  const doc = await db.collection(FIRESTORE_COLLECTION).doc(id).get();
+  if(!doc.exists) return;
+  currentDocId = id;
+  const data = doc.data()?.data || {};
+  applyDataToForm(data);
+  closeHistory();
+}
+
+async function deleteHistoryItem(id){
+  if(!db) return;
+  if(!confirm('¿Eliminar esta liquidación del historial?')) return;
+  await db.collection(FIRESTORE_COLLECTION).doc(id).delete();
+  if(currentDocId === id) currentDocId = null;
+  await loadHistory();
+}
+
+
+function build(){
+  const tbE = document.querySelector('#tblEntero tbody');
+  tbE.innerHTML='';
+  ENTERO_ROWS.forEach((r,i)=>{
+    tbE.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${r.t}</td>
+        <td><input id="eu${i}" class="num" value="0"></td>
+        <td id="ep${i}" class="right mono">0,00%</td>
+        <td id="el${i}" class="right mono">0,00%</td>
+        <td id="ee${i}" class="right mono">0,00</td>
+        <td id="ek${i}" class="right mono">0,00</td>
+        <td><input id="eprec${i}" class="num" value="${r.p.toFixed(2)}"></td>
+        <td id="ed${i}" class="right mono">0,00</td>
+      </tr>`);
+  });
+  const tbC = document.querySelector('#tblCola tbody');
+  tbC.innerHTML='';
+  COLA_ROWS.forEach((r,i)=>{
+    tbC.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${r.t}</td>
+        <td><input id="ca${i}" class="num" value="0"></td>
+        <td id="cla${i}" class="right mono">0,00</td>
+        <td><input id="cpa${i}" class="num money-in" value="${r.pa.toFixed(2)}"></td>
+        <td id="cva${i}" class="right mono">0,00</td>
+        <td><input id="cb${i}" class="num" value="0"></td>
+        <td id="clb${i}" class="right mono">0,00</td>
+        <td><input id="cpb${i}" class="num money-in" value="${r.pb.toFixed(2)}"></td>
+        <td id="cvb${i}" class="right mono">0,00</td>
+        <td><input id="cs${i}" class="num" value="0"></td>
+        <td id="cls${i}" class="right mono">0,00</td>
+        <td><input id="cps${i}" class="num money-in" value="${r.ps.toFixed(2)}"></td>
+        <td id="cvs${i}" class="right mono">0,00</td>
+      </tr>`);
+  });
+}
+
+function calc(){
+  setSystemDate();
+  const pesoGuia = num(document.getElementById('pesoGuia').value);
+  const basuraTotal = num(document.getElementById('basuraTotal').value);
+  const pesoPlanta = pesoGuia;
+  document.getElementById('kpiPesoPlanta').textContent = f2(pesoGuia);
+
+  let totalBines=0, totalPesoBines=0;
+  for(let i=1;i<=5;i++){
+    const b = num((document.getElementById('bin'+i)||{}).value||0);
+    const l = num((document.getElementById('lib'+i)||{}).value||0);
+    const peso = b*l;
+    totalBines += b;
+    totalPesoBines += peso;
+    const out = document.getElementById('peso'+i);
+    if(out) out.textContent = f2(peso);
+  }
+  const binesTot = document.getElementById('bines');
+  const binesPesoTot = document.getElementById('binesPeso');
+  if(binesTot) binesTot.textContent = f2(totalBines);
+  if(binesPesoTot) binesPesoTot.textContent = f2(totalPesoBines);
+  const pesoPromedio = document.getElementById('pesoPromedio');
+  if(pesoPromedio) pesoPromedio.value = f2(totalPesoBines);
+  const pesoAcordadoVal = num((document.getElementById('pesoAcordado')||{}).value||0);
+  const difCtrl = pesoAcordadoVal ? (totalPesoBines - pesoAcordadoVal) : 0;
+
+  let usaConteo=0;
+  ENTERO_ROWS.forEach((r,i)=> usaConteo += num(document.getElementById('eu'+i).value));
+  const sobranteConteo = num(document.getElementById('sobranteConteo').value);
+  const basuraConteo = num(document.getElementById('basuraConteo').value);
+  const totalConteo = usaConteo + sobranteConteo + basuraConteo;
+
+  let totalPagar=0, totalEmpacadoLibras=0;
+  ENTERO_ROWS.forEach((r,i)=>{
+    const librasUSA = num(document.getElementById('eu'+i).value);
+    const pctEmp = usaConteo? (librasUSA/usaConteo*100):0;
+    const pctLibras = totalConteo? (librasUSA/totalConteo):0;
+    const librasEmp = pesoPlanta * pctLibras; // E = peso planta * % libras
+    const kilos = librasEmp/2.20462;
+    const precio = num(document.getElementById('eprec'+i).value);
+    const dol = kilos * precio;
+    totalPagar += dol;
+    totalEmpacadoLibras += librasEmp;
+    const hasEntero = librasUSA > 0;
+    document.getElementById('ep'+i).textContent = hasEntero ? fp(pctEmp) : '';
+    document.getElementById('el'+i).textContent = hasEntero ? fp(pctLibras*100) : '';
+    document.getElementById('ee'+i).textContent = hasEntero ? f2(librasEmp) : '';
+    document.getElementById('ek'+i).textContent = hasEntero ? f2(kilos) : '';
+    document.getElementById('ed'+i).textContent = hasEntero ? f2(dol) : '';
+  });
+
+  const pctSob = totalConteo? sobranteConteo/totalConteo*100:0;
+  const pctBas = totalConteo? basuraConteo/totalConteo*100:0;
+  const librasSob = pesoPlanta*(pctSob/100);
+  const librasBas = pesoPlanta*(pctBas/100);
+  document.getElementById('tEmpacadoB').textContent = f2(usaConteo);
+  document.getElementById('tPctLibras').textContent = fp(totalConteo? usaConteo/totalConteo*100:0);
+  document.getElementById('tLibrasEmp').textContent = f2(totalEmpacadoLibras);
+  document.getElementById('tPagar').textContent = f2(totalPagar);
+  document.getElementById('pctSobrante').textContent = fp(pctSob);
+  document.getElementById('librasSobrante').textContent = f2(librasSob);
+  document.getElementById('pctBasura').textContent = fp(pctBas);
+  document.getElementById('librasBasura').textContent = f2(librasBas);
+  document.getElementById('usaTotalB').textContent = f2(totalConteo);
+  const usaTotalLibrasCalc = totalEmpacadoLibras + librasSob;
+  document.getElementById('usaTotalLibras').textContent = f2(usaTotalLibrasCalc);
+
+  const pesoA = num((document.getElementById('pesoA')||{}).value||2);
+  const pesoB = num((document.getElementById('pesoB')||{}).value||2);
+  const pesoS = num((document.getElementById('pesoS')||{}).value||2);
+  let unidA=0,lA=0,vA=0, unidB=0,lB=0,vB=0, unidS=0,lS=0,vS=0;
+  COLA_ROWS.forEach((r,i)=>{
+    const a = num(document.getElementById('ca'+i).value), b=num(document.getElementById('cb'+i).value), s=num(document.getElementById('cs'+i).value);
+    const isBVS = r.t === 'BVS';
+    const la = isBVS ? (a * 5) : (a * pesoA * 2.2);
+    const lb = isBVS ? (b * 5) : (b * pesoB * 2.2);
+    const ls = isBVS ? (s * 5) : (s * pesoS * 2.2);
+    const va = la*num(document.getElementById('cpa'+i).value);
+    const vb = lb*num(document.getElementById('cpb'+i).value);
+    const vs = ls*num(document.getElementById('cps'+i).value);
+    unidA+=a; lA+=la; vA+=va; unidB+=b; lB+=lb; vB+=vb; unidS+=s; lS+=ls; vS+=vs;
+    document.getElementById('cla'+i).textContent = a > 0 ? f2(la) : '';
+    document.getElementById('cva'+i).textContent = a > 0 ? fm(va) : '';
+    document.getElementById('clb'+i).textContent = b > 0 ? f2(lb) : '';
+    document.getElementById('cvb'+i).textContent = b > 0 ? fm(vb) : '';
+    document.getElementById('cls'+i).textContent = s > 0 ? f2(ls) : '';
+    document.getElementById('cvs'+i).textContent = s > 0 ? fm(vs) : '';
+  });
+  document.getElementById('totUnidA').textContent=f2(unidA); document.getElementById('totLibrasA').textContent=f2(lA); document.getElementById('totValA').textContent=fm(vA);
+  document.getElementById('totUnidB').textContent=f2(unidB); document.getElementById('totLibrasB').textContent=f2(lB); document.getElementById('totValB').textContent=fm(vB);
+  document.getElementById('totUnidS').textContent=f2(unidS); document.getElementById('totLibrasS').textContent=f2(lS); document.getElementById('totValS').textContent=fm(vS);
+
+  const plantaS = librasSob;
+  const basuraS = num((document.getElementById('basuraS')||{}).value||0);
+  const rendS = (plantaS - basuraS) > 0 ? ((lS / (plantaS - basuraS)) * 100) : 0;
+
+  const plantaSEl = document.getElementById('plantaSVal');
+  const rendSEl = document.getElementById('rendSVal');
+  if (plantaSEl) plantaSEl.textContent = f2(plantaS);
+  if (rendSEl) rendSEl.textContent = fp(rendS);
+
+  const colaUsa = totalEmpacadoLibras * 0.66;
+  const colaSob = librasSob * 0.66;
+  const colaTotal = colaUsa + colaSob;
+  const colaEmp = lA + lB;
+  const colaFavor = colaEmp - colaTotal;
+  const rendEntero = usaTotalLibrasCalc ? totalEmpacadoLibras/usaTotalLibrasCalc*100 : 0;
+
+  document.getElementById('colaUsa').textContent=f2(colaUsa);
+  document.getElementById('colaSob').textContent=f2(colaSob);
+  document.getElementById('colaTotal').textContent=f2(colaTotal);
+  document.getElementById('colaEmp').textContent=f2(colaEmp);
+  document.getElementById('colaFavor').textContent=f2(colaFavor);
+  document.getElementById('kpiRendEntero').textContent=fp(rendEntero);
+  const pagarIndicador = totalPagar + vS;
+  document.getElementById('kpiPagar').textContent=f2(pagarIndicador);
+  document.getElementById('kpiRecibir').textContent=f2(vA+vB);
+
+  const costoInicialEl = document.getElementById('costoInicial');
+  const costoInicial = costoInicialEl ? num(costoInicialEl.value) : 0;
+  const costoFinal = totalPagar;
+  const dolares = costoInicial - costoFinal;
+  const comisionEl = document.getElementById('comision30');
+  const comision = (comisionEl ? num(comisionEl.value) : 0) || dolares*0.30;
+  const plantaEl = document.getElementById('plantaCosto');
+  const planta = (plantaEl ? num(plantaEl.value) : 0) || (dolares-comision);
+  const recibir = vA+vB;
+  const pagar = totalPagar + vS;
+  const dif = recibir - pagar;
+
+  const rCostoInicialEl = document.getElementById('rCostoInicial');
+  const rCostoFinalEl = document.getElementById('rCostoFinal');
+  const rDolaresEl = document.getElementById('rDolares');
+  const rComisionEl = document.getElementById('rComision');
+  const rPlantaEl = document.getElementById('rPlanta');
+  const cRecibirEl = document.getElementById('cRecibir');
+  const cPagarEl = document.getElementById('cPagar');
+  const cDifEl = document.getElementById('cDif');
+
+  if (rCostoInicialEl) rCostoInicialEl.textContent = f2(costoInicial);
+  if (rCostoFinalEl) rCostoFinalEl.textContent = f2(costoFinal);
+  if (rDolaresEl) rDolaresEl.textContent = f2(dolares);
+  if (rComisionEl) rComisionEl.textContent = f2(comision);
+  if (rPlantaEl) rPlantaEl.textContent = f2(planta);
+  if (cRecibirEl) cRecibirEl.textContent = f2(recibir);
+  if (cPagarEl) cPagarEl.textContent = f2(pagar);
+  if (cDifEl) cDifEl.textContent = f2(dif);
+
+  document.getElementById('kpiDif').textContent=f2(dif);
+  document.getElementById('kpiColaFavor').textContent=f2(colaFavor);
+
+
+  // Gramaje liquidación (lógica Excel)
+  const masaMap = {
+    15: num(document.getElementById('eu0').value) * 0.15,
+    25: num(document.getElementById('eu1').value) * 0.25,
+    35: num(document.getElementById('eu2').value) * 0.35,
+    45: num(document.getElementById('eu3').value) * 0.45,
+    55: num(document.getElementById('eu4').value) * 0.55,
+    65: num(document.getElementById('eu5').value) * 0.65,
+    75: num(document.getElementById('eu6').value) * 0.75,
+    85: 0,
+    90: num(document.getElementById('eu7').value) * 0.90,
+    110: num(document.getElementById('eu8').value) * 1.10
+  };
+  const masaIds = {15:'gm15',25:'gm25',35:'gm35',45:'gm45',55:'gm55',65:'gm65',75:'gm75',85:'gm85',90:'gm90',110:'gm110'};
+  let masaTotal = 0;
+  Object.entries(masaMap).forEach(([k,v])=>{
+    masaTotal += v;
+    const el = document.getElementById(masaIds[k]);
+    if (el) el.textContent = v > 0 ? f2(v) : '-';
+  });
+  const gramajeLiquidacion = masaTotal > 0 ? (usaConteo / masaTotal * 10) : 0;
+  const gramajeEl = document.getElementById('gramajeLiquidacionVal');
+  if (gramajeEl) gramajeEl.textContent = f2(gramajeLiquidacion);
+
+
+  const gramajeRows = [
+    ['gr15','gm15'],['gr25','gm25'],['gr35','gm35'],['gr45','gm45'],['gr55','gm55'],
+    ['gr65','gm65'],['gr75','gm75'],['gr85','gm85'],['gr90','gm90'],['gr110','gm110']
+  ];
+  gramajeRows.forEach(([rowId, masaId])=>{
+    const row = document.getElementById(rowId);
+    const masaEl = document.getElementById(masaId);
+    if (!row || !masaEl) return;
+    const txt = (masaEl.textContent || '').trim();
+    const hide = !txt || txt == '-';
+    row.classList.toggle('gramaje-hide', hide);
+  });
+}
+
+
+function setupMoneyInputs(){
+  document.querySelectorAll('.money-in').forEach(inp=>{
+    inp.addEventListener('focus', ()=>{ inp.value = f2(num(inp.value)); });
+    inp.addEventListener('blur', ()=>{ inp.value = fm(num(inp.value)); });
+  });
+}
+
+function formatMoneyInputs(){
+  document.querySelectorAll('.money-in').forEach(inp=> inp.value = fm(num(inp.value)));
+}
+
+function saveLocal(){}
+function loadLocal(){}
+
+function pdfEntero(){
+  calc();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  doc.setFont('times','normal');
+  doc.setFontSize(14);
+  doc.text('SSL Sistema de Soporte de Liquidaciones', 105, 12, {align:'center'});
+  const proveedor=document.getElementById('proveedor').value||'-';
+  const sec=document.getElementById('secuencial').value||'-';
+  const piscina=document.getElementById('piscina').value||'-';
+  const fechaSistema = document.getElementById('fecha').value || formatLongDateES(new Date());
+  const rows1 = [
+    ['PROVEEDOR', proveedor],
+    ['SECUENCIAL', sec],
+    ['PISCINA', piscina],
+    ['FECHA', fechaSistema],
+    ['PESO GUIA', f2(num(document.getElementById('pesoRemitido').value))],
+    ['RECIBIDO', f2(num(document.getElementById('pesoGuia').value))],
+    ['BASURA', f2(num(document.getElementById('basuraTotal').value))],
+    ['PESO PLANTA', document.getElementById('usaTotalLibras').textContent],
+    ['EMPACADO', document.getElementById('tLibrasEmp').textContent],
+    ['RENDIMIENTO', document.getElementById('kpiRendEntero').textContent],
+    ['SOBRANTE', document.getElementById('librasSobrante').textContent]
+  ];
+  doc.autoTable({startY:18, theme:'plain', styles:{font:'times',fontSize:11,lineColor:[0,0,0],lineWidth:.2,cellPadding:1.8}, body:rows1, columnStyles:{0:{fontStyle:'bold',cellWidth:52},1:{halign:'right'}}});
+  doc.setFont('times','bold'); doc.setFontSize(18); doc.text('ENTERO', 105, doc.lastAutoTable.finalY + 12, {align:'center'});
+  const body=[];
+  ENTERO_ROWS.forEach((r,i)=>{ const lib=document.getElementById('ee'+i).textContent; if(num(lib)>0) body.push([r.t, lib]); });
+  body.push([{content:'',styles:{lineWidth:0}}, {content:document.getElementById('tLibrasEmp').textContent, styles:{textColor:[44,88,120], fontStyle:'normal'}}]);
+  doc.autoTable({startY:doc.lastAutoTable.finalY+16, head:[['TALLAS','LIBRAS']], body, theme:'plain', styles:{font:'times',fontSize:11,lineColor:[0,0,0],lineWidth:.2,cellPadding:2}, headStyles:{fontStyle:'bold'}, columnStyles:{1:{halign:'right'}}});
+  doc.save(`${proveedor||'PROVEEDOR'}_${sec||'0000'}_ENTERO.pdf`);
+}
+
+function pdfSobrante(){
+  calc();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  doc.setFont('times','normal');
+  doc.setFontSize(14);
+  doc.text('SSL Sistema de Soporte de Liquidaciones', 105, 12, {align:'center'});
+
+  const proveedor = (document.getElementById('proveedor').value || '-').trim();
+  const sec = (document.getElementById('secuencial').value || '-').trim();
+  const piscina = (document.getElementById('piscina').value || '-').trim();
+
+  const pesoGuiaSob = num((document.getElementById('plantaSVal')||{}).textContent || 0);
+  const recibidoSob = pesoGuiaSob;
+  const basuraSob = num((document.getElementById('basuraS')||{}).value || 0);
+  const pesoPlantaSob = Math.max(recibidoSob - basuraSob, 0);
+  const empacadoSob = num((document.getElementById('totLibrasS')||{}).textContent || 0);
+  const rendSob = pesoPlantaSob > 0 ? (empacadoSob / pesoPlantaSob * 100) : 0;
+
+  const fechaSistema = document.getElementById('fecha').value || formatLongDateES(new Date());
+  const rows1 = [
+    ['PROVEEDOR', proveedor || '-'],
+    ['SECUENCIAL', sec || '-'],
+    ['PISCINA', piscina || '-'],
+    ['FECHA', fechaSistema],
+    ['PESO GUIA', f2(pesoGuiaSob)],
+    ['RECIBIDO', f2(recibidoSob)],
+    ['BASURA', f2(basuraSob)],
+    ['PESO PLANTA', f2(pesoPlantaSob)],
+    ['EMPACADO', f2(empacadoSob)],
+    ['RENDIMIENTO', fp(rendSob)]
+  ];
+
+  doc.autoTable({
+    startY: 18,
+    theme: 'grid',
+    styles: {font:'times', fontSize:10.5, lineColor:[0,0,0], lineWidth:.2, cellPadding:2},
+    body: rows1,
+    columnStyles: {0:{fontStyle:'bold', cellWidth:52}, 1:{halign:'right'}}
+  });
+
+  function classRows(kind){
+    const out = [];
+    COLA_ROWS.forEach((r,i)=>{
+      let u = 0, l = 0;
+      if(kind==='A'){ u = num(document.getElementById('cs'+i)?.value || 0); l = num(document.getElementById('cls'+i)?.textContent || 0); }
+      if(kind==='B'){ u = 0; l = 0; } // para el PDF de sobrante no se toma Clase B
+      if(kind==='C'){ u = (r.t === 'BVS') ? num(document.getElementById('cs'+i)?.value || 0) : 0; l = (r.t === 'BVS') ? num(document.getElementById('cls'+i)?.textContent || 0) : 0; }
+      if(kind==='A' && r.t === 'BVS'){ u = 0; l = 0; } // BVS se va solo a Clase C
+      if(u > 0 || l > 0) out.push([r.t, f2(u), f2(l)]);
+    });
+    return out.length ? out : [['-','-','-']];
+  }
+
+  let y = doc.lastAutoTable.finalY + 10;
+
+  const classA = classRows('A');
+  doc.setFont('times','normal');
+  doc.setFontSize(11);
+  doc.text('CLASE "A"', 105, y, {align:'center'});
+  doc.autoTable({
+    startY: y + 4,
+    theme: 'grid',
+    styles: {font:'times', fontSize:10.5, lineColor:[0,0,0], lineWidth:.2, cellPadding:2},
+    head: [['TALLAS', 'CAJAS', 'LIBRAS']],
+    body: [...classA, [{content:'Total clase A', colSpan:2, styles:{halign:'left'}}, f2(num((document.getElementById('totLibrasS')||{}).textContent || 0) - num((document.getElementById('cls10')||{}).textContent || 0))]],
+    columnStyles: {1:{halign:'right'}, 2:{halign:'right'}}
+  });
+
+  y = doc.lastAutoTable.finalY + 12;
+  doc.text('CLASE "B"', 105, y, {align:'center'});
+  doc.autoTable({
+    startY: y + 4,
+    theme: 'grid',
+    styles: {font:'times', fontSize:10.5, lineColor:[0,0,0], lineWidth:.2, cellPadding:2},
+    head: [['TALLAS', 'CAJAS', 'LIBRAS']],
+    body: [['-','-','-'], ['-','-','-'], [{content:'Total clase B', colSpan:2, styles:{halign:'left'}}, f2(0)]],
+    columnStyles: {1:{halign:'right'}, 2:{halign:'right'}}
+  });
+
+  y = doc.lastAutoTable.finalY + 12;
+  doc.text('CLASE "C"', 105, y, {align:'center'});
+  const classC = classRows('C');
+  doc.autoTable({
+    startY: y + 4,
+    theme: 'grid',
+    styles: {font:'times', fontSize:10.5, lineColor:[0,0,0], lineWidth:.2, cellPadding:2},
+    head: [['TALLAS', 'FUNDAS', 'LIBRAS']],
+    body: [...classC, [{content:'Total clase C', colSpan:2, styles:{halign:'left'}}, f2(num((document.getElementById('cls10')||{}).textContent || 0))]],
+    columnStyles: {1:{halign:'right'}, 2:{halign:'right'}}
+  });
+
+  const safeProv = (proveedor || 'PROVEEDOR').replace(/[\/:*?"<>|]/g,'').trim() || 'PROVEEDOR';
+  const safeSec = (sec || '0000').replace(/[\/:*?"<>|]/g,'').trim() || '0000';
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  const ss = String(d.getSeconds()).padStart(2,'0');
+  doc.save(`${safeProv}${safeSec}_${yyyy}-${mm}-${dd}_${hh}-${mi}-${ss}.pdf`);
+}
+
+initFirebase();
+build();
+setupMoneyInputs();
+setSystemDate();
+calc();
+
+document.addEventListener('input', e=>{ if(e.target.matches('input')) calc(); });
+document.getElementById('btnNuevo').addEventListener('click', resetForNew);
+document.getElementById('btnGuardar').addEventListener('click', saveToCloud);
+document.getElementById('btnHistorial').addEventListener('click', openHistory);
+document.getElementById('btnCerrarHistorial').addEventListener('click', closeHistory);
+document.getElementById('historyOverlay').addEventListener('click', e=>{ if(e.target.id==='historyOverlay') closeHistory(); });
+document.getElementById('historyBody').addEventListener('click', e=>{
+  const openId = e.target.getAttribute('data-open');
+  const editId = e.target.getAttribute('data-edit');
+  const delId = e.target.getAttribute('data-del');
+  if(openId) openHistoryItem(openId);
+  if(editId) openHistoryItem(editId);
+  if(delId) deleteHistoryItem(delId);
+});
+document.getElementById('btnPdfEntero').onclick=pdfEntero;
+document.getElementById('btnPdfSobrante').onclick=pdfSobrante;
+document.getElementById('btnLogin').addEventListener('click', handleLogin);
+document.getElementById('btnLogout').addEventListener('click', handleLogout);
+document.getElementById('btnHeaderLogout').addEventListener('click', handleLogout);
+document.getElementById('loginPassword').addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
+bindAuthState();
+</script>
+</body>
+</html>
