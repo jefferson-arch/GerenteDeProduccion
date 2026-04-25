@@ -30,7 +30,6 @@
       position:relative;
     }
 
-    /* ✅ Fondo: bg.jpg en la raíz (junto a index.html) */
     body::before{
       content:"";
       position:fixed;
@@ -44,7 +43,6 @@
       filter:saturate(.95) contrast(1.05);
     }
 
-    /* ✅ Capa oscura (imagen clara) */
     body::after{
       content:"";
       position:fixed;
@@ -59,11 +57,32 @@
       background:rgba(0,0,0,.25);
       backdrop-filter: blur(6px);
     }
-    h1{margin:0;font-size:18px;font-weight:700}
-    p{margin:6px 0 0;font-size:13px;opacity:.85}
 
-    main{max-width:980px;margin:0 auto;padding:18px;display:grid;gap:12px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    h1{
+      margin:0;
+      font-size:18px;
+      font-weight:700;
+    }
+
+    p{
+      margin:6px 0 0;
+      font-size:13px;
+      opacity:.85;
+    }
+
+    main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px;
+      display:grid;
+      gap:12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;
+    }
 
     .card{
       background:var(--panel);
@@ -72,9 +91,21 @@
       padding:14px;
       backdrop-filter: blur(6px);
     }
-    .card h2{margin:0 0 6px;font-size:15px}
-    .card small{opacity:.78}
-    .line{height:1px;background:var(--line);margin:10px 0}
+
+    .card h2{
+      margin:0 0 6px;
+      font-size:15px;
+    }
+
+    .card small{
+      opacity:.78;
+    }
+
+    .line{
+      height:1px;
+      background:var(--line);
+      margin:10px 0;
+    }
 
     .btn{
       display:inline-block;
@@ -85,24 +116,45 @@
       color:#fff;
       text-decoration:none;
       font-weight:700;
-      font-size:13px
+      font-size:13px;
     }
-    .btn:hover{filter:brightness(1.05)}
-    .muted{opacity:.75;font-size:12px;margin-top:10px}
 
-    /* ====== Efecto presentación (PowerPoint) ====== */
-    @keyframes pptFadeUp{
-      from{opacity:0; transform: translateY(16px) scale(.985); filter: blur(2px);}
-      to  {opacity:1; transform: translateY(0)   scale(1);     filter: blur(0);}
+    .btn:hover{
+      filter:brightness(1.05);
     }
+
+    .muted{
+      opacity:.75;
+      font-size:12px;
+      margin-top:10px;
+    }
+
+    @keyframes pptFadeUp{
+      from{
+        opacity:0;
+        transform: translateY(16px) scale(.985);
+        filter: blur(2px);
+      }
+      to{
+        opacity:1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
     @keyframes pptFade{
       from{opacity:0}
       to{opacity:1}
     }
 
-    /* Solo aplica animación si hay JS (para no dejar página invisible si JS falla) */
-    html.js body{ opacity:0; }
-    html.js body.ppt-loaded{ opacity:1; animation: pptFade .35s ease-out both; }
+    html.js body{
+      opacity:0;
+    }
+
+    html.js body.ppt-loaded{
+      opacity:1;
+      animation: pptFade .35s ease-out both;
+    }
 
     html.js header,
     html.js .card{
@@ -119,7 +171,6 @@
       animation-delay: var(--d, 120ms);
     }
 
-    /* Delays por tarjeta */
     html.js body.ppt-loaded .card:nth-child(1)  { --d: 120ms; }
     html.js body.ppt-loaded .card:nth-child(2)  { --d: 180ms; }
     html.js body.ppt-loaded .card:nth-child(3)  { --d: 240ms; }
@@ -133,12 +184,24 @@
     html.js body.ppt-loaded .card:nth-child(11) { --d: 720ms; }
     html.js body.ppt-loaded .card:nth-child(12) { --d: 780ms; }
     html.js body.ppt-loaded .card:nth-child(13) { --d: 840ms; }
-    html.js body.ppt-loaded .card:nth-child(14) { --d: 900ms; } /* ✅ nuevo */
+    html.js body.ppt-loaded .card:nth-child(14) { --d: 900ms; }
+    html.js body.ppt-loaded .card:nth-child(15) { --d: 960ms; }
 
     @media (prefers-reduced-motion: reduce){
-      html.js body{opacity:1}
-      html.js header, html.js .card{opacity:1; transform:none}
-      html.js body.ppt-loaded header, html.js body.ppt-loaded .card{animation:none}
+      html.js body{
+        opacity:1;
+      }
+
+      html.js header,
+      html.js .card{
+        opacity:1;
+        transform:none;
+      }
+
+      html.js body.ppt-loaded header,
+      html.js body.ppt-loaded .card{
+        animation:none;
+      }
     }
   </style>
 </head>
@@ -200,13 +263,20 @@
         <div class="muted">Archivo: SPC-Programacion-Firestore-YanelaOnly.html</div>
       </div>
 
-      <!-- ✅ NUEVO: SAC (Registro Calidad Materia Prima) -->
       <div class="card">
         <h2>SAC — Registro Calidad Materia Prima</h2>
         <small>Login Firebase (Analista/Jefferson editores — Gerencia vista)</small>
         <div class="line"></div>
         <a class="btn" data-nocache href="./SAC-Registro-Calidad-Materia-Prima-Firestore.html">Abrir</a>
         <div class="muted">Archivo: SAC-Registro-Calidad-Materia-Prima-Firestore.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SCRM — Control Recepción Materia Prima</h2>
+        <small>Login Firebase (Jefferson / Yanela / Milena) — recepción</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SCRM-Control-Recepcion-MP-v3-reglas-actuales.html">Abrir</a>
+        <div class="muted">Archivo: SCRM-Control-Recepcion-MP-v3-reglas-actuales.html</div>
       </div>
 
       <div class="card">
@@ -241,7 +311,6 @@
         <div class="muted">Archivo: SDA - Avance-Firestore-DescabezadoOnly.html</div>
       </div>
 
-      <!-- ✅ NUEVO: SID -->
       <div class="card">
         <h2>SID — Informe Descabezado</h2>
         <small>Login Firebase (Informe Descabezado) — nube</small>
@@ -275,6 +344,7 @@
 
   <script>
     document.documentElement.classList.add("js");
+
     window.addEventListener("DOMContentLoaded", () => {
       requestAnimationFrame(() => document.body.classList.add("ppt-loaded"));
     });
