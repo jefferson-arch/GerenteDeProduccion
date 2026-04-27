@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <link rel="icon" href="favicon.ico?v=1">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Oceantreasure | Sistemas</title>
+
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:rgba(255,255,255,.07);
+      --border:rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:rgba(229,231,235,.80);
+      --line:rgba(255,255,255,.10);
+      --btn:#2563eb;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      min-height:100vh;
+      position:relative;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image:url("./bg.jpg?v=1");
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      z-index:-2;
+      transform:scale(1.02);
+      filter:saturate(.95) contrast(1.05);
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:rgba(3, 7, 18, 0.68);
+      z-index:-1;
+    }
+
+    header{
+      padding:22px 18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.25);
+      backdrop-filter: blur(6px);
+    }
+
+    h1{
+      margin:0;
+      font-size:18px;
+      font-weight:700;
+    }
+
+    p{
+      margin:6px 0 0;
+      font-size:13px;
+      opacity:.85;
+    }
+
+    main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px;
+      display:grid;
+      gap:12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      backdrop-filter: blur(6px);
+    }
+
+    .card h2{
+      margin:0 0 6px;
+      font-size:15px;
+    }
+
+    .card small{
+      opacity:.78;
+    }
+
+    .line{
+      height:1px;
+      background:var(--line);
+      margin:10px 0;
+    }
+
+    .btn{
+      display:inline-block;
+      margin-top:10px;
+      padding:9px 12px;
+      border-radius:10px;
+      background:var(--btn);
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+      font-size:13px;
+    }
+
+    .btn:hover{
+      filter:brightness(1.05);
+    }
+
+    .muted{
+      opacity:.75;
+      font-size:12px;
+      margin-top:10px;
+    }
+
+    @keyframes pptFadeUp{
+      from{
+        opacity:0;
+        transform: translateY(16px) scale(.985);
+        filter: blur(2px);
+      }
+      to{
+        opacity:1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes pptFade{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    html.js body{
+      opacity:0;
+    }
+
+    html.js body.ppt-loaded{
+      opacity:1;
+      animation: pptFade .35s ease-out both;
+    }
+
+    html.js header,
+    html.js .card{
+      opacity:0;
+      transform: translateY(16px) scale(.985);
+    }
+
+    html.js body.ppt-loaded header{
+      animation: pptFadeUp .55s ease-out both;
+    }
+
+    html.js body.ppt-loaded .card{
+      animation: pptFadeUp .55s ease-out both;
+      animation-delay: var(--d, 120ms);
+    }
+
+    html.js body.ppt-loaded .card:nth-child(1)  { --d: 120ms; }
+    html.js body.ppt-loaded .card:nth-child(2)  { --d: 180ms; }
+    html.js body.ppt-loaded .card:nth-child(3)  { --d: 240ms; }
+    html.js body.ppt-loaded .card:nth-child(4)  { --d: 300ms; }
+    html.js body.ppt-loaded .card:nth-child(5)  { --d: 360ms; }
+    html.js body.ppt-loaded .card:nth-child(6)  { --d: 420ms; }
+    html.js body.ppt-loaded .card:nth-child(7)  { --d: 480ms; }
+    html.js body.ppt-loaded .card:nth-child(8)  { --d: 540ms; }
+    html.js body.ppt-loaded .card:nth-child(9)  { --d: 600ms; }
+    html.js body.ppt-loaded .card:nth-child(10) { --d: 660ms; }
+    html.js body.ppt-loaded .card:nth-child(11) { --d: 720ms; }
+    html.js body.ppt-loaded .card:nth-child(12) { --d: 780ms; }
+    html.js body.ppt-loaded .card:nth-child(13) { --d: 840ms; }
+    html.js body.ppt-loaded .card:nth-child(14) { --d: 900ms; }
+    html.js body.ppt-loaded .card:nth-child(15) { --d: 960ms; }
+
+    @media (prefers-reduced-motion: reduce){
+      html.js body{
+        opacity:1;
+      }
+
+      html.js header,
+      html.js .card{
+        opacity:1;
+        transform:none;
+      }
+
+      html.js body.ppt-loaded header,
+      html.js body.ppt-loaded .card{
+        animation:none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>OCEANTREASURE — Sistemas Web</h1>
+    <p>Selecciona el sistema que deseas abrir.</p>
+  </header>
+
+  <main>
+    <div class="grid">
+
+      <div class="card">
+        <h2>DX — Etiquetas de Importador</h2>
+        <small>Login Firebase (editores / vista) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./DX-Etiquetas-Importador-Firestore.html">Abrir</a>
+        <div class="muted">Archivo: DX-Etiquetas-Importador-Firestore.html</div>
+      </div>
+
+      <div class="card">
+        <h2>Gestión de Compra</h2>
+        <small>Login Firebase (solo Jefferson)</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SGC-Gestion-de-compra-Firebase-JeffersonOnly.html">Abrir</a>
+        <div class="muted">Archivo: SGC-Gestion-de-compra-Firebase-JeffersonOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>PCD — Registro Peso Cola</h2>
+        <small>Login Firebase (Pesador Cola / Jefferson) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./PCD%20-%20Registro-Cola-Firestore-Descabezado.html">Abrir</a>
+        <div class="muted">Archivo: PCD - Registro-Cola-Firestore-Descabezado.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SLP — Liquidación de Pago</h2>
+        <small>Login Firebase (liquidacionesdepago)</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SLP-Liquidacion-de-pago-Firebase-LiquidacionesOnly.html">Abrir</a>
+        <div class="muted">Archivo: SLP-Liquidacion-de-pago-Firebase-LiquidacionesOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SOP — Órdenes de Producción</h2>
+        <small>Login Firebase (ordenesdeproduccion) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SOP-Ordenes-de-Produccion-OrdenesOnly.html">Abrir</a>
+        <div class="muted">Archivo: SOP-Ordenes-de-Produccion-OrdenesOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SPC — Programación Diario de Planta</h2>
+        <small>Login Firebase (Yanela Only) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SPC-Programacion-Firestore-YanelaOnly.html">Abrir</a>
+        <div class="muted">Archivo: SPC-Programacion-Firestore-YanelaOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SAC — Registro Calidad Materia Prima</h2>
+        <small>Login Firebase (Analista/Jefferson editores — Gerencia vista)</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SAC-Registro-Calidad-Materia-Prima-Firestore.html">Abrir</a>
+        <div class="muted">Archivo: SAC-Registro-Calidad-Materia-Prima-Firestore.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SCRM — Control Recepción Materia Prima</h2>
+        <small>Login Firebase (Jefferson / Yanela / Milena) — recepción</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SCRM-Control-Recepcion-MP.html">Abrir</a>
+        <div class="muted">Archivo: SCRM-Control-Recepcion-MP.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SPAH — Pagos (Avance/Hora)</h2>
+        <small>Login Firebase (Milena Only) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SPAH%20-%20Pagos-Firestore-MilenaOnly.html">Abrir</a>
+        <div class="muted">Archivo: SPAH - Pagos-Firestore-MilenaOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SSL — Soporte de Liquidaciones</h2>
+        <small>Login Firebase (soporte) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SSL-Soporte-de-Liquidaciones-Firebase-SoporteOnly.html">Abrir</a>
+        <div class="muted">Archivo: SSL-Soporte-de-Liquidaciones-Firebase-SoporteOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SRH — RRHH Talento Humano</h2>
+        <small>Login Firebase (RRHH) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SRH%20-%20RRHH-Firestore-TalentoHumanoOnly.html">Abrir</a>
+        <div class="muted">Archivo: SRH - RRHH-Firestore-TalentoHumanoOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SDA — Avance Descabezado</h2>
+        <small>Login Firebase (Avance Descabezado) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SDA%20-%20Avance-Firestore-DescabezadoOnly.html">Abrir</a>
+        <div class="muted">Archivo: SDA - Avance-Firestore-DescabezadoOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SID — Informe Descabezado</h2>
+        <small>Login Firebase (Informe Descabezado) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SID%20-%20Informe-Firestore-DescabezadoOnly.html">Abrir</a>
+        <div class="muted">Archivo: SID - Informe-Firestore-DescabezadoOnly.html</div>
+      </div>
+
+      <div class="card">
+        <h2>SLA — Listado por Área (RRHH)</h2>
+        <small>Consulta Firestore (RRHH) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./SLA%20-%20RRHH-ListadoPorAreaOnly.html">Abrir</a>
+        <div class="muted">Archivo: SLA - RRHH-ListadoPorAreaOnly.html</div>
+      </div>
+
+
+      <div class="card">
+        <h2>CSE — Control de Saldos a Empacar</h2>
+        <small>Login Firebase (Jefferson editor / Gerencia visor) — saldos, secuenciales e historial</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./CSE-Control-Saldos-Empaque-Firestore_AccesoRestringido.html">Abrir</a>
+        <div class="muted">Archivo: CSE-Control-Saldos-Empaque-Firestore_AccesoRestringido.html</div>
+      </div>
+
+      <div class="card">
+        <h2>CMO — Costos Mano de Obra</h2>
+        <small>Login Firebase (editores / vista) — nube</small>
+        <div class="line"></div>
+        <a class="btn" data-nocache href="./CMO-Costos-Mano-Obra-Firestore.html">Abrir</a>
+        <div class="muted">Archivo: CMO-Costos-Mano-Obra-Firestore.html</div>
+      </div>
+
+    </div>
+
+    <p class="muted">
+      Nota: GitHub Pages distingue mayúsculas/minúsculas. Si cambias el nombre del archivo, cambia el link aquí.
+    </p>
+  </main>
+
+  <script>
+    document.documentElement.classList.add("js");
+
+    window.addEventListener("DOMContentLoaded", () => {
+      requestAnimationFrame(() => document.body.classList.add("ppt-loaded"));
+    });
+
+    function withNoCache(url) {
+      const u = new URL(url, window.location.href);
+      u.searchParams.set("v", Date.now().toString());
+      return u.toString();
+    }
+
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a[data-nocache]");
+      if (!a) return;
+
+      if (e.ctrlKey || e.shiftKey || e.metaKey || e.button === 1) {
+        a.href = withNoCache(a.getAttribute("href"));
+        return;
+      }
+
+      e.preventDefault();
+      window.location.href = withNoCache(a.getAttribute("href"));
+    });
+  </script>
+</body>
+</html>
