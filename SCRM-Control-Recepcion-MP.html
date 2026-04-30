@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCRM — Control Recepción Materia Prima</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#0b1f3a;--navy2:#123762;--blue:#1d4ed8;--cyan:#0ea5e9;--bg:#eef3f8;--panel:#ffffff;--line:#d9e2ec;--text:#122033;--muted:#64748b;--green:#16a34a;--red:#dc2626;--yellow:#f59e0b;--shadow:0 16px 40px rgba(15,23,42,.10)}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#e8f0f8 0%,#f7fafc 45%,#eaf4ff 100%);color:var(--text)}
+    .login-bg{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top left,rgba(14,165,233,.18),transparent 35%),linear-gradient(135deg,#061426,#123762)}
+    .login-card{width:min(440px,100%);background:#fff;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.24);padding:34px;border:1px solid rgba(255,255,255,.25)}
+    .brand{display:flex;align-items:center;gap:14px;margin-bottom:22px}.brand-logo{width:58px;height:58px;object-fit:contain;border-radius:12px;background:#fff;padding:3px}.brand h1{font-size:22px;margin:0;color:var(--navy)}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+    label{font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.04em}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:8px} input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font:inherit;background:#fff;color:var(--text);outline:none} input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(14,165,233,.14)}
+    button{border:0;border-radius:12px;padding:11px 16px;font-weight:800;cursor:pointer;font:inherit;transition:.15s ease}.btn-primary{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff}.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(29,78,216,.25)}.btn-soft{background:#eaf2ff;color:#123762}.btn-green{background:#e9fbeF;color:#137333}.btn-red{background:#fee2e2;color:#b91c1c}.btn-ghost{background:#f1f5f9;color:#334155}.btn-yellow{background:#fff7ed;color:#9a3412}.btn-disabled,button:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+    .app{min-height:100vh;display:none}.topbar{height:64px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:20}.top-left{display:flex;align-items:center;gap:12px}.logo-small-img{width:42px;height:42px;object-fit:contain;border-radius:10px;background:#fff;padding:2px}.top-title h2{font-size:16px;margin:0;color:var(--navy)}.top-title span{font-size:12px;color:var(--muted)}.user-pill{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid var(--line);padding:8px 10px;border-radius:999px;font-size:12px;color:#334155;max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px)}.sidebar{background:rgba(11,31,58,.98);padding:16px;color:#dbeafe}.nav-btn{width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;background:rgba(255,255,255,.08);color:#eaf2ff;text-align:left}.nav-btn.active{background:#fff;color:var(--navy)}.nav-btn small{font-weight:700;color:inherit;opacity:.7}.main{padding:14px 22px;overflow:auto}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}.card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px 18px}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-4{grid-column:span 4}.span-3{grid-column:span 3}.span-6{grid-column:span 6}.card-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.card-title h3{margin:0;color:var(--navy);font-size:18px}.card-title p{margin:4px 0 0;color:var(--muted);font-size:12px}.actions{display:flex;gap:10px;flex-wrap:wrap}.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 12px}.field.full{grid-column:span 4}.field.half{grid-column:span 2}.mini-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kpi{padding:10px 13px;border:1px solid var(--line);border-radius:16px;background:#f8fbff}.kpi b{display:block;font-size:20px;color:var(--navy)}.kpi span{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}.notice{border-left:5px solid var(--cyan);background:#eff8ff;padding:12px;border-radius:12px;color:#164e63;font-size:13px}.error{border-left-color:var(--red);background:#fff1f2;color:#991b1b}.success{border-left-color:var(--green);background:#f0fdf4;color:#166534}.warning{border-left-color:var(--yellow);background:#fffbeb;color:#92400e}.hidden{display:none!important}
+    .table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}table{border-collapse:separate;border-spacing:0;width:100%;min-width:980px}th,td{padding:9px 10px;border-bottom:1px solid #e5edf5;border-right:1px solid #edf2f7;font-size:12px;vertical-align:middle}th{position:sticky;top:0;background:#f8fbff;color:#0f2a4a;text-transform:uppercase;font-size:11px;letter-spacing:.04em;z-index:5}tr:hover td{background:#fbfdff}.table-input{border:0;border-radius:0;padding:7px;background:transparent;min-width:100px}.filter-row th{background:#eef6ff;top:34px}.filter-row input,.filter-row select{height:30px;padding:5px 7px;border-radius:8px;font-size:11px}.right{text-align:right}.center{text-align:center}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}.badge-green{background:#dcfce7;color:#166534}.badge-blue{background:#dbeafe;color:#1e40af}.badge-red{background:#fee2e2;color:#991b1b}.badge-yellow{background:#fef3c7;color:#92400e}.screen{display:none}.screen.active{display:block}.muted{color:var(--muted);font-size:12px}.footer-note{padding-top:10px;color:var(--muted);font-size:11px}.empty{padding:22px;text-align:center;color:var(--muted)}
+    .blocked-bg{min-height:100vh;display:none;place-items:center;padding:24px;background:radial-gradient(circle at top left,rgba(14,165,233,.18),transparent 35%),linear-gradient(135deg,#061426,#123762)}
+    .blocked-card{width:min(680px,100%);background:#fff;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.24);padding:28px;border:1px solid rgba(255,255,255,.25)}
+    .blocked-card h2{margin:0 0 8px;color:#991b1b}.codebox{display:flex;gap:8px;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0;font-family:Consolas,monospace;word-break:break-all}.admin-only.hidden{display:none!important}.device-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.device-pill{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}.device-ok{background:#dcfce7;color:#166534}.device-pending{background:#fef3c7;color:#92400e}.device-block{background:#fee2e2;color:#991b1b}.mono{font-family:Consolas,monospace;font-size:11px;word-break:break-all}.small-btn{padding:7px 9px;border-radius:9px;font-size:12px}
+    .detalle-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;justify-content:flex-end}
+    .toolbar-field{display:flex;flex-direction:column;gap:3px;min-width:118px}
+    .toolbar-field.sec-field{min-width:110px}
+    .sec-open{display:flex;align-items:center;justify-content:space-between;gap:6px;white-space:nowrap}.sec-open .btnOpen{padding:5px 8px;border-radius:9px;font-size:12px}
+    .toolbar-field label{font-size:10px;color:#475569}
+    .toolbar-field input{height:36px;padding:6px 9px;border-radius:10px;font-size:12px}
+    .btn-pdf{background:linear-gradient(135deg,#991b1b,#dc2626);color:#fff}
+    .detalle-admin-input{width:82px;min-width:72px;height:28px;padding:4px 7px;border-radius:8px;font-size:12px;text-align:right}
+    .rend-cell{font-weight:800;color:#0f2a4a;text-align:right;white-space:nowrap}
+    .detalle-selected td{background:#fff7cc!important}
+    .row-actions{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:nowrap}
+    .sec-open{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+    /* ===== Detalle - Planta: ancho legible para nueva columna PROGRAMADAS ===== */
+    #detalleTable{min-width:1320px;table-layout:fixed}
+    #detalleTable th,#detalleTable td{white-space:nowrap}
+    #detalleTable th:nth-child(1),#detalleTable td:nth-child(1){width:88px}
+    #detalleTable th:nth-child(2),#detalleTable td:nth-child(2){width:92px}
+    #detalleTable th:nth-child(3),#detalleTable td:nth-child(3){width:82px}
+    #detalleTable th:nth-child(4),#detalleTable td:nth-child(4){width:170px}
+    #detalleTable th:nth-child(5),#detalleTable td:nth-child(5){width:110px}
+    #detalleTable th:nth-child(6),#detalleTable td:nth-child(6){width:130px}
+    #detalleTable th:nth-child(7),#detalleTable td:nth-child(7){width:95px}
+    #detalleTable th:nth-child(8),#detalleTable td:nth-child(8){width:78px}
+    #detalleTable th:nth-child(9),#detalleTable td:nth-child(9){width:78px}
+    #detalleTable th:nth-child(10),#detalleTable td:nth-child(10){width:118px}
+    #detalleTable th:nth-child(11),#detalleTable td:nth-child(11){width:104px}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}.sidebar{display:flex;overflow:auto;gap:8px}.nav-btn{min-width:210px}.form-grid{grid-template-columns:1fr}.field.half,.field.full{grid-column:span 1}.span-8,.span-4,.span-6,.span-3{grid-column:span 12}.topbar{height:auto;gap:10px;align-items:flex-start;flex-direction:column;padding:12px}.user-pill{max-width:100%}}
+  
+
+    /* ===== Upgrade visual: modo compacto 30% ===== */
+    .main{padding:10px 18px}
+    .grid{gap:8px}
+    .card{padding:10px 14px;border-radius:17px}
+    .card-title{margin-bottom:6px}
+    .card-title h3{font-size:17px}
+    .card-title p{font-size:11px;margin:2px 0 0}
+    .form-grid{gap:6px 10px}
+    .field{gap:3px;margin-bottom:4px}
+    label{font-size:11px}
+    input,select,textarea{padding:6px 10px;border-radius:10px;min-height:34px}
+    button{padding:8px 13px;border-radius:10px}
+    .kpi{padding:8px 11px;border-radius:14px}
+    .kpi b{font-size:18px}
+    .kpi span{font-size:11px}
+    .mini-kpi{gap:7px}
+    th,td{padding:6px 8px;font-size:11.5px;line-height:1.15}
+    th{font-size:10.5px}
+    .table-input{padding:4px 6px;min-height:28px;font-size:11.5px}
+    .filter-row th{top:28px;padding:5px 8px}
+    .filter-row input,.filter-row select{height:25px;padding:3px 6px;border-radius:7px;font-size:10.5px}
+    .btn-soft,.btn-green,.btn-red,.btn-yellow,.btn-primary,.btn-ghost,.btn-pdf{padding:8px 12px;border-radius:10px}
+    .small-btn{padding:5px 7px;border-radius:8px;font-size:11px}
+    .notice{padding:9px;border-radius:10px;font-size:12px}
+    .muted{font-size:11px}
+    .table-wrap{border-radius:12px}
+    @media(max-width:980px){
+      .main{padding:8px 10px}
+      .card{padding:9px 10px;border-radius:15px}
+      input,select,textarea{min-height:32px;padding:5px 9px}
+      th,td{padding:5px 6px;font-size:11px}
+      .table-input{padding:3px 5px;min-height:26px}
+      button{padding:7px 10px}
+    }
+    /* ===== Ajuste adicional: INGRESO más compacto (-30% sobre medida actual) ===== */
+    #screen-ingreso .card{padding:7px 11px;border-radius:15px}
+    #screen-ingreso .grid{gap:6px}
+    #screen-ingreso .card-title{margin-bottom:4px}
+    #screen-ingreso .card-title h3{font-size:16px}
+    #screen-ingreso .card-title p{font-size:10.5px;margin:1px 0 0}
+    #screen-ingreso .form-grid{gap:4px 8px}
+    #screen-ingreso .field{gap:2px;margin-bottom:2px}
+    #screen-ingreso label{font-size:10px;letter-spacing:.035em}
+    #screen-ingreso input,#screen-ingreso select,#screen-ingreso textarea{min-height:24px;padding:3px 8px;border-radius:8px;font-size:13px}
+    #screen-ingreso button{padding:6px 10px;border-radius:9px;font-size:13px}
+    #screen-ingreso .btn-soft,#screen-ingreso .btn-green,#screen-ingreso .btn-red,#screen-ingreso .btn-yellow,#screen-ingreso .btn-primary,#screen-ingreso .btn-ghost{padding:6px 10px;border-radius:9px;font-size:13px}
+    #screen-ingreso .mini-kpi{gap:5px}
+    #screen-ingreso .kpi{padding:5px 9px;border-radius:12px}
+    #screen-ingreso .kpi b{font-size:16px;line-height:1.05}
+    #screen-ingreso .kpi span{font-size:10px}
+    #screen-ingreso th,#screen-ingreso td{padding:3px 6px;font-size:10.5px;line-height:1.05}
+    #screen-ingreso th{font-size:10px}
+    #screen-ingreso .table-input{padding:2px 4px;min-height:20px;font-size:11px}
+    #screen-ingreso .muted{font-size:10.5px}
+    #screen-ingreso .table-wrap{border-radius:10px}
+    @media(max-width:980px){#screen-ingreso .card{padding:6px 8px;border-radius:13px}#screen-ingreso input,#screen-ingreso select,#screen-ingreso textarea{min-height:23px;padding:3px 7px;font-size:12px}#screen-ingreso th,#screen-ingreso td{padding:2px 5px;font-size:10px}#screen-ingreso .table-input{padding:1px 3px;min-height:19px;font-size:10.5px}#screen-ingreso button{padding:5px 8px;font-size:12px}}
+
+    /* ===== Ajuste final: Detalle de carros cómodo en celular ===== */
+    #screen-ingreso .carros-wrap{overflow-x:auto}
+    #screen-ingreso #carrosTable{min-width:0;table-layout:fixed;width:100%}
+    #screen-ingreso #carrosTable th:nth-child(1),#screen-ingreso #carrosTable td:nth-child(1){width:54px}
+    #screen-ingreso #carrosTable th:nth-child(2),#screen-ingreso #carrosTable td:nth-child(2){width:88px}
+    #screen-ingreso #carrosTable th:nth-child(3),#screen-ingreso #carrosTable td:nth-child(3){width:78px}
+    #screen-ingreso #carrosTable th:nth-child(4),#screen-ingreso #carrosTable td:nth-child(4){width:92px}
+    #screen-ingreso #carrosTable th:nth-child(5),#screen-ingreso #carrosTable td:nth-child(5){width:auto}
+    #screen-ingreso #carrosTable th:nth-child(6),#screen-ingreso #carrosTable td:nth-child(6){width:76px}
+    #screen-ingreso #carrosTable .table-input{width:100%;min-width:0}
+    #screen-ingreso #carrosTable .btnDelCarro{padding:4px 8px;font-size:11px;white-space:nowrap}
+    @media(max-width:640px){
+      #screen-ingreso .carros-wrap{overflow-x:hidden}
+      #screen-ingreso #carrosTable{table-layout:fixed;width:100%;min-width:0}
+      #screen-ingreso #carrosTable th:nth-child(1),#screen-ingreso #carrosTable td:nth-child(1){width:44px}
+      #screen-ingreso #carrosTable th:nth-child(2),#screen-ingreso #carrosTable td:nth-child(2){width:74px}
+      #screen-ingreso #carrosTable th:nth-child(3),#screen-ingreso #carrosTable td:nth-child(3){width:66px}
+      #screen-ingreso #carrosTable th:nth-child(4),#screen-ingreso #carrosTable td:nth-child(4){width:76px}
+      #screen-ingreso #carrosTable th:nth-child(5),#screen-ingreso #carrosTable td:nth-child(5){display:none}
+      #screen-ingreso #carrosTable th:nth-child(6),#screen-ingreso #carrosTable td:nth-child(6){width:62px}
+      #screen-ingreso #carrosTable th,#screen-ingreso #carrosTable td{padding:2px 3px;font-size:9.5px}
+      #screen-ingreso #carrosTable .table-input{font-size:10px;padding:1px 2px}
+      #screen-ingreso #carrosTable .btnDelCarro{padding:3px 5px;font-size:10px}
+    }
+
+
+    /* ===== Ajuste final móvil: cinta de pestañas uniforme en todas las pantallas ===== */
+    @media(max-width:980px){
+      .sidebar{display:flex !important;flex-direction:row !important;align-items:center !important;gap:7px !important;padding:8px 10px !important;min-height:58px !important;height:58px !important;max-height:58px !important;overflow-x:auto !important;overflow-y:hidden !important;white-space:nowrap !important;-webkit-overflow-scrolling:touch;}
+      .sidebar::-webkit-scrollbar{height:0}
+      .nav-btn{flex:0 0 auto !important;width:auto !important;min-width:142px !important;height:42px !important;max-height:42px !important;margin:0 !important;padding:7px 12px !important;border-radius:12px !important;align-self:center !important;display:flex !important;align-items:center !important;justify-content:space-between !important;gap:10px !important;line-height:1 !important;}
+      .nav-btn span{font-size:14px !important;line-height:1 !important;}
+      .nav-btn small{font-size:10.5px !important;line-height:1 !important;}
+    }
+    @media(max-width:640px){
+      .sidebar{padding:7px 8px !important;height:54px !important;min-height:54px !important;max-height:54px !important;gap:6px !important;}
+      .nav-btn{min-width:132px !important;height:38px !important;max-height:38px !important;padding:6px 10px !important;border-radius:11px !important;}
+      .nav-btn span{font-size:13px !important}
+      .nav-btn small{font-size:10px !important}
+    }
+    /* ===== AJUSTE FINAL: sin espacio sobrante en pestañas móviles + fuentes 15% más grandes ===== */
+    body{font-size:15px}
+    .brand h1{font-size:25px}.brand p{font-size:15px}
+    .top-title h2{font-size:18.5px}.top-title span{font-size:13.8px}.user-pill{font-size:13.8px}
+    .nav-btn span{font-size:16px}.nav-btn small{font-size:12px}
+    .card-title h3{font-size:19.5px}.card-title p{font-size:12.7px}
+    label{font-size:12.7px} input,select,textarea{font-size:15px} button{font-size:15px}
+    .kpi b{font-size:20.7px}.kpi span{font-size:12.7px}
+    th,td{font-size:13.2px}.table-input{font-size:13.2px} th{font-size:12.1px}
+    .filter-row input,.filter-row select{font-size:12.1px}.muted{font-size:12.7px}.notice{font-size:13.8px}.footer-note{font-size:12.7px}
+    .badge,.device-pill{font-size:12.7px}.mono{font-size:12.7px}.small-btn{font-size:13.8px}.toolbar-field label{font-size:11.5px}.toolbar-field input{font-size:13.8px}
+    #screen-ingreso .card-title h3{font-size:18.4px}#screen-ingreso .card-title p{font-size:12.1px}
+    #screen-ingreso label{font-size:11.5px}#screen-ingreso input,#screen-ingreso select,#screen-ingreso textarea{font-size:14.9px}
+    #screen-ingreso button,#screen-ingreso .btn-soft,#screen-ingreso .btn-green,#screen-ingreso .btn-red,#screen-ingreso .btn-yellow,#screen-ingreso .btn-primary,#screen-ingreso .btn-ghost{font-size:14.9px}
+    #screen-ingreso .kpi b{font-size:18.4px}#screen-ingreso .kpi span{font-size:11.5px}
+    #screen-ingreso th,#screen-ingreso td{font-size:12.1px}#screen-ingreso th{font-size:11.5px}#screen-ingreso .table-input{font-size:12.7px}
+    #screen-ingreso .muted{font-size:12.1px}
+
+    @media(max-width:980px){
+      .layout{display:block!important;min-height:auto!important}
+      .sidebar{display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px!important;padding:5px 8px!important;height:44px!important;min-height:44px!important;max-height:44px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;margin:0!important}
+      .sidebar::-webkit-scrollbar{height:0!important}
+      .nav-btn{flex:0 0 auto!important;width:auto!important;min-width:128px!important;height:34px!important;max-height:34px!important;min-height:34px!important;margin:0!important;padding:5px 9px!important;border-radius:10px!important;align-self:center!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;line-height:1!important}
+      .nav-btn span{font-size:15px!important;line-height:1!important}.nav-btn small{font-size:11.5px!important;line-height:1!important}
+      .main{padding:6px 8px!important;overflow:visible!important}.screen{margin:0!important;padding:0!important}.screen>.grid,.screen>.card{margin-top:0!important}.card{margin-top:0!important}
+      .topbar{gap:7px!important;padding:8px 10px!important}.top-left{gap:8px}.logo-small-img{width:36px;height:36px}.top-title h2{font-size:16px}.top-title span{font-size:12.5px}.user-pill{font-size:12.5px;padding:7px 9px}
+      input,select,textarea{font-size:14px}button{font-size:14px}th,td{font-size:12.7px}.table-input{font-size:12.7px}
+      #screen-ingreso input,#screen-ingreso select,#screen-ingreso textarea{font-size:13.8px}#screen-ingreso button{font-size:13.8px}#screen-ingreso th,#screen-ingreso td{font-size:11.5px}#screen-ingreso .table-input{font-size:12.1px}
+    }
+    @media(max-width:640px){
+      .sidebar{height:42px!important;min-height:42px!important;max-height:42px!important;padding:4px 7px!important;gap:5px!important}
+      .nav-btn{min-width:122px!important;height:32px!important;min-height:32px!important;max-height:32px!important;padding:4px 8px!important;border-radius:9px!important}
+      .nav-btn span{font-size:14px!important}.nav-btn small{font-size:10.8px!important}
+      .main{padding:5px 7px!important}.card{border-radius:13px!important}
+      #screen-ingreso #carrosTable th,#screen-ingreso #carrosTable td{font-size:10.9px!important}#screen-ingreso #carrosTable .table-input{font-size:11.5px!important}#screen-ingreso #carrosTable .btnDelCarro{font-size:11px!important}
+    }
+
+
+    /* ===== Ajuste final DETALLE móvil: filtros en 2 líneas y botones en una sola línea ===== */
+    #screen-detalle .detalle-titlebar{align-items:flex-start;gap:12px}
+    #screen-detalle .detalle-title{flex:0 0 auto;padding-top:4px}
+    #screen-detalle .detalle-toolbar{display:flex;flex-wrap:wrap;align-items:end;justify-content:flex-end;gap:8px;flex:1}
+    #screen-detalle .detalle-toolbar .toolbar-field{min-width:115px}
+    #screen-detalle .detalle-toolbar .toolbar-actions{display:flex;align-items:end;gap:8px;white-space:nowrap}
+    #screen-detalle .detalle-toolbar .toolbar-actions button{white-space:nowrap}
+    @media(max-width:640px){
+      #screen-detalle .card{padding:8px 9px!important}
+      #screen-detalle .detalle-titlebar{display:block!important;margin-bottom:6px!important}
+      #screen-detalle .detalle-title h3{font-size:18px!important;margin:0 0 4px 0!important;line-height:1.05!important}
+      #screen-detalle .detalle-toolbar{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;width:100%!important;margin-top:2px!important;align-items:end!important;justify-content:stretch!important}
+      #screen-detalle .detalle-toolbar .toolbar-field{min-width:0!important;width:100%!important;gap:2px!important}
+      #screen-detalle .detalle-toolbar .toolbar-field label{font-size:10.8px!important;line-height:1!important;margin:0!important}
+      #screen-detalle .detalle-toolbar .toolbar-field input{height:32px!important;min-height:32px!important;padding:4px 7px!important;font-size:13px!important;border-radius:10px!important}
+      #screen-detalle .detalle-toolbar .toolbar-actions{grid-column:1 / -1!important;display:flex!important;flex-wrap:nowrap!important;gap:5px!important;width:100%!important;align-items:center!important;justify-content:space-between!important;margin-top:3px!important}
+      #screen-detalle .detalle-toolbar .toolbar-actions button{flex:1 1 0!important;min-width:0!important;width:auto!important;padding:8px 6px!important;font-size:13px!important;border-radius:10px!important;text-align:center!important;white-space:nowrap!important}
+      #screen-detalle #btnPdfDetalle{flex:.72 1 0!important}
+      #screen-detalle .table-wrap{margin-top:6px!important}
+    }
+
+
+    /* ===== AJUSTE FINAL DETALLE - PLANTA: SIN SCROLL HORIZONTAL Y COLUMNAS LEGIBLES ===== */
+    #screen-detalle .table-wrap{
+      overflow-x:hidden !important;
+      overflow-y:visible !important;
+    }
+    #detalleTable{
+      width:100% !important;
+      min-width:0 !important;
+      table-layout:fixed !important;
+      border-collapse:separate !important;
+      border-spacing:0 !important;
+    }
+    #detalleTable th,
+    #detalleTable td{
+      padding:6px 5px !important;
+      font-size:11.4px !important;
+      line-height:1.15 !important;
+      white-space:normal !important;
+      overflow:visible !important;
+      text-overflow:clip !important;
+      word-break:normal !important;
+      vertical-align:middle !important;
+    }
+    #detalleTable th{
+      font-size:10.4px !important;
+      letter-spacing:.015em !important;
+      text-align:center !important;
+    }
+    #detalleTable .filter-row th{padding:4px 4px !important;}
+    #detalleTable .filter-row input,
+    #detalleFilters input{
+      width:100% !important;
+      min-width:0 !important;
+      height:27px !important;
+      padding:3px 4px !important;
+      font-size:10.5px !important;
+      border-radius:7px !important;
+    }
+
+    /* Anchos proporcionales para que las 16 columnas entren completas en pantalla */
+    #detalleTable th:nth-child(1),  #detalleTable td:nth-child(1){width:6.7% !important;}  /* SEC. + Abrir */
+    #detalleTable th:nth-child(2),  #detalleTable td:nth-child(2){width:6.0% !important;}  /* FECHA */
+    #detalleTable th:nth-child(3),  #detalleTable td:nth-child(3){width:4.9% !important;}  /* HORA */
+    #detalleTable th:nth-child(4),  #detalleTable td:nth-child(4){width:10.2% !important;} /* RAZÓN SOCIAL */
+    #detalleTable th:nth-child(5),  #detalleTable td:nth-child(5){width:6.5% !important;}  /* PISCINA */
+    #detalleTable th:nth-child(6),  #detalleTable td:nth-child(6){width:8.9% !important;}  /* LOTE */
+    #detalleTable th:nth-child(7),  #detalleTable td:nth-child(7){width:5.5% !important;}  /* ESTATUS */
+    #detalleTable th:nth-child(8),  #detalleTable td:nth-child(8){width:4.4% !important;}  /* CARROS */
+    #detalleTable th:nth-child(9),  #detalleTable td:nth-child(9){width:4.4% !important;}  /* BINES */
+    #detalleTable th:nth-child(10), #detalleTable td:nth-child(10){width:7.3% !important;}  /* PROGRAMADAS */
+    #detalleTable th:nth-child(11), #detalleTable td:nth-child(11){width:7.3% !important;}  /* LIBRAS */
+    #detalleTable th:nth-child(12), #detalleTable td:nth-child(12){width:6.2% !important;}  /* PROMEDIO */
+    #detalleTable th:nth-child(13), #detalleTable td:nth-child(13){width:5.4% !important;}  /* BASURA */
+    #detalleTable th:nth-child(14), #detalleTable td:nth-child(14){width:6.2% !important;}  /* EMPACADO */
+    #detalleTable th:nth-child(15), #detalleTable td:nth-child(15){width:5.0% !important;}  /* REND */
+    #detalleTable th:nth-child(16), #detalleTable td:nth-child(16){width:5.1% !important;}  /* ELIMINAR */
+
+    #detalleTable td:nth-child(1),
+    #detalleTable td:nth-child(8),
+    #detalleTable td:nth-child(9),
+    #detalleTable td:nth-child(10),
+    #detalleTable td:nth-child(11),
+    #detalleTable td:nth-child(12),
+    #detalleTable td:nth-child(13),
+    #detalleTable td:nth-child(14),
+    #detalleTable td:nth-child(15){
+      text-align:right !important;
+    }
+
+    #detalleTable .sec-open{
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:3px !important;
+      min-width:0 !important;
+      width:100% !important;
+      white-space:nowrap !important;
+    }
+    #detalleTable .sec-open span{
+      font-weight:900 !important;
+      color:#0b1f3a !important;
+      font-size:11.8px !important;
+      min-width:32px !important;
+      text-align:right !important;
+      flex:0 0 auto !important;
+    }
+    #detalleTable .sec-open .btnOpen{
+      flex:0 0 auto !important;
+      padding:4px 5px !important;
+      font-size:10.8px !important;
+      border-radius:7px !important;
+      line-height:1 !important;
+      white-space:nowrap !important;
+    }
+
+    #detalleTable .detalle-admin-input{
+      width:100% !important;
+      min-width:0 !important;
+      height:27px !important;
+      padding:3px 4px !important;
+      font-size:11px !important;
+      text-align:right !important;
+      border-radius:7px !important;
+    }
+    #detalleTable .small-btn,
+    #detalleTable .btnDeleteRecepcion{
+      padding:5px 6px !important;
+      font-size:10.7px !important;
+      border-radius:7px !important;
+      white-space:nowrap !important;
+    }
+    #detalleTable .rend-cell{
+      font-size:11px !important;
+      white-space:nowrap !important;
+      font-weight:900 !important;
+    }
+
+    /* En pantallas muy pequeñas se mantiene lectura completa con texto más compacto, sin barra horizontal */
+    @media(max-width:980px){
+      #detalleTable th,#detalleTable td{font-size:10.2px !important;padding:5px 3px !important;}
+      #detalleTable th{font-size:9.2px !important;letter-spacing:0 !important;}
+      #detalleTable .sec-open{gap:2px !important;}
+      #detalleTable .sec-open span{font-size:10.5px !important;min-width:28px !important;}
+      #detalleTable .sec-open .btnOpen{font-size:9.5px !important;padding:3px 4px !important;}
+      #detalleTable .detalle-admin-input{font-size:10px !important;height:25px !important;padding:2px 3px !important;}
+      #detalleTable .small-btn,#detalleTable .btnDeleteRecepcion{font-size:9.5px !important;padding:4px 4px !important;}
+    }
+
+  
+    /* ===== AJUSTE MÓVIL DETALLE - PLANTA: lectura completa con scroll horizontal ===== */
+    @media (max-width: 720px){
+      #screen-detalle .card{padding:8px 8px !important;border-radius:16px !important;}
+      #screen-detalle .table-wrap{width:100% !important;max-width:100% !important;overflow-x:auto !important;overflow-y:visible !important;-webkit-overflow-scrolling:touch !important;border-radius:12px !important;}
+      #detalleTable{width:1320px !important;min-width:1320px !important;table-layout:fixed !important;}
+      #detalleTable th,#detalleTable td{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;word-break:normal !important;padding:6px 6px !important;font-size:11.5px !important;line-height:1.15 !important;}
+      #detalleTable th{font-size:10.5px !important;letter-spacing:0 !important;text-align:center !important;}
+      #detalleTable th:nth-child(1),#detalleTable td:nth-child(1){width:92px !important;}
+      #detalleTable th:nth-child(2),#detalleTable td:nth-child(2){width:88px !important;}
+      #detalleTable th:nth-child(3),#detalleTable td:nth-child(3){width:70px !important;}
+      #detalleTable th:nth-child(4),#detalleTable td:nth-child(4){width:140px !important;}
+      #detalleTable th:nth-child(5),#detalleTable td:nth-child(5){width:90px !important;}
+      #detalleTable th:nth-child(6),#detalleTable td:nth-child(6){width:125px !important;}
+      #detalleTable th:nth-child(7),#detalleTable td:nth-child(7){width:82px !important;}
+      #detalleTable th:nth-child(8),#detalleTable td:nth-child(8){width:62px !important;}
+      #detalleTable th:nth-child(9),#detalleTable td:nth-child(9){width:62px !important;}
+      #detalleTable th:nth-child(10),#detalleTable td:nth-child(10){width:104px !important;}
+      #detalleTable th:nth-child(11),#detalleTable td:nth-child(11){width:104px !important;}
+      #detalleTable th:nth-child(12),#detalleTable td:nth-child(12){width:90px !important;}
+      #detalleTable th:nth-child(13),#detalleTable td:nth-child(13){width:82px !important;}
+      #detalleTable th:nth-child(14),#detalleTable td:nth-child(14){width:92px !important;}
+      #detalleTable th:nth-child(15),#detalleTable td:nth-child(15){width:76px !important;}
+      #detalleTable th:nth-child(16),#detalleTable td:nth-child(16){width:82px !important;}
+      #detalleTable .filter-row input,#detalleFilters input{width:100% !important;min-width:0 !important;height:30px !important;padding:4px 5px !important;font-size:11px !important;}
+      #detalleTable .sec-open{display:flex !important;justify-content:center !important;align-items:center !important;gap:4px !important;white-space:nowrap !important;}
+      #detalleTable .sec-open span{font-weight:900 !important;min-width:34px !important;text-align:right !important;font-size:11.8px !important;}
+      #detalleTable .sec-open .btnOpen{padding:4px 6px !important;font-size:10.8px !important;border-radius:7px !important;}
+      #detalleTable .detalle-admin-input{width:100% !important;min-width:0 !important;height:30px !important;padding:4px 5px !important;font-size:11px !important;text-align:right !important;}
+      #detalleTable .small-btn,#detalleTable .btnDeleteRecepcion{padding:5px 6px !important;font-size:10.7px !important;border-radius:7px !important;white-space:nowrap !important;}
+      #detalleTable td:nth-child(4),#detalleTable td:nth-child(5),#detalleTable td:nth-child(6),#detalleTable td:nth-child(7){text-align:left !important;}
+      #detalleTable td:nth-child(8),#detalleTable td:nth-child(9),#detalleTable td:nth-child(10),#detalleTable td:nth-child(11),#detalleTable td:nth-child(12),#detalleTable td:nth-child(13),#detalleTable td:nth-child(14),#detalleTable td:nth-child(15){text-align:right !important;}
+    }
+
+  
+
+    /* ===== FIX WEBVIEW ANDROID / CELULAR: Detalle - Planta con scroll real ===== */
+    html.scrm-mobile-detail #screen-detalle .card{
+      overflow:hidden !important;
+    }
+    html.scrm-mobile-detail #screen-detalle .table-wrap{
+      display:block !important;
+      width:100% !important;
+      max-width:100vw !important;
+      overflow-x:scroll !important;
+      overflow-y:visible !important;
+      -webkit-overflow-scrolling:touch !important;
+      touch-action:pan-x pan-y !important;
+      scrollbar-width:auto !important;
+    }
+    html.scrm-mobile-detail #detalleTable{
+      width:1560px !important;
+      min-width:1560px !important;
+      max-width:none !important;
+      table-layout:fixed !important;
+      border-collapse:separate !important;
+    }
+    html.scrm-mobile-detail #detalleTable th,
+    html.scrm-mobile-detail #detalleTable td{
+      white-space:nowrap !important;
+      overflow:hidden !important;
+      text-overflow:ellipsis !important;
+      word-break:normal !important;
+      padding:6px 7px !important;
+      font-size:12px !important;
+      line-height:1.15 !important;
+      vertical-align:middle !important;
+    }
+    html.scrm-mobile-detail #detalleTable th{
+      font-size:10.8px !important;
+      letter-spacing:0 !important;
+      text-align:center !important;
+    }
+    html.scrm-mobile-detail #detalleTable th:nth-child(1), html.scrm-mobile-detail #detalleTable td:nth-child(1){width:104px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(2), html.scrm-mobile-detail #detalleTable td:nth-child(2){width:104px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(3), html.scrm-mobile-detail #detalleTable td:nth-child(3){width:78px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(4), html.scrm-mobile-detail #detalleTable td:nth-child(4){width:170px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(5), html.scrm-mobile-detail #detalleTable td:nth-child(5){width:100px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(6), html.scrm-mobile-detail #detalleTable td:nth-child(6){width:145px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(7), html.scrm-mobile-detail #detalleTable td:nth-child(7){width:92px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(8), html.scrm-mobile-detail #detalleTable td:nth-child(8){width:72px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(9), html.scrm-mobile-detail #detalleTable td:nth-child(9){width:72px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(10), html.scrm-mobile-detail #detalleTable td:nth-child(10){width:118px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(11), html.scrm-mobile-detail #detalleTable td:nth-child(11){width:118px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(12), html.scrm-mobile-detail #detalleTable td:nth-child(12){width:104px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(13), html.scrm-mobile-detail #detalleTable td:nth-child(13){width:94px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(14), html.scrm-mobile-detail #detalleTable td:nth-child(14){width:110px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(15), html.scrm-mobile-detail #detalleTable td:nth-child(15){width:82px !important;}
+    html.scrm-mobile-detail #detalleTable th:nth-child(16), html.scrm-mobile-detail #detalleTable td:nth-child(16){width:90px !important;}
+    html.scrm-mobile-detail #detalleTable .sec-open{display:flex !important;align-items:center !important;justify-content:center !important;gap:5px !important;white-space:nowrap !important;}
+    html.scrm-mobile-detail #detalleTable .sec-open span{font-weight:900 !important;min-width:38px !important;text-align:right !important;font-size:12px !important;}
+    html.scrm-mobile-detail #detalleTable .sec-open .btnOpen{padding:4px 7px !important;font-size:11px !important;border-radius:7px !important;}
+    html.scrm-mobile-detail #detalleTable .filter-row input,
+    html.scrm-mobile-detail #detalleFilters input{width:100% !important;min-width:0 !important;height:30px !important;padding:4px 5px !important;font-size:11px !important;}
+    html.scrm-mobile-detail #detalleTable .detalle-admin-input{width:100% !important;min-width:0 !important;height:30px !important;padding:4px 5px !important;font-size:11px !important;text-align:right !important;}
+    #totalProgramadas:disabled{background:#f8fafc;color:#334155;opacity:1;cursor:not-allowed;}
+
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <section id="login" class="login-bg">
+    <div class="login-card">
+      <div class="brand"><img class="brand-logo" src="./logo.png?v=1" alt="Oceantreasure"><div><h1>Control de Recepción</h1><p>Materia Prima · Oceantreasure S.A.</p></div></div>
+      <div id="loginMsg" class="notice hidden"></div>
+      <div class="field"><label>Usuario</label><input id="loginEmail" type="email" autocomplete="username" placeholder="usuario@oceantreasure.local"></div>
+      <div class="field"><label>Contraseña</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Contraseña"></div>
+      <button id="btnLogin" class="btn-primary" style="width:100%">Iniciar sesión</button>
+      <div class="footer-note">Sistema preparado para GitHub Pages + Firebase Authentication + Firestore.</div>
+    </div>
+  </section>
+
+  <section id="blockedDevice" class="blocked-bg">
+    <div class="blocked-card">
+      <div class="brand"><img class="brand-logo" src="./logo.png?v=1" alt="Oceantreasure"><div><h1>Dispositivo no autorizado</h1><p>Control de acceso por usuario + dispositivo</p></div></div>
+      <div class="notice warning" style="margin-bottom:12px">Este equipo todavía no tiene permiso para acceder al sistema SCRM. Se registró una solicitud pendiente para revisión del administrador.</div>
+      <label>Usuario</label><div class="codebox" id="blockedEmail">-</div>
+      <label>Código del dispositivo</label><div class="codebox"><span id="blockedDeviceCode">-</span></div>
+      <div class="actions" style="margin-top:14px"><button id="btnCopyDeviceCode" class="btn-soft">Copiar código</button><button id="btnBlockedLogout" class="btn-ghost">Cerrar sesión</button></div>
+      <div class="footer-note">Una vez autorizado el dispositivo, cierre sesión o actualice la página e ingrese nuevamente.</div>
+    </div>
+  </section>
+
+  <section id="app" class="app">
+    <header class="topbar">
+      <div class="top-left"><img class="logo-small-img" src="./logo.png?v=1" alt="Oceantreasure"><div class="top-title"><h2>SCRM — Sistema de Control de Recepción de Materia Prima</h2><span id="todayText"></span></div></div>
+      <div class="actions"><div class="user-pill" id="userPill">Usuario</div><button class="btn-ghost" id="btnLogout">Cerrar sesión</button></div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar">
+        <button class="nav-btn active" data-screen="ingreso"><span>Ingreso</span><small>Recepción</small></button>
+        <button class="nav-btn" data-screen="detalle"><span>Detalle - Planta</span><small>Resumen</small></button>
+        <button class="nav-btn" data-screen="lotes"><span>Lotes - Calidad</span><small>Análisis</small></button>
+        <button id="navDevices" class="nav-btn admin-only hidden" data-screen="devices"><span>Dispositivos</span><small>Autorizados</small></button>
+      </aside>
+      <main class="main">
+        <div id="globalMsg" class="notice hidden"></div>
+        <section id="screen-ingreso" class="screen active">
+          <div class="grid">
+            <div class="card span-8">
+              <div class="card-title"><div><h3>Ingreso de recepción</h3><p>El secuencial se asigna únicamente al presionar GUARDAR.</p></div><div class="actions"><button id="btnNuevo" class="btn-soft">NUEVO</button><button id="btnEditar" class="btn-yellow">EDITAR</button><button id="btnGuardar" class="btn-primary">GUARDAR</button></div></div>
+              <div id="ingresoMsg" class="notice hidden"></div>
+              <div class="form-grid">
+                <div class="field"><label>Secuencial disponible</label><input id="secuencial" readonly></div>
+                <div class="field"><label>Fecha de llegada</label><input id="fechaLlegada" type="date"></div>
+                <div class="field"><label>Hora de llegada</label><input id="horaLlegada" type="time"></div>
+                <div class="field"><label>Estatus</label><select id="estatus"><option value="ENTERO">ENTERO</option><option value="COLA">COLA</option></select></div>
+                <div class="field"><label>Total libras programadas</label><input id="totalProgramadas" type="text" inputmode="decimal" placeholder="0,00"></div>
+                <div class="field half"><label>Razón social</label><input id="razonSocial" type="text"></div>
+                <div class="field"><label>Piscina</label><input id="piscina" type="text"></div>
+                <div class="field"><label>Sector</label><input id="sector" type="text"></div>
+                <div class="field"><label>Lote</label><input id="lote" list="lotesList" autocomplete="off"><datalist id="lotesList"></datalist></div>
+                <div class="field"><label>Orden de compra</label><input id="ordenCompra" type="text"></div>
+                <div class="field half"><label>Usuario creación</label><input id="usuarioCreacion" readonly></div>
+                <div class="field half"><label>Usuario modificación</label><input id="usuarioModificacion" readonly></div>
+              </div>
+            </div>
+            <div class="card span-4">
+              <div class="card-title"><div><h3>Resumen actual</h3><p>Totales del registro en pantalla.</p></div></div>
+              <div class="mini-kpi"><div class="kpi"><span>Carros</span><b id="kpiCarros">0</b></div><div class="kpi"><span>Bines</span><b id="kpiBines">0</b></div><div class="kpi"><span>Libras</span><b id="kpiLibras">0,00</b></div><div class="kpi"><span>Modo</span><b id="kpiModo">Nuevo</b></div></div>
+            </div>
+            <div class="card span-12">
+              <div class="card-title"><div><h3>Detalle de carros</h3><p>Número de carro automático; número de bines y libras ingresados por el usuario.</p></div><div class="actions"><button id="btnAddCarro" class="btn-green">Agregar carro</button><button id="btnClearCarros" class="btn-red">Limpiar carros</button></div></div>
+              <div class="table-wrap carros-wrap"><table id="carrosTable"><thead><tr><th>Carro</th><th>Guía</th><th>N° Bines</th><th>Libras</th><th>Observación</th><th>Acción</th></tr></thead><tbody></tbody></table></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-detalle" class="screen">
+          <div class="card span-12">
+            <div class="card-title detalle-titlebar"><div class="detalle-title"><h3>Detalle - Planta</h3></div><div class="detalle-toolbar"><div class="toolbar-field date-field"><label>Desde</label><input id="detalleDesde" type="date"></div><div class="toolbar-field date-field"><label>Hasta</label><input id="detalleHasta" type="date"></div><div class="toolbar-field sec-field"><label>Mostrar desde</label><input id="secDesde" type="number" min="0" step="1" placeholder="Sec. inicial"></div><div class="toolbar-field sec-field"><label>Mostrar hasta</label><input id="secHasta" type="number" min="0" step="1" placeholder="Sec. final"></div><div class="toolbar-actions"><button id="btnPdfDetalle" class="btn-pdf admin-only hidden">PDF</button><button id="btnRefreshDetalle" class="btn-soft">Actualizar</button><button id="btnExportCSV" class="btn-green">Exportar CSV</button></div></div></div>
+            <div class="table-wrap"><table id="detalleTable"><thead><tr id="detalleHead"></tr><tr id="detalleFilters" class="filter-row"></tr></thead><tbody></tbody></table></div>
+          </div>
+        </section>
+
+        <section id="screen-lotes" class="screen">
+          <div class="grid">
+            <div class="card span-12">
+              <div class="card-title"><div><h3>Lotes - Calidad</h3><p>Disponible para Jefferson, Yanela y Milena. Análisis + Fecha forman el Lote.</p></div><div class="actions"><button id="btnNuevoLote" class="btn-soft">NUEVO</button><button id="btnEditarLote" class="btn-yellow">EDITAR</button><button id="btnGuardarLote" class="btn-primary">GUARDAR</button></div></div>
+              <div id="lotesMsg" class="notice hidden"></div>
+              <div class="form-grid">
+                <div class="field"><label>Análisis</label><input id="analisisLote" type="text" placeholder="Ej. 12345"></div>
+                <div class="field"><label>Fecha análisis</label><input id="fechaAnalisis" type="date"></div>
+                <div class="field half"><label>Lote generado</label><input id="loteGenerado" readonly></div>
+              </div>
+              <div class="table-wrap" style="margin-top:12px"><table id="lotesTable"><thead><tr><th>Análisis</th><th>Fecha</th><th>Lote</th><th>Usuario creación</th><th>Fecha creación</th><th>Modificado por</th><th>Acción</th></tr></thead><tbody></tbody></table></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-devices" class="screen">
+          <div class="grid">
+            <div class="card span-12">
+              <div class="card-title"><div><h3>Dispositivos autorizados</h3><p>Panel exclusivo para Jefferson. Autoriza, bloquea o elimina dispositivos que intentan acceder al sistema.</p></div><div class="device-toolbar"><button id="btnRefreshDevices" class="btn-soft">Actualizar</button></div></div>
+              <div id="devicesMsg" class="notice hidden"></div>
+              <div class="notice warning" style="margin-bottom:12px">Los usuarios que ingresen desde un celular, PC o navegador nuevo quedarán como solicitud pendiente hasta que Jefferson los autorice.</div>
+              <h3 style="color:var(--navy);margin:8px 0 10px">Solicitudes pendientes</h3>
+              <div class="table-wrap"><table id="deviceRequestsTable"><thead><tr><th>Usuario</th><th>Plataforma</th><th>Dispositivo</th><th>Fecha solicitud</th><th>Último acceso</th><th>Estado</th><th>Acción</th></tr></thead><tbody></tbody></table></div>
+              <h3 style="color:var(--navy);margin:18px 0 10px">Dispositivos registrados</h3>
+              <div class="table-wrap"><table id="authorizedDevicesTable"><thead><tr><th>Usuario</th><th>Nombre</th><th>Plataforma</th><th>Dispositivo</th><th>Último acceso</th><th>Estado</th><th>Acción</th></tr></thead><tbody></tbody></table></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = { apiKey:"AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac", authDomain:"oceantreasure-app.firebaseapp.com", projectId:"oceantreasure-app", storageBucket:"oceantreasure-app.firebasestorage.app", messagingSenderId:"553014659258", appId:"1:553014659258:web:cfc30844a88433b7b79a83", measurementId:"G-HMMQKJY8NJ" };
+    const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+    // ✅ Ajustado para funcionar con tus reglas Firestore actuales.
+    // Tus reglas actuales ya permiten escritura a isEditor().
+    // Este sistema web, por interfaz, solo habilita edición/guardado a estos 3 usuarios.
+    const ADMIN_EMAIL = "jeffersonfigueroa@oceantreasure.local";
+    const SYSTEM_EDITORS = ["jeffersonfigueroa@oceantreasure.local","yanelavinueza@oceantreasure.local","milenalmeida@oceantreasure.local"];
+    const PROGRAMADAS_EDITORS = ["jeffersonfigueroa@oceantreasure.local","yanelavinueza@oceantreasure.local","milenalmeida@oceantreasure.local"];
+    const RECEPCION_EDITORS = SYSTEM_EDITORS;
+    const CALIDAD_USERS = SYSTEM_EDITORS;
+    const START_SEQ = 4919;
+    let currentUser = null, currentDeviceId = "", editingId = null, editingData = null, editingLoteId = null, detalleRows = [], lotesRows = [], deviceRequestsRows = [], authorizedDevicesRows = [], unsubscribeDetalle = null, unsubscribeLotes = null, unsubscribeDeviceRequests = null, unsubscribeAuthorizedDevices = null, isUnlockedForEdit = false, selectedDetalleId = null;
+    const detalleMetricTimers = {};
+    const $ = id => document.getElementById(id);
+    const fmt = n => Number(n||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+    function parseFlexibleNumber(v){
+      const raw = String(v ?? '').trim();
+      if(!raw) return 0;
+      const normalized = raw.replace(/\s+/g,'').replace(/\./g,'').replace(',', '.');
+      const n = Number(normalized);
+      return Number.isFinite(n) ? n : 0;
+    }
+    const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+    const timeISO = () => new Date().toTimeString().slice(0,5);
+    const email = () => (currentUser?.email || '').toLowerCase();
+    const shortUser = v => String(v || '').replace('@oceantreasure.local','');
+    function formatLote(v){
+      const raw = String(v || '').trim().toUpperCase();
+      if(!raw) return '';
+      const m = raw.match(/^(.+?)\s*-\s*(\d{2})(\d{2})(\d{2,4})$/);
+      if(m){
+        const year = m[4].length === 2 ? '20' + m[4] : m[4];
+        return m[1].trim() + ' - ' + m[2] + '/' + m[3] + '/' + year;
+      }
+      return raw.replace(/\s+-\s+/g,' - ');
+    }
+    const canEditRecepcion = () => RECEPCION_EDITORS.includes(email());
+    const canEditProgramadas = () => PROGRAMADAS_EDITORS.includes(email());
+    const canCalidad = () => CALIDAD_USERS.includes(email());
+    const isAdmin = () => email() === ADMIN_EMAIL;
+    const msg = (el, text, type='notice') => { el.className = 'notice ' + (type==='error'?'error':type==='success'?'success':type==='warning'?'warning':''); el.textContent = text; el.classList.remove('hidden'); setTimeout(()=>el.classList.add('hidden'), type==='error'?6500:4200); };
+
+    $('todayText').textContent = new Date().toLocaleDateString('es-EC',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    $('btnLogin').onclick = async () => { try { $('btnLogin').disabled = true; await signInWithEmailAndPassword(auth, $('loginEmail').value.trim(), $('loginPass').value); } catch(e){ msg($('loginMsg'), 'No se pudo iniciar sesión. Verifique usuario y contraseña.', 'error'); } finally { $('btnLogin').disabled = false; } };
+    $('loginPass').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnLogin').click(); });
+    $('btnLogout').onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+      if(user){
+        $('login').style.display='none'; $('blockedDevice').style.display='none'; $('userPill').textContent = user.email;
+        const allowed = await validateDeviceAccess(user.email);
+        if(!allowed){
+          $('app').style.display='none'; $('blockedDevice').style.display='grid';
+          $('blockedEmail').textContent = user.email; $('blockedDeviceCode').textContent = currentDeviceId || '-';
+          return;
+        }
+        $('app').style.display='block'; initializeAppView(); saveAndroidFcmToken(user.email);
+      }
+      else { $('login').style.display='grid'; $('app').style.display='none'; $('blockedDevice').style.display='none'; if(unsubscribeDetalle) unsubscribeDetalle(); if(unsubscribeLotes) unsubscribeLotes(); if(unsubscribeDeviceRequests) unsubscribeDeviceRequests(); if(unsubscribeAuthorizedDevices) unsubscribeAuthorizedDevices(); }
+    });
+    $('btnBlockedLogout').onclick = () => signOut(auth);
+    $('btnCopyDeviceCode').onclick = async () => { try{ await navigator.clipboard.writeText(currentDeviceId || ''); alert('Código copiado'); }catch(e){ alert(currentDeviceId || ''); } };
+
+    function initializeAppView(){
+      // Fechas predeterminadas: siempre la fecha actual local del equipo al iniciar sesión o recargar.
+      if($('detalleDesde')) $('detalleDesde').value = todayISO();
+      if($('detalleHasta')) $('detalleHasta').value = todayISO();
+      setRoleVisibility(); resetForm(); loadNextSequentialPreview(); loadUserDetalleFilters().then(()=>{ listenLotes(); listenDetalle(); }); if(isAdmin()) listenDeviceAdmin();
+      if(canEditRecepcion()) msg($('globalMsg'), 'Sesión iniciada con permisos de ingreso, edición y lotes de calidad.', 'success');
+      else msg($('globalMsg'), 'Sesión iniciada en modo consulta. Botones de edición/guardado protegidos por el sistema.', 'warning');
+    }
+
+    function setRoleVisibility(){
+      ['btnNuevo','btnEditar','btnGuardar','btnAddCarro','btnClearCarros'].forEach(id=>$(id).disabled = !canEditRecepcion());
+      $('btnGuardarLote').disabled = !canCalidad(); $('btnNuevoLote').disabled = !canCalidad(); if($('btnEditarLote')) $('btnEditarLote').disabled = !canCalidad();
+      $('navDevices')?.classList.toggle('hidden', !isAdmin());
+      document.querySelectorAll('#screen-detalle .admin-only').forEach(el=>el.classList.toggle('hidden', !isAdmin()));
+      if(!canEditRecepcion()) lockForm(true); else lockForm(false);
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn=>btn.onclick=()=>{ document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $('screen-'+btn.dataset.screen).classList.add('active'); });
+
+    function lockForm(lock){
+      ['fechaLlegada','horaLlegada','razonSocial','piscina','sector','lote','ordenCompra','estatus'].forEach(id=>$(id).disabled = lock);
+      // Total libras programadas: editable únicamente para Jefferson, Yanela y Milena cuando el registro esté en modo Nuevo/Edición.
+      $('totalProgramadas').disabled = lock || !canEditProgramadas();
+      document.querySelectorAll('#carrosTable input').forEach(i=>i.disabled=lock);
+    }
+    async function loadNextSequentialPreview(){ const ref=doc(db,'scrm_counters','recepcion'); const snap=await getDoc(ref); const next = snap.exists() ? (Number(snap.data().last||START_SEQ-1)+1) : START_SEQ; if(!editingId) $('secuencial').value = next; }
+
+    function resetForm(){ editingId=null; editingData=null; isUnlockedForEdit=false; $('fechaLlegada').value=todayISO(); $('horaLlegada').value=timeISO(); ['razonSocial','piscina','sector','lote','ordenCompra','totalProgramadas','usuarioCreacion','usuarioModificacion'].forEach(id=>$(id).value=''); $('estatus').value='ENTERO'; $('kpiModo').textContent='Nuevo'; renderCarros([{carro:1,guia:'',bines:'',libras:'',observacion:''}]); lockForm(!canEditRecepcion()); loadNextSequentialPreview(); }
+    $('btnNuevo').onclick = () => resetForm();
+    $('btnEditar').onclick = () => { if(!editingId) return msg($('ingresoMsg'),'Para editar, primero seleccione un registro desde Detalle - Planta.', 'warning'); isUnlockedForEdit=true; $('kpiModo').textContent='Edición'; lockForm(false); msg($('ingresoMsg'),'Registro habilitado para edición. Los cambios solo se graban al presionar GUARDAR.', 'success'); };
+
+    function escAttr(v){ return String(v ?? '').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+    function renderCarros(rows){ const tb=$('carrosTable').querySelector('tbody'); tb.innerHTML=''; rows.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td class="center"><b>${i+1}</b></td><td><input class="table-input guia" type="text" value="${escAttr(r.guia)}"></td><td><input class="table-input bines" type="number" min="0" step="1" value="${r.bines ?? ''}"></td><td><input class="table-input libras" type="number" min="0" step="0.01" value="${r.libras ?? ''}"></td><td><input class="table-input obs" type="text" value="${escAttr(r.observacion)}"></td><td class="center"><button class="btn-red btnDelCarro" type="button">Quitar</button></td>`; tb.appendChild(tr); }); bindCarros(); updateKpis(); }
+    function getCarros(){ return [...document.querySelectorAll('#carrosTable tbody tr')].map((tr,i)=>({carro:i+1,guia:tr.querySelector('.guia').value.trim().toUpperCase(),bines:Number(tr.querySelector('.bines').value||0),libras:Number(tr.querySelector('.libras').value||0),observacion:tr.querySelector('.obs').value.trim()})).filter(r=>r.guia || r.bines>0 || r.libras>0 || r.observacion); }
+    function bindCarros(){ document.querySelectorAll('#carrosTable input').forEach(inp=>{ inp.disabled = !canEditRecepcion() || (!isUnlockedForEdit && !!editingId); inp.addEventListener('input',updateKpis); }); document.querySelectorAll('.libras').forEach(inp=>inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addCarro(); }})); document.querySelectorAll('.btnDelCarro').forEach(btn=>btn.onclick=()=>{ if(!canEditRecepcion()) return; btn.closest('tr').remove(); renumberCarros(); updateKpis(); }); }
+    function renumberCarros(){ [...document.querySelectorAll('#carrosTable tbody tr')].forEach((tr,i)=>tr.children[0].innerHTML=`<b>${i+1}</b>`); }
+    function addCarro(){ const rows=getCarros(); rows.push({carro:rows.length+1,guia:'',bines:'',libras:'',observacion:''}); renderCarros(rows); setTimeout(()=>document.querySelector('#carrosTable tbody tr:last-child .bines')?.focus(),50); }
+    $('btnAddCarro').onclick = addCarro; $('btnClearCarros').onclick = () => renderCarros([{carro:1,guia:'',bines:'',libras:'',observacion:''}]);
+    function updateKpis(){ const rows=getCarros(); $('kpiCarros').textContent=rows.length; $('kpiBines').textContent=rows.reduce((a,b)=>a+Number(b.bines||0),0).toLocaleString('es-EC'); $('kpiLibras').textContent=fmt(rows.reduce((a,b)=>a+Number(b.libras||0),0)); }
+
+    async function getNextSequential(){ const ref=doc(db,'scrm_counters','recepcion'); return await runTransaction(db, async tx=>{ const snap=await tx.get(ref); const last=snap.exists()?Number(snap.data().last||START_SEQ-1):START_SEQ-1; const next=last+1; tx.set(ref,{last:next,updatedAt:serverTimestamp()},{merge:true}); return next; }); }
+    $('btnGuardar').onclick = async () => { if(!canEditRecepcion()) return msg($('ingresoMsg'),'Usuario sin permiso para guardar ingresos.', 'error'); const carros=getCarros(); if(!$('razonSocial').value.trim() || !$('lote').value.trim()) return msg($('ingresoMsg'),'Razón social y lote son obligatorios.', 'warning'); if(carros.length===0) return msg($('ingresoMsg'),'Debe ingresar al menos un carro con bines o libras.', 'warning'); try{ $('btnGuardar').disabled=true; let sec = editingId ? Number($('secuencial').value) : await getNextSequential(); const payload={secuencial:sec,fechaLlegada:$('fechaLlegada').value,horaLlegada:$('horaLlegada').value,razonSocial:$('razonSocial').value.trim().toUpperCase(),piscina:$('piscina').value.trim().toUpperCase(),sector:$('sector').value.trim().toUpperCase(),lote:formatLote($('lote').value),ordenCompra:$('ordenCompra').value.trim().toUpperCase(),estatus:$('estatus').value,totalProgramadas:parseFlexibleNumber($('totalProgramadas').value),carros,totalCarros:carros.length,totalBines:carros.reduce((a,b)=>a+Number(b.bines||0),0),totalLibras:carros.reduce((a,b)=>a+Number(b.libras||0),0),updatedAt:serverTimestamp()}; if(editingId){ payload.usuarioModificacion=email(); await updateDoc(doc(db,'scrm_recepcion',editingId),payload); msg($('ingresoMsg'),'Registro actualizado correctamente.', 'success'); } else { payload.usuarioCreacion=email(); payload.createdAt=serverTimestamp(); const saved=await addDoc(collection(db,'scrm_recepcion'),payload); editingId=saved.id; $('secuencial').value=sec; $('usuarioCreacion').value=email(); msg($('ingresoMsg'),'Registro guardado correctamente con secuencial '+sec+'.', 'success'); } isUnlockedForEdit=false; $('kpiModo').textContent='Guardado'; lockForm(true); } catch(e){ console.error(e); msg($('ingresoMsg'),'Error al guardar. Revise permisos de Firestore o conexión.', 'error'); } finally { $('btnGuardar').disabled=!canEditRecepcion(); } };
+
+    function listenDetalle(){ if(unsubscribeDetalle) unsubscribeDetalle(); const q=query(collection(db,'scrm_recepcion'),orderBy('secuencial','desc'),limit(500)); unsubscribeDetalle=onSnapshot(q,s=>{ detalleRows=s.docs.map(d=>({id:d.id,...d.data()})); const active=document.activeElement; if(active && active.classList && active.classList.contains('detalle-admin-input')) return; renderDetalle(); },e=>msg($('globalMsg'),'No se pudo cargar Detalle - Planta. Revise reglas de Firestore.', 'error')); }
+
+    const detalleColsBase=[['secuencial','Sec.'],['fechaLlegada','Fecha'],['horaLlegada','Hora'],['razonSocial','Razón social'],['piscina','Piscina'],['sector','Sector'],['lote','Lote'],['ordenCompra','O/C'],['estatus','Estatus'],['totalCarros','Carros'],['totalBines','Bines'],['totalProgramadas','Programadas'],['totalLibras','Libras'],['usuarioCreacion','Creado por'],['usuarioModificacion','Modificado por']];
+    const detalleColsAdmin=[['secuencial','Sec.'],['fechaLlegada','Fecha'],['horaLlegada','Hora'],['razonSocial','Razón social'],['piscina','Piscina'],['lote','Lote'],['estatus','Estatus'],['totalCarros','Carros'],['totalBines','Bines'],['totalProgramadas','Programadas'],['totalLibras','Libras'],['promedio','Promedio'],['basura','Basura'],['empacado','Empacado'],['rend','Rend']];
+    function detalleCols(){ return isAdmin() ? detalleColsAdmin : detalleColsBase; }
+    function detalleRend(r){ const promedio=Number(r.promedio||0), basura=Number(r.basura||0), empacado=Number(r.empacado||0); const base=promedio-basura; return base>0 && empacado>0 ? (empacado/base)*100 : 0; }
+    function detalleCellValue(k,r){
+      if(k==='totalLibras' || k==='totalProgramadas' || k==='promedio' || k==='basura' || k==='empacado') return fmt(r[k]);
+      if(k==='rend') return detalleRend(r) ? detalleRend(r).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2})+'%' : '';
+      if(k==='lote') return formatLote(r[k]);
+      if(k==='usuarioCreacion' || k==='usuarioModificacion') return shortUser(r[k]);
+      return r[k] ?? '';
+    }
+    function getDetalleFilteredRows(){
+      const filters = $('detalleFilters');
+      const cols = detalleCols();
+      const active = filters ? [...filters.querySelectorAll('input')].reduce((o,i)=>(o[i.dataset.col]=i.value.toLowerCase(),o),{}) : {};
+      const desde = $('detalleDesde')?.value || '';
+      const hasta = $('detalleHasta')?.value || '';
+      const secDesde = Number($('secDesde')?.value || 0);
+      const secHasta = Number($('secHasta')?.value || 0);
+      const usarFiltroSecuencial = !!(secDesde || secHasta);
+      return detalleRows.filter(r=>{
+        const fecha = String(r.fechaLlegada || '');
+        const sec = Number(r.secuencial || 0);
+        // Si se filtra por MOSTRAR DESDE/HASTA, el rango de fechas no aplica.
+        if(!usarFiltroSecuencial && desde && fecha < desde) return false;
+        if(!usarFiltroSecuencial && hasta && fecha > hasta) return false;
+        if(secDesde && sec < secDesde) return false;
+        if(secHasta && sec > secHasta) return false;
+        return cols.every(([k])=>!active[k] || String(detalleCellValue(k,r)).toLowerCase().includes(active[k]));
+      });
+    }
+
+    function adminMetricInput(k,r){
+      const v = r[k] ?? '';
+      return `<input class="detalle-admin-input" data-id="${r.id}" data-field="${k}" type="text" inputmode="decimal" autocomplete="off" value="${escAttr(v)}">`;
+    }
+    function renderDetalleCell(k,r,idx){
+      if(idx===0){
+        return `<td class="right"><div class="sec-open"><span>${detalleCellValue(k,r)}</span><button class="btn-soft btnOpen" data-id="${r.id}">Abrir</button></div></td>`;
+      }
+      if(isAdmin() && ['promedio','basura','empacado'].includes(k)) return `<td class="right">${adminMetricInput(k,r)}</td>`;
+      if(isAdmin() && k==='rend') return `<td class="rend-cell">${detalleCellValue(k,r)}</td>`;
+      return `<td class="${['totalLibras','totalProgramadas','totalBines','totalCarros','secuencial'].includes(k)?'right':''}">${detalleCellValue(k,r)}</td>`;
+    }
+    function renderDetalle(){
+      const head=$('detalleHead'), filters=$('detalleFilters'), tb=$('detalleTable').querySelector('tbody');
+      const cols = detalleCols();
+      head.innerHTML=cols.map(c=>`<th>${c[1]}</th>`).join('')+(canEditRecepcion()?'<th>Eliminar</th>':'');
+      filters.innerHTML=cols.map(([k])=> ['promedio','basura','empacado','rend'].includes(k) ? '<th></th>' : `<th><input data-col="${k}" placeholder=""></th>`).join('')+(canEditRecepcion()?'<th></th>':'');
+      filters.querySelectorAll('input').forEach(i=>i.addEventListener('input',renderDetalle));
+      const rows=getDetalleFilteredRows();
+      tb.innerHTML = rows.length ? rows.map(r=>`<tr data-id="${r.id}" class="${selectedDetalleId===r.id?'detalle-selected':''}">${cols.map(([k],idx)=>renderDetalleCell(k,r,idx)).join('')}${canEditRecepcion()?`<td class="center"><button class="btn-red small-btn btnDeleteRecepcion" data-id="${r.id}">Eliminar</button></td>`:''}</tr>`).join('') : `<tr><td colspan="${cols.length+(canEditRecepcion()?1:0)}" class="empty">Sin registros</td></tr>`;
+      document.querySelectorAll('#detalleTable tbody tr[data-id]').forEach(tr=>tr.onclick=(ev)=>{ if(ev.target.closest('button') || ev.target.closest('input')) return; selectedDetalleId=tr.dataset.id; renderDetalle(); });
+      document.querySelectorAll('.btnOpen').forEach(b=>b.onclick=(ev)=>{ ev.stopPropagation(); selectedDetalleId=b.dataset.id; openDetalle(b.dataset.id); });
+      document.querySelectorAll('.btnDeleteRecepcion').forEach(b=>b.onclick=(ev)=>{ ev.stopPropagation(); deleteRecepcion(b.dataset.id); });
+      document.querySelectorAll('.detalle-admin-input').forEach(inp=>{ inp.addEventListener('input',()=>saveDetalleMetric(inp.dataset.id, inp.dataset.field, inp.value)); inp.addEventListener('blur',()=>{ setTimeout(()=>renderDetalle(), 120); }); });
+    }
+
+    async function saveDetalleMetric(id, field, value){
+      if(!isAdmin() || !id || !['promedio','basura','empacado'].includes(field)) return;
+      const row = detalleRows.find(r=>r.id===id);
+      const numericValue = parseFlexibleNumber(value);
+      if(row){
+        row[field] = numericValue;
+        row.rend = detalleRend(row);
+        const tr=document.querySelector(`#detalleTable tbody tr[data-id="${id}"]`);
+        const rendCell=tr?.querySelector('.rend-cell');
+        if(rendCell) rendCell.textContent = detalleCellValue('rend', row);
+      }
+      clearTimeout(detalleMetricTimers[id+'_'+field]);
+      detalleMetricTimers[id+'_'+field] = setTimeout(async()=>{
+        try{
+          const r = detalleRows.find(x=>x.id===id) || {};
+          await updateDoc(doc(db,'scrm_recepcion',id), {
+            [field]: numericValue,
+            rend: detalleRend(r),
+            rendimientoActualizadoPor: email(),
+            rendimientoUpdatedAt: serverTimestamp()
+          });
+        }catch(e){ console.error(e); msg($('globalMsg'),'No se pudo guardar Promedio/Basura/Empacado.', 'error'); }
+      }, 1300);
+    }
+    async function deleteRecepcion(id){
+      if(!canEditRecepcion()) return msg($('globalMsg'),'Usuario sin permiso para eliminar.', 'error');
+      const r = detalleRows.find(x=>x.id===id);
+      const sec = r?.secuencial || '';
+      if(!confirm(`¿Eliminar definitivamente el ingreso ${sec}? Esta acción no se puede deshacer.`)) return;
+      try{ await deleteDoc(doc(db,'scrm_recepcion',id)); if(selectedDetalleId===id) selectedDetalleId=null; await syncRecepcionCounterAfterDelete(); msg($('globalMsg'),'Ingreso eliminado correctamente.', 'success'); }
+      catch(e){ console.error(e); msg($('globalMsg'),'No se pudo eliminar el ingreso. Revise permisos/conexión.', 'error'); }
+    }
+    async function syncRecepcionCounterAfterDelete(){
+      if(!canEditRecepcion()) return;
+      try{
+        const qMax=query(collection(db,'scrm_recepcion'),orderBy('secuencial','desc'),limit(1));
+        const snap=await getDocs(qMax);
+        const maxSec = snap.empty ? START_SEQ-1 : Number(snap.docs[0].data().secuencial || START_SEQ-1);
+        await setDoc(doc(db,'scrm_counters','recepcion'),{last:maxSec,updatedAt:serverTimestamp(),syncedBy:email()},{merge:true});
+        if(!editingId) $('secuencial').value = maxSec + 1;
+      }catch(e){ console.warn('No se pudo sincronizar contador:', e); }
+    }
+
+    $('btnRefreshDetalle').onclick=renderDetalle;
+    ['detalleDesde','detalleHasta'].forEach(id=>$(id)?.addEventListener('change',()=>{ saveUserDetalleFilters?.(); renderDetalle(); }));
+    ['secDesde','secHasta'].forEach(id=>$(id)?.addEventListener('input',()=>{ saveUserDetalleFilters?.(); renderDetalle(); }));
+
+    function openDetalle(id){ const r=detalleRows.find(x=>x.id===id); if(!r) return; editingId=id; editingData=r; $('secuencial').value=r.secuencial||''; $('fechaLlegada').value=r.fechaLlegada||''; $('horaLlegada').value=r.horaLlegada||''; $('razonSocial').value=r.razonSocial||''; $('piscina').value=r.piscina||''; $('sector').value=r.sector||''; $('lote').value=formatLote(r.lote)||''; $('ordenCompra').value=r.ordenCompra||''; $('totalProgramadas').value=r.totalProgramadas ? fmt(r.totalProgramadas) : ''; $('estatus').value=(r.estatus==='COLA'?'COLA':'ENTERO'); $('usuarioCreacion').value=r.usuarioCreacion||''; $('usuarioModificacion').value=r.usuarioModificacion||''; renderCarros(r.carros?.length?r.carros:[{carro:1,guia:'',bines:'',libras:'',observacion:''}]); isUnlockedForEdit=false; $('kpiModo').textContent='Consulta'; lockForm(true); document.querySelector('[data-screen="ingreso"]').click(); msg($('ingresoMsg'),'Registro abierto en modo consulta. Presione EDITAR para modificar.', 'notice'); }
+
+    $('btnExportCSV').onclick=()=>{ const rows=getDetalleFilteredRows(); const cols=detalleCols(); const header=cols.map(c=>c[1]).join(';'); const body=rows.map(r=>cols.map(([k])=>`"${String(detalleCellValue(k,r)).replaceAll('"','""')}"`).join(';')).join('\n'); const blob=new Blob([header+'\n'+body],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='SCRM_Detalle_Planta.csv'; a.click(); URL.revokeObjectURL(a.href); };
+
+    async function getLogoDataUrl(){
+      return new Promise(resolve=>{
+        const img=new Image(); img.crossOrigin='anonymous';
+        img.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight; c.getContext('2d').drawImage(img,0,0); resolve(c.toDataURL('image/png')); }catch(e){ resolve(null); } };
+        img.onerror=()=>resolve(null);
+        img.src='./logo.png?v=' + Date.now();
+      });
+    }
+
+    function sumByStatus(rows,status,key){ return rows.filter(r=>String(r.estatus||'').toUpperCase()===status).reduce((a,b)=>a+Number(b[key]||0),0); }
+    function countByStatus(rows,status){ return rows.filter(r=>String(r.estatus||'').toUpperCase()===status).length; }
+    function pdfDateName(){ const d=new Date(); return d.toISOString().slice(0,10)+'_'+String(d.getHours()).padStart(2,'0')+'-'+String(d.getMinutes()).padStart(2,'0'); }
+
+    async function generateDetallePDF(){
+      if(!isAdmin()) return msg($('globalMsg'),'Solo Jefferson puede generar este PDF.', 'error');
+      const rows=getDetalleFilteredRows();
+      if(!rows.length) return msg($('globalMsg'),'No hay registros para el rango/filtro seleccionado.', 'warning');
+      if(!window.jspdf?.jsPDF) return msg($('globalMsg'),'No se cargó la librería PDF. Revise conexión a internet.', 'error');
+
+      const { jsPDF } = window.jspdf;
+      const docPdf = new jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+      const pageW = docPdf.internal.pageSize.getWidth();
+      const pageH = docPdf.internal.pageSize.getHeight();
+      const logo = await getLogoDataUrl();
+      const now = new Date();
+      const desde = $('detalleDesde')?.value || 'Inicio';
+      const hasta = $('detalleHasta')?.value || 'Actual';
+      const secDesde = $('secDesde')?.value || 'Inicio';
+      const secHasta = $('secHasta')?.value || 'Actual';
+      const device = (window.SCRMAndroid ? 'APK Android' : 'Navegador Web') + ' · ' + (navigator.platform || '') + ' · ' + (currentDeviceId || '').slice(0,30);
+
+      if(logo) docPdf.addImage(logo,'PNG',36,22,76,44, undefined, 'FAST');
+      docPdf.setFont('helvetica','bold'); docPdf.setFontSize(14); docPdf.text('SCRM — Detalle de Recepción de Materia Prima', 122, 36);
+      docPdf.setFont('helvetica','normal'); docPdf.setFontSize(8.5);
+      docPdf.text('Generado: '+now.toLocaleString('es-EC'), 122, 52);
+      docPdf.text('Usuario: '+email(), 122, 66);
+      docPdf.text('Dispositivo: '+device, 122, 80);
+      const usaRangoSec = !!(($('secDesde')?.value || '') || ($('secHasta')?.value || ''));
+      docPdf.text('Rango fechas: '+(usaRangoSec ? 'No aplica por filtro secuencial' : (desde+' hasta '+hasta)), 122, 94);
+      docPdf.text('Rango secuencial: '+secDesde+' hasta '+secHasta, 122, 108);
+
+      const enteroLb=sumByStatus(rows,'ENTERO','totalLibras');
+      const colaLbOriginal=sumByStatus(rows,'COLA','totalLibras');
+      const colaLb=colaLbOriginal*0.66;
+      const enteroCarros=sumByStatus(rows,'ENTERO','totalCarros'), colaCarros=sumByStatus(rows,'COLA','totalCarros');
+      const enteroBines=sumByStatus(rows,'ENTERO','totalBines'), colaBines=sumByStatus(rows,'COLA','totalBines');
+
+      docPdf.autoTable({
+        startY:124,
+        head:[['Detalle de libras para procesar','Registros','Carros','Bines','Libras']],
+        body:[
+          ['ENTERO', countByStatus(rows,'ENTERO'), enteroCarros.toLocaleString('es-EC'), enteroBines.toLocaleString('es-EC'), fmt(enteroLb)],
+          ['COLA', countByStatus(rows,'COLA'), colaCarros.toLocaleString('es-EC'), colaBines.toLocaleString('es-EC'), fmt(colaLb)],
+          ['TOTAL A PROCESAR', rows.length, (enteroCarros+colaCarros).toLocaleString('es-EC'), (enteroBines+colaBines).toLocaleString('es-EC'), fmt(enteroLb+colaLb)]
+        ],
+        theme:'grid',
+        styles:{fontSize:8, cellPadding:4, overflow:'linebreak'},
+        headStyles:{fillColor:[11,31,58], textColor:255},
+        tableWidth:674,
+        columnStyles:{
+          0:{cellWidth:300},
+          1:{halign:'right',cellWidth:120},
+          2:{halign:'right',cellWidth:90},
+          3:{halign:'right',cellWidth:80},
+          4:{halign:'right',cellWidth:84}
+        },
+        margin:{left:36,right:36}
+      });
+
+      const body=rows.map(r=>[
+        r.secuencial||'', r.fechaLlegada||'', r.horaLlegada||'', r.razonSocial||'', r.piscina||'', formatLote(r.lote)||'', r.estatus||'',
+        Number(r.totalCarros||0).toLocaleString('es-EC'), Number(r.totalBines||0).toLocaleString('es-EC'), fmt(r.totalProgramadas), fmt(r.totalLibras),
+        fmt(r.promedio), fmt(r.basura), fmt(r.empacado), detalleCellValue('rend', r)
+      ]);
+
+      docPdf.autoTable({
+        startY:docPdf.lastAutoTable.finalY+12,
+        head:[['SEC.','FECHA','HORA','RAZÓN SOCIAL','PISCINA','LOTE','ESTATUS','CARROS','BINES','PROGRAMADAS','LIBRAS','PROMEDIO','BASURA','EMPACADO','REND']],
+        body,
+        theme:'grid',
+        styles:{fontSize:6.7, cellPadding:3, overflow:'linebreak'},
+        headStyles:{fillColor:[18,55,98], textColor:255},
+        columnStyles:{
+          0:{halign:'right',cellWidth:30},1:{cellWidth:44},2:{cellWidth:32},3:{cellWidth:70},4:{cellWidth:42},5:{cellWidth:68},6:{cellWidth:42},7:{halign:'right',cellWidth:34},8:{halign:'right',cellWidth:34},9:{halign:'right',cellWidth:58},10:{halign:'right',cellWidth:50},11:{halign:'right',cellWidth:50},12:{halign:'right',cellWidth:46},13:{halign:'right',cellWidth:50},14:{halign:'right',cellWidth:38}
+        },
+        margin:{left:36,right:36},
+        didDrawPage:()=>{ docPdf.setFontSize(7); docPdf.text('Sistema SCRM · Oceantreasure S.A.', 36, pageH-18); docPdf.text('Página '+docPdf.internal.getCurrentPageInfo().pageNumber, pageW-36, pageH-18, {align:'right'}); }
+      });
+
+      docPdf.save('SCRM_Detalle_Planta_'+pdfDateName()+'.pdf');
+    }
+    $('btnPdfDetalle')?.addEventListener('click', generateDetallePDF);
+
+    function loteValue(){ const a=$('analisisLote').value.trim().toUpperCase(); const f=$('fechaAnalisis').value; if(!a || !f) return ''; const d=new Date(f+'T00:00:00'); const dd=String(d.getDate()).padStart(2,'0'), mm=String(d.getMonth()+1).padStart(2,'0'), yyyy=String(d.getFullYear()); return `${a} - ${dd}/${mm}/${yyyy}`; }
+    function loteDeviceInfo(){ return (window.SCRMAndroid ? 'APK Android' : 'Navegador Web') + ' · ' + (navigator.platform || '') + ' · ' + (currentDeviceId || '').slice(0,24); }
+    function loteModificadoInfo(r){
+      if(!r.usuarioModificacion && !r.fechaModificacion && !r.dispositivoModificacion) return '';
+      const fecha = r.fechaModificacion?.toDate ? r.fechaModificacion.toDate().toLocaleString('es-EC') : '';
+      const disp = r.dispositivoModificacion ? ' · ' + r.dispositivoModificacion : '';
+      return `${shortUser(r.usuarioModificacion || '')}${fecha ? '<br><span class="muted">'+fecha+'</span>' : ''}${disp ? '<br><span class="muted">'+disp+'</span>' : ''}`;
+    }
+    ['analisisLote','fechaAnalisis'].forEach(id=>$(id).addEventListener('input',()=>$('loteGenerado').value=loteValue()));
+    function resetLoteForm(){ editingLoteId=null; $('analisisLote').value=''; $('fechaAnalisis').value=todayISO(); $('loteGenerado').value=''; if($('btnGuardarLote')) $('btnGuardarLote').textContent='GUARDAR'; }
+    $('btnNuevoLote').onclick=()=>{ resetLoteForm(); msg($('lotesMsg'),'Formulario listo para nuevo lote.', 'notice'); };
+    $('btnEditarLote').onclick=()=>{ if(!editingLoteId) return msg($('lotesMsg'),'Seleccione un lote con el botón EDITAR de la tabla.', 'warning'); msg($('lotesMsg'),'Lote cargado para edición. Presione GUARDAR para actualizar.', 'notice'); };
+    $('btnGuardarLote').onclick=async()=>{
+      if(!canCalidad()) return msg($('lotesMsg'),'Usuario sin permiso para guardar lotes de calidad.', 'error');
+      const lote=loteValue();
+      if(!lote) return msg($('lotesMsg'),'Ingrese análisis y fecha para generar el lote.', 'warning');
+      try{
+        $('btnGuardarLote').disabled=true;
+        const payload={analisis:$('analisisLote').value.trim().toUpperCase(),fecha:$('fechaAnalisis').value,lote,updatedAt:serverTimestamp()};
+        if(editingLoteId){
+          await updateDoc(doc(db,'scrm_lotes_calidad',editingLoteId),{...payload,usuarioModificacion:email(),fechaModificacion:serverTimestamp(),dispositivoModificacion:loteDeviceInfo()});
+          msg($('lotesMsg'),'Lote actualizado correctamente: '+lote, 'success');
+        }else{
+          await addDoc(collection(db,'scrm_lotes_calidad'),{...payload,usuarioCreacion:email(),createdAt:serverTimestamp()});
+          msg($('lotesMsg'),'Lote guardado correctamente: '+lote, 'success');
+        }
+        resetLoteForm();
+      } catch(e){ console.error(e); msg($('lotesMsg'),'No se pudo guardar el lote. Revise permisos de Firestore.', 'error'); }
+      finally { $('btnGuardarLote').disabled=!canCalidad(); }
+    };
+    function listenLotes(){ if(unsubscribeLotes) unsubscribeLotes(); const q=query(collection(db,'scrm_lotes_calidad'),orderBy('createdAt','desc'),limit(500)); unsubscribeLotes=onSnapshot(q,s=>{ lotesRows=s.docs.map(d=>({id:d.id,...d.data()})); renderLotes(); updateDatalist(); },e=>msg($('globalMsg'),'No se pudo cargar Lotes - Calidad. Revise reglas de Firestore.', 'error')); }
+    function renderLotes(){
+      const tb=$('lotesTable').querySelector('tbody');
+      tb.innerHTML=lotesRows.length?lotesRows.map(r=>`<tr class="${editingLoteId===r.id?'detalle-selected':''}"><td>${r.analisis||''}</td><td>${r.fecha||''}</td><td><b>${formatLote(r.lote)||''}</b></td><td>${shortUser(r.usuarioCreacion)||''}</td><td>${r.createdAt?.toDate? r.createdAt.toDate().toLocaleString('es-EC') : ''}</td><td>${loteModificadoInfo(r)}</td><td class="center"><button class="btn-yellow small-btn btnEditLote" data-id="${r.id}">Editar</button> <button class="btn-red small-btn btnDeleteLote" data-id="${r.id}">Eliminar</button></td></tr>`).join(''):`<tr><td colspan="7" class="empty">Sin lotes registrados</td></tr>`;
+      document.querySelectorAll('.btnEditLote').forEach(b=>b.onclick=()=>openLoteForEdit(b.dataset.id));
+      document.querySelectorAll('.btnDeleteLote').forEach(b=>b.onclick=()=>deleteLote(b.dataset.id));
+    }
+    function openLoteForEdit(id){
+      if(!canCalidad()) return msg($('lotesMsg'),'Usuario sin permiso para editar lotes.', 'error');
+      const r=lotesRows.find(x=>x.id===id); if(!r) return;
+      editingLoteId=id;
+      $('analisisLote').value=r.analisis||'';
+      $('fechaAnalisis').value=r.fecha||todayISO();
+      $('loteGenerado').value=loteValue();
+      $('btnGuardarLote').textContent='ACTUALIZAR';
+      renderLotes();
+      msg($('lotesMsg'),'Lote cargado para edición. Corrija y presione ACTUALIZAR.', 'notice');
+    }
+    async function deleteLote(id){
+      if(!canCalidad()) return msg($('lotesMsg'),'Usuario sin permiso para eliminar lotes.', 'error');
+      const r=lotesRows.find(x=>x.id===id); if(!r) return;
+      if(!confirm(`¿Eliminar definitivamente el lote ${formatLote(r.lote)}? Esta acción no se puede deshacer.`)) return;
+      try{ await deleteDoc(doc(db,'scrm_lotes_calidad',id)); if(editingLoteId===id) resetLoteForm(); msg($('lotesMsg'),'Lote eliminado correctamente.', 'success'); }
+      catch(e){ console.error(e); msg($('lotesMsg'),'No se pudo eliminar el lote. Revise permisos/conexión.', 'error'); }
+    }
+    function updateDatalist(){ $('lotesList').innerHTML=lotesRows.map(r=>`<option value="${formatLote(r.lote)}"></option>`).join(''); }
+
+
+    function safeId(v){ return String(v || '').toLowerCase().replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,120); }
+    function deviceDocId(userEmail, deviceId){ return safeId(userEmail) + '_' + safeId(deviceId); }
+    function getPlatform(){ try{ if(window.SCRMAndroid) return window.SCRMAndroid.getPlatform?.() || 'android'; }catch(e){} return 'web'; }
+    async function getCurrentDeviceId(){
+      try{ if(window.SCRMAndroid && typeof window.SCRMAndroid.getDeviceId === 'function'){ const androidId = window.SCRMAndroid.getDeviceId(); if(androidId) return androidId; } }catch(e){}
+      let id = localStorage.getItem('SCRM_DEVICE_ID');
+      if(!id){ const rnd = (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(16).slice(2)); id = 'SCRM-WEB-' + rnd; localStorage.setItem('SCRM_DEVICE_ID', id); }
+      return id;
+    }
+    async function validateDeviceAccess(userEmail){
+      const cleanEmail = String(userEmail || '').toLowerCase();
+      currentDeviceId = await getCurrentDeviceId();
+      const platform = getPlatform();
+      const id = deviceDocId(cleanEmail, currentDeviceId);
+      const reqRef = doc(db, 'scrm_device_requests', id);
+      const authRef = doc(db, 'scrm_authorized_devices', id);
+      const authSnap = await getDoc(authRef);
+
+      if(cleanEmail === ADMIN_EMAIL){
+        await setDoc(authRef, {
+          email: cleanEmail,
+          deviceId: currentDeviceId,
+          deviceName: platform === 'android' ? 'Dispositivo Android Jefferson' : 'Navegador Jefferson',
+          platform,
+          authorized: true,
+          active: true,
+          userAgent: navigator.userAgent,
+          lastAccessAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        return true;
+      }
+
+      if(authSnap.exists()){
+        const d = authSnap.data();
+        if(d.authorized === true && d.active !== false){
+          await setDoc(authRef, { lastAccessAt: serverTimestamp(), updatedAt: serverTimestamp(), userAgent: navigator.userAgent }, { merge: true });
+          return true;
+        }
+      }
+
+      await setDoc(reqRef, {
+        email: cleanEmail,
+        deviceId: currentDeviceId,
+        platform,
+        status: 'pending',
+        active: false,
+        authorized: false,
+        userAgent: navigator.userAgent,
+        requestedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        lastAccessAt: serverTimestamp()
+      }, { merge: true });
+      return false;
+    }
+
+    async function saveAndroidFcmToken(userEmail){
+      try{
+        if(!window.SCRMAndroid || !userEmail) return;
+        let token = '';
+        for(let i = 0; i < 8; i++){
+          token = window.SCRMAndroid.getFcmToken?.() || '';
+          if(token) break;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        if(!token) return;
+        const cleanEmail = String(userEmail).toLowerCase();
+        const cleanTokenId = token.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
+        const docId = cleanEmail.replace(/[^a-zA-Z0-9_-]/g, '_') + '_' + cleanTokenId;
+        await setDoc(doc(db, 'scrm_user_devices', docId), {
+          email: cleanEmail,
+          token,
+          deviceId: currentDeviceId || await getCurrentDeviceId(),
+          platform: 'android',
+          app: 'SCRM',
+          active: true,
+          userAgent: navigator.userAgent,
+          lastLoginAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      }catch(e){ console.warn('No se pudo guardar token FCM Android:', e); }
+    }
+
+    function fmtDateTS(v){ return v?.toDate ? v.toDate().toLocaleString('es-EC') : ''; }
+    function deviceStatusLabel(d){
+      if(d.status === 'pending') return '<span class="device-pill device-pending">PENDIENTE</span>';
+      if(d.authorized === true && d.active !== false) return '<span class="device-pill device-ok">ACTIVO</span>';
+      return '<span class="device-pill device-block">BLOQUEADO</span>';
+    }
+    function listenDeviceAdmin(){
+      if(!isAdmin()) return;
+      if(unsubscribeDeviceRequests) unsubscribeDeviceRequests();
+      if(unsubscribeAuthorizedDevices) unsubscribeAuthorizedDevices();
+      unsubscribeDeviceRequests = onSnapshot(collection(db,'scrm_device_requests'), snap => {
+        deviceRequestsRows = snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderDeviceRequests();
+      });
+      unsubscribeAuthorizedDevices = onSnapshot(collection(db,'scrm_authorized_devices'), snap => {
+        authorizedDevicesRows = snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderAuthorizedDevices();
+      });
+    }
+    $('btnRefreshDevices').onclick = () => { renderDeviceRequests(); renderAuthorizedDevices(); };
+    function renderDeviceRequests(){
+      const tb = $('deviceRequestsTable')?.querySelector('tbody'); if(!tb) return;
+      const rows = deviceRequestsRows.filter(r => (r.status || 'pending') === 'pending').sort((a,b)=>(b.requestedAt?.seconds||0)-(a.requestedAt?.seconds||0));
+      tb.innerHTML = rows.length ? rows.map(r => `<tr><td>${shortUser(r.email)}</td><td>${r.platform||''}</td><td class="mono">${r.deviceId||''}</td><td>${fmtDateTS(r.requestedAt)}</td><td>${fmtDateTS(r.lastAccessAt)}</td><td>${deviceStatusLabel(r)}</td><td><button class="btn-green small-btn btnAuthorizeDevice" data-id="${r.id}">Autorizar</button> <button class="btn-red small-btn btnRejectDevice" data-id="${r.id}">Bloquear</button></td></tr>`).join('') : `<tr><td colspan="7" class="empty">Sin solicitudes pendientes</td></tr>`;
+      document.querySelectorAll('.btnAuthorizeDevice').forEach(b=>b.onclick=()=>authorizeDeviceRequest(b.dataset.id));
+      document.querySelectorAll('.btnRejectDevice').forEach(b=>b.onclick=()=>rejectDeviceRequest(b.dataset.id));
+    }
+    function renderAuthorizedDevices(){
+      const tb = $('authorizedDevicesTable')?.querySelector('tbody'); if(!tb) return;
+      const rows = authorizedDevicesRows.sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
+      tb.innerHTML = rows.length ? rows.map(r => `<tr><td>${shortUser(r.email)}</td><td>${r.deviceName||''}</td><td>${r.platform||''}</td><td class="mono">${r.deviceId||''}</td><td>${fmtDateTS(r.lastAccessAt)}</td><td>${deviceStatusLabel(r)}</td><td><button class="btn-yellow small-btn btnToggleDevice" data-id="${r.id}">${r.active === false || r.authorized !== true ? 'Activar' : 'Bloquear'}</button> <button class="btn-red small-btn btnDeleteDevice" data-id="${r.id}">Eliminar</button></td></tr>`).join('') : `<tr><td colspan="7" class="empty">Sin dispositivos registrados</td></tr>`;
+      document.querySelectorAll('.btnToggleDevice').forEach(b=>b.onclick=()=>toggleAuthorizedDevice(b.dataset.id));
+      document.querySelectorAll('.btnDeleteDevice').forEach(b=>b.onclick=()=>deleteAuthorizedDevice(b.dataset.id));
+    }
+    async function authorizeDeviceRequest(id){
+      const r = deviceRequestsRows.find(x=>x.id===id); if(!r) return;
+      const name = prompt('Nombre del dispositivo:', `${shortUser(r.email)} - ${r.platform === 'android' ? 'Android' : 'Web'}`) || `${shortUser(r.email)} - ${r.platform||'Dispositivo'}`;
+      await setDoc(doc(db,'scrm_authorized_devices',id), {
+        email: String(r.email||'').toLowerCase(),
+        deviceId: r.deviceId,
+        deviceName: name,
+        platform: r.platform || 'web',
+        authorized: true,
+        active: true,
+        userAgent: r.userAgent || '',
+        lastAccessAt: r.lastAccessAt || serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      await setDoc(doc(db,'scrm_device_requests',id), { status:'approved', authorized:true, active:true, approvedBy: email(), approvedAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge:true });
+      msg($('devicesMsg'), 'Dispositivo autorizado correctamente.', 'success');
+    }
+    async function rejectDeviceRequest(id){
+      const r = deviceRequestsRows.find(x=>x.id===id); if(!r) return;
+      await setDoc(doc(db,'scrm_device_requests',id), { status:'rejected', authorized:false, active:false, rejectedBy: email(), rejectedAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge:true });
+      await setDoc(doc(db,'scrm_authorized_devices',id), { email:String(r.email||'').toLowerCase(), deviceId:r.deviceId, platform:r.platform||'web', authorized:false, active:false, updatedAt:serverTimestamp() }, { merge:true });
+      msg($('devicesMsg'), 'Solicitud bloqueada.', 'warning');
+    }
+    async function toggleAuthorizedDevice(id){
+      const r = authorizedDevicesRows.find(x=>x.id===id); if(!r) return;
+      const newActive = !(r.authorized === true && r.active !== false);
+      await updateDoc(doc(db,'scrm_authorized_devices',id), { authorized:newActive, active:newActive, updatedAt:serverTimestamp(), changedBy:email() });
+      msg($('devicesMsg'), newActive ? 'Dispositivo activado.' : 'Dispositivo bloqueado.', newActive ? 'success' : 'warning');
+    }
+    async function deleteAuthorizedDevice(id){
+      if(!confirm('¿Eliminar este dispositivo autorizado?')) return;
+      await deleteDoc(doc(db,'scrm_authorized_devices',id));
+      msg($('devicesMsg'), 'Dispositivo eliminado.', 'warning');
+    }
+
+
+    function detalleFilterDocId(){ return email().replace(/[^a-zA-Z0-9_-]/g,'_') || 'sin_usuario'; }
+    async function loadUserDetalleFilters(){
+      try{
+        if(!currentUser) return;
+        // Las fechas DESDE/HASTA no se restauran desde preferencias: siempre arrancan con la fecha actual local.
+        if($('detalleDesde')) $('detalleDesde').value = todayISO();
+        if($('detalleHasta')) $('detalleHasta').value = todayISO();
+        const snap = await getDoc(doc(db,'scrm_user_preferences',detalleFilterDocId()));
+        if(snap.exists()){
+          const f = snap.data().detalleFilters || {};
+          if($('secDesde')) $('secDesde').value = f.secDesde || '';
+          if($('secHasta')) $('secHasta').value = f.secHasta || '';
+        }
+      }catch(e){ console.warn('No se pudieron cargar filtros personales', e); }
+    }
+    let saveUserDetalleFiltersTimer=null;
+    async function saveUserDetalleFilters(){
+      try{
+        if(!currentUser) return;
+        clearTimeout(saveUserDetalleFiltersTimer);
+        saveUserDetalleFiltersTimer=setTimeout(async()=>{
+          await setDoc(doc(db,'scrm_user_preferences',detalleFilterDocId()), { email: email(), detalleFilters:{ desde:'', hasta:'', secDesde:$('secDesde')?.value || '', secHasta:$('secHasta')?.value || '' }, updatedAt: serverTimestamp() }, {merge:true});
+        }, 350);
+      }catch(e){ console.warn('No se pudieron guardar filtros personales', e); }
+    }
+    $('fechaAnalisis').value=todayISO();
+  </script>
+
+
+  <script>
+    // Refuerzo para la APK Recepcion MP (Android WebView): evita que Detalle-Planta aplaste columnas.
+    (function(){
+      function isMobileOrWebView(){
+        var ua = navigator.userAgent || '';
+        return /Android|wv|Version\/.*Chrome|Mobile|iPhone|iPad/i.test(ua) || window.innerWidth <= 900;
+      }
+      var widths = [104,104,78,170,100,145,92,72,72,118,118,104,94,110,82,90];
+      function forceDetalleMobileScroll(){
+        if(!isMobileOrWebView()) return;
+        document.documentElement.classList.add('scrm-mobile-detail');
+        var wrap = document.querySelector('#screen-detalle .table-wrap');
+        var table = document.getElementById('detalleTable');
+        if(!wrap || !table) return;
+        wrap.style.setProperty('overflow-x','scroll','important');
+        wrap.style.setProperty('overflow-y','visible','important');
+        wrap.style.setProperty('-webkit-overflow-scrolling','touch','important');
+        wrap.style.setProperty('touch-action','pan-x pan-y','important');
+        wrap.style.setProperty('max-width','100vw','important');
+        table.style.setProperty('width','1560px','important');
+        table.style.setProperty('min-width','1560px','important');
+        table.style.setProperty('max-width','none','important');
+        table.style.setProperty('table-layout','fixed','important');
+        for(var i=0;i<widths.length;i++){
+          var cells = table.querySelectorAll('th:nth-child('+(i+1)+'), td:nth-child('+(i+1)+')');
+          cells.forEach(function(c){
+            c.style.setProperty('width', widths[i]+'px', 'important');
+            c.style.setProperty('min-width', widths[i]+'px', 'important');
+            c.style.setProperty('max-width', widths[i]+'px', 'important');
+            c.style.setProperty('white-space','nowrap','important');
+            c.style.setProperty('overflow','hidden','important');
+            c.style.setProperty('text-overflow','ellipsis','important');
+          });
+        }
+        table.querySelectorAll('.sec-open span').forEach(function(s){
+          s.style.setProperty('font-weight','900','important');
+        });
+      }
+      window.forceDetalleMobileScroll = forceDetalleMobileScroll;
+      window.addEventListener('load', function(){ setTimeout(forceDetalleMobileScroll,200); setTimeout(forceDetalleMobileScroll,900); });
+      window.addEventListener('resize', function(){ setTimeout(forceDetalleMobileScroll,100); });
+      document.addEventListener('click', function(e){
+        if(e.target && (e.target.closest('[data-screen="detalle"]') || e.target.id === 'btnRefreshDetalle')){
+          setTimeout(forceDetalleMobileScroll,250);
+          setTimeout(forceDetalleMobileScroll,900);
+        }
+      });
+      var mo = new MutationObserver(function(){ forceDetalleMobileScroll(); });
+      document.addEventListener('DOMContentLoaded', function(){
+        var tbody = document.querySelector('#detalleTable tbody');
+        if(tbody) mo.observe(tbody, {childList:true, subtree:true});
+        setInterval(forceDetalleMobileScroll, 1500);
+      });
+    })();
+  </script>
+
+</body>
+</html>
