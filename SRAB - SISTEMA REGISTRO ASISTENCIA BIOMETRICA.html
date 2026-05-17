@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>SRAB — Login + Ubicación + QR + Área SRH + Biometría</title>
+
+  <link rel="icon" href="./favicon.ico?v=1" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png?v=1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=1" />
+
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    :root{
+      --azul:#082f57;
+      --azul2:#0b477f;
+      --celeste:#eaf5ff;
+      --verde:#10b981;
+      --verde2:#dcfce7;
+      --amarillo:#f59e0b;
+      --amarillo2:#fef3c7;
+      --rojo:#dc2626;
+      --rojo2:#fee2e2;
+      --gris:#64748b;
+      --borde:#cbd5e1;
+      --fondo:#f4f7fb;
+      --blanco:#ffffff;
+      --sombra:0 12px 28px rgba(8,47,87,.12);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      background:var(--fondo);
+      color:#102033;
+    }
+
+    header{
+      background:linear-gradient(135deg,var(--azul),var(--azul2));
+      color:white;
+      padding:14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      position:sticky;
+      top:0;
+      z-index:30;
+      box-shadow:var(--sombra);
+    }
+
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{height:46px;max-width:128px;object-fit:contain;background:white;border-radius:8px;padding:4px}
+    .brand h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .brand small{display:block;font-size:12px;opacity:.85;margin-top:2px}
+    .userBox{text-align:right;font-size:12px;line-height:1.35}
+    .wrap{max-width:1460px;margin:16px auto;padding:0 14px 42px}
+
+    .loginCard{
+      max-width:430px;
+      margin:60px auto;
+      background:white;
+      border:1px solid var(--borde);
+      border-radius:18px;
+      padding:24px;
+      box-shadow:var(--sombra);
+    }
+    .loginCard h2{margin:0 0 8px;color:var(--azul)}
+    .loginCard p{margin:0 0 18px;color:var(--gris);font-size:14px}
+
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+    .tabBtn,button{
+      border:0;
+      background:var(--azul);
+      color:white;
+      padding:9px 13px;
+      border-radius:9px;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform .12s ease,opacity .12s ease;
+    }
+    .tabBtn:hover,button:hover{transform:translateY(-1px);opacity:.96}
+    .tabBtn.active{background:#0f766e}
+    button.secondary{background:#475569}
+    button.good{background:var(--verde)}
+    button.warn{background:var(--amarillo);color:#1f2937}
+    button.danger{background:var(--rojo)}
+    button.light{background:#e2e8f0;color:#0f172a}
+    button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+    .panel{
+      display:none;
+      background:white;
+      border:1px solid var(--borde);
+      border-radius:16px;
+      box-shadow:var(--sombra);
+      overflow:hidden;
+    }
+    .panel.active{display:block}
+    .panelHeader{
+      padding:14px 16px;
+      background:#f8fbff;
+      border-bottom:1px solid var(--borde);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .panelHeader h2{margin:0;color:var(--azul);font-size:18px}
+    .panelBody{padding:16px}
+
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:10px}
+    .grid.two{grid-template-columns:repeat(2,minmax(180px,1fr))}
+    .grid.three{grid-template-columns:repeat(3,minmax(180px,1fr))}
+    label{font-size:12px;font-weight:800;color:var(--azul);display:block;margin-bottom:4px;text-transform:uppercase}
+    input,select,textarea{
+      width:100%;
+      padding:9px 10px;
+      border:1px solid var(--borde);
+      border-radius:8px;
+      font-size:14px;
+      background:white;
+      outline:none;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--azul2);box-shadow:0 0 0 3px rgba(11,71,127,.12)}
+
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+    .status{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--borde);
+      background:#f8fafc;
+      font-size:14px;
+      font-weight:700;
+      line-height:1.35;
+    }
+    .status.good{background:var(--verde2);border-color:#86efac;color:#166534}
+    .status.warn{background:var(--amarillo2);border-color:#facc15;color:#92400e}
+    .status.danger{background:var(--rojo2);border-color:#fca5a5;color:#991b1b}
+
+    .cards{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+    .metric{background:#f8fbff;border:1px solid var(--borde);border-radius:14px;padding:14px}
+    .metric span{display:block;color:var(--gris);font-size:12px;font-weight:700;text-transform:uppercase}
+    .metric strong{display:block;color:var(--azul);font-size:24px;margin-top:4px}
+
+    .stepper{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+    .step{
+      border:1px solid var(--borde);
+      background:#f8fafc;
+      border-radius:14px;
+      padding:12px;
+      min-height:82px;
+    }
+    .step b{display:block;color:var(--azul);font-size:13px;margin-bottom:4px}
+    .step small{display:block;color:var(--gris);font-size:12px}
+    .step.ok{background:var(--verde2);border-color:#86efac}
+    .step.warn{background:var(--amarillo2);border-color:#facc15}
+    .step.bad{background:var(--rojo2);border-color:#fca5a5}
+
+    .videoBox{
+      border:1px solid var(--borde);
+      background:#0f172a;
+      border-radius:16px;
+      overflow:hidden;
+      min-height:340px;
+      height:min(62vh,520px);
+      position:relative;
+    }
+    .videoBox video{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      min-height:340px;
+      object-fit:cover;
+      background:#0f172a;
+      transform:scaleX(-1) translateZ(0);
+      z-index:1;
+    }
+    .ovalGuide{
+      position:absolute;
+      width:48%;
+      max-width:260px;
+      aspect-ratio:.74;
+      border:4px solid rgba(255,255,255,.82);
+      border-radius:50%;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      box-shadow:0 0 0 9999px rgba(0,0,0,.18);
+      pointer-events:none;
+      z-index:2;
+    }
+
+    /* QR: vista normal para que la credencial y el código no se vean al revés */
+    #videoQR {
+      transform: none !important;
+    }
+
+    /* Cámaras faciales: vista tipo espejo para usuario */
+    #videoEnroll,
+    #videoBioMark {
+      transform: scaleX(-1) translateZ(0) !important;
+    }
+
+    .qrGuide{
+      position:absolute;
+      width:58%;
+      max-width:340px;
+      aspect-ratio:1;
+      border:4px solid rgba(34,197,94,.92);
+      border-radius:18px;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      box-shadow:0 0 0 9999px rgba(0,0,0,.18);
+      pointer-events:none;
+      z-index:2;
+    }
+
+    .cameraActions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+      justify-content:flex-start;
+    }
+
+    .credential{
+      display:grid;
+      grid-template-columns:150px 1fr;
+      gap:14px;
+      border:1px solid var(--borde);
+      background:#f8fbff;
+      border-radius:16px;
+      padding:14px;
+      margin-top:12px;
+    }
+    .credential img{
+      width:150px;
+      height:190px;
+      border-radius:12px;
+      object-fit:cover;
+      background:white;
+      border:1px solid var(--borde);
+    }
+    .credential h3{margin:0 0 8px;color:var(--azul);font-size:20px}
+    .credential .line{height:1px;background:#dbe3ee;margin:8px 0}
+    .kv{display:grid;grid-template-columns:150px 1fr;gap:6px;font-size:13px;margin:4px 0}
+    .kv b{color:var(--azul)}
+
+    .tableWrap{overflow-x:auto;border:1px solid var(--borde);border-radius:12px;background:white}
+    table{width:100%;border-collapse:collapse;min-width:920px;font-size:12px}
+    th,td{border-bottom:1px solid #e2e8f0;padding:7px 8px;text-align:left;white-space:nowrap}
+    th{background:var(--azul);color:white;position:sticky;top:0;z-index:2}
+    tr:hover td{background:#f8fafc}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:800;font-size:11px}
+    .pill.ok{background:var(--verde2);color:#166534}
+    .pill.rev{background:var(--amarillo2);color:#92400e}
+    .pill.bad{background:var(--rojo2);color:#991b1b}
+    .pill.info{background:#dbeafe;color:#1e40af}
+    .hidden{display:none!important}
+    .muted{color:var(--gris);font-size:12px}
+
+    @media (max-width:900px){
+      header{align-items:flex-start}
+      .brand h1{font-size:15px}
+      .grid,.grid.two,.grid.three{grid-template-columns:1fr}
+      .cards{grid-template-columns:repeat(2,minmax(130px,1fr))}
+      .stepper{grid-template-columns:1fr}
+      .panelBody{padding:12px}
+      .tabBtn,button{padding:9px 10px;font-size:12px}
+      .videoBox{min-height:360px;height:58vh;border-radius:14px}
+      .videoBox video{min-height:360px;height:100%;object-fit:cover}
+      .cameraActions{display:grid;grid-template-columns:1fr;gap:8px}
+      .credential{grid-template-columns:1fr}
+      .credential img{width:130px;height:165px}
+      table{min-width:1050px}
+    }
+  
+    /* HEADER COMPACTO SRAB */
+    header{
+      min-height:auto!important;
+      padding:8px 16px!important;
+      align-items:center!important;
+    }
+    .brand{
+      gap:12px!important;
+      min-width:0!important;
+      flex:1 1 auto!important;
+    }
+    .brand img{
+      height:46px!important;
+      width:auto!important;
+      max-width:150px!important;
+      object-fit:contain!important;
+      background:transparent!important;
+      border-radius:0!important;
+      padding:0!important;
+      box-shadow:none!important;
+    }
+    .brand h1{
+      font-size:20px!important;
+      line-height:1.08!important;
+      margin:0!important;
+      white-space:nowrap!important;
+    }
+    .brand small{
+      display:none!important;
+    }
+    .userBox{
+      min-width:230px!important;
+      font-size:13px!important;
+      line-height:1.25!important;
+    }
+    .userBox .userLine{
+      display:block!important;
+      font-weight:800!important;
+    }
+    .userBox .versionLine{
+      display:none!important;
+    }
+
+    .tipoButtons{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .tipoBtn{
+      width:100%;
+      min-height:42px;
+      border-radius:10px;
+      background:#e2e8f0;
+      color:#0f172a;
+      border:1px solid #cbd5e1;
+      font-weight:900;
+    }
+    .tipoBtn.active{
+      background:#10b981;
+      color:#ffffff;
+      border-color:#059669;
+      box-shadow:0 0 0 3px rgba(16,185,129,.18);
+    }
+    .tipoBtn[data-tipo="SALIDA"].active{
+      background:#f59e0b;
+      color:#1f2937;
+      border-color:#d97706;
+      box-shadow:0 0 0 3px rgba(245,158,11,.20);
+    }
+    #flowMsg.flowHidden{
+      display:none!important;
+    }
+
+    @media(max-width:900px){
+      header{
+        padding:8px 12px!important;
+        display:grid!important;
+        grid-template-columns:108px 1fr;
+        gap:8px!important;
+      }
+      .brand{
+        grid-column:1 / 2;
+        gap:8px!important;
+      }
+      .brand img{
+        height:40px!important;
+        max-width:98px!important;
+      }
+      .brand h1{
+        grid-column:2 / 3;
+        font-size:15px!important;
+        line-height:1.12!important;
+        white-space:normal!important;
+      }
+      .brand{
+        display:contents!important;
+      }
+      .userBox{
+        grid-column:1 / -1;
+        text-align:left!important;
+        min-width:0!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:space-between!important;
+        gap:8px!important;
+        font-size:12px!important;
+        padding-top:2px!important;
+      }
+      .userBox button{
+        margin:0!important;
+        padding:8px 13px!important;
+      }
+      .wrap{
+        margin-top:8px!important;
+      }
+      .tipoButtons{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <img src="./logo_pdf_blanco.png?v=1" alt="Oceantreasure" onerror="this.src='./logo.png?v=1'" />
+      <div>
+        <h1>Sistema Registro Asistencia Biométrica</h1>
+        <small></small>
+      </div>
+    </div>
+    <div class="userBox" id="userBox">
+      <div>No autenticado</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="loginView" class="loginCard">
+      <h2>Ingreso al sistema</h2>
+      <p>Acceso restringido para usuarios autorizados.</p>
+      <div style="display:grid;gap:10px">
+        <div>
+          <label>Correo</label>
+          <input id="loginEmail" type="email" placeholder="usuario@oceantreasure.local" autocomplete="username" />
+        </div>
+        <div>
+          <label>Contraseña</label>
+          <input id="loginPass" type="password" autocomplete="current-password" />
+        </div>
+        <button id="btnLogin">Ingresar</button>
+        <div id="loginMsg" class="status hidden"></div>
+      </div>
+    </section>
+
+    <section id="appView" class="hidden">
+      <div class="tabs">
+        <button class="tabBtn active" data-tab="toma">Toma por QR</button>
+        <button class="tabBtn" data-tab="biometria">Registrar biometría</button>
+        <button class="tabBtn" data-tab="historial">Historial</button>
+        <button class="tabBtn" data-tab="dashboard">Dashboard</button>
+        <button class="tabBtn" data-tab="config">Configuración</button>
+      </div>
+
+      <section id="tab-toma" class="panel active">
+        <div class="panelHeader">
+          <h2>Toma de asistencia por área</h2>
+          <div class="toolbar">
+            <button id="btnResetFlujo" class="light">Nuevo flujo</button>
+            <button id="btnValidarUbicacion" class="good">Validar ubicación</button>
+          </div>
+        </div>
+        <div class="panelBody">
+          <div class="stepper">
+            <div class="step" id="stepLogin"><b>1. Login</b><small>Usuario autorizado</small></div>
+            <div class="step" id="stepGeo"><b>2. Ubicación</b><small>Dentro de empresa</small></div>
+            <div class="step" id="stepQR"><b>3. QR</b><small>Credencial SRH</small></div>
+            <div class="step" id="stepArea"><b>4. Área</b><small>Cargada desde Talento Humano</small></div>
+            <div class="step" id="stepBio"><b>5. Biometría</b><small>Rostro 1 a 1</small></div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>Área cargada desde Talento Humano</label>
+              <input id="areaToma" readonly placeholder="Se cargará automáticamente al escanear QR" />
+            </div>
+            <div>
+              <label>Cargo cargado desde Talento Humano</label>
+              <input id="cargoToma" readonly placeholder="Se cargará automáticamente al escanear QR" />
+            </div>
+            <div>
+              <label>Tipo de marcación</label>
+              <input id="tipoAsistencia" type="hidden" value="ENTRADA" />
+              <div class="tipoButtons">
+                <button type="button" class="tipoBtn active" data-tipo="ENTRADA">ENTRADA</button>
+                <button type="button" class="tipoBtn" data-tipo="SALIDA">SALIDA</button>
+              </div>
+            </div>
+            <div>
+              <label>Modo después de registrar</label>
+              <select id="modoLote">
+                <option value="CONTINUAR">Volver a escanear QR</option>
+                <option value="DETENER">Detener después de registrar</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="flowMsg" class="status flowHidden" style="margin-top:12px"></div>
+
+          <div class="grid two" style="margin-top:14px">
+            <div>
+              <label>Cámara QR</label>
+              <div class="videoBox">
+                <video id="videoQR" autoplay playsinline webkit-playsinline muted></video>
+                <div class="qrGuide"></div>
+              </div>
+              <div class="cameraActions">
+                <button id="btnCamQR" class="secondary">Abrir cámara QR</button>
+                <button id="btnScanQR" class="good">Escanear QR</button>
+                <button id="btnBuscarCedula" class="warn">Buscar por cédula</button>
+              </div>
+              <div style="margin-top:8px">
+                <label>Cédula manual / valor QR</label>
+                <input id="manualCedula" placeholder="Escanee QR o escriba cédula" />
+              </div>
+            </div>
+
+            <div>
+              <label>Credencial del trabajador</label>
+              <div id="credencialBox" class="credential hidden">
+                <img id="credFoto" alt="Foto trabajador" />
+                <div>
+                  <h3 id="credNombre">-</h3>
+                  <div class="line"></div>
+                  <div class="kv"><b>Cédula:</b><span id="credCedula">-</span></div>
+                  <div class="kv"><b>Área:</b><span id="credArea">-</span></div>
+                  <div class="kv"><b>Cargo:</b><span id="credCargo">-</span></div>
+                  <div class="kv"><b>Estado:</b><span id="credEstado">-</span></div>
+                  <div class="kv"><b>Biometría:</b><span id="credBio">-</span></div>
+                  <div class="kv"><b>QR:</b><span id="credQR">-</span></div>
+                  <div class="toolbar">
+                    <button id="btnTomarBio" class="good">Tomar asistencia biométrica</button>
+                    <button id="btnRegistrarBioRapida" class="warn">Registrar biometría</button>
+                  </div>
+                </div>
+              </div>
+              <div id="credEmpty" class="status warn">Escanee el QR de la credencial o busque por cédula.</div>
+            </div>
+          </div>
+
+          <div id="bioPanel" class="hidden" style="margin-top:16px">
+            <div class="panelHeader" style="border:1px solid var(--borde);border-radius:14px 14px 0 0">
+              <h2>Validación biométrica facial 1 a 1</h2>
+              <div class="toolbar">
+                <button id="btnCamBioMark" class="secondary">Abrir cámara biométrica</button>
+                <button id="btnRegistrarAsistencia" class="good">Registrar asistencia</button>
+              </div>
+            </div>
+            <div style="border:1px solid var(--borde);border-top:0;border-radius:0 0 14px 14px;padding:12px">
+              <div class="grid two">
+                <div>
+                  <div class="videoBox">
+                    <video id="videoBioMark" autoplay playsinline webkit-playsinline muted></video>
+                    <div class="ovalGuide"></div>
+                  </div>
+                  <div class="cameraActions">
+                    <button id="btnCamBioMark2" class="secondary">Abrir cámara</button>
+                    <button id="btnRegistrarAsistencia2" class="good">Guardar asistencia</button>
+                  </div>
+                </div>
+                <div>
+                  <div id="bioMsg" class="status">Abra la cámara biométrica y valide el rostro del trabajador.</div>
+                  <div class="grid two" style="margin-top:10px">
+                    <div><label>Distancia facial</label><input id="bioDist" readonly /></div>
+                    <div><label>Coincidencia</label><input id="bioScore" readonly /></div>
+                    <div><label>Prueba de vida</label><input id="bioLive" readonly value="NO REQUERIDA" /></div>
+                    <div><label>Estado</label><input id="bioEstado" readonly /></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="tab-biometria" class="panel">
+        <div class="panelHeader">
+          <h2>Registrar biometría vinculada a SRH</h2>
+          <div class="toolbar">
+            <button id="btnCamEnroll" class="secondary">Abrir cámara</button>
+            <button id="btnCapturarEnroll" class="good">Capturar muestra</button>
+            <button id="btnGuardarBiometria" class="warn">Guardar biometría</button>
+          </div>
+        </div>
+        <div class="panelBody">
+          <div class="grid two">
+            <div>
+              <div class="grid two">
+                <div><label>Cédula</label><input id="enrollCedula" placeholder="Cédula desde QR/SRH" /></div>
+                <div style="align-self:end"><button id="btnBuscarEnroll" class="secondary">Buscar SRH</button></div>
+              </div>
+              <div id="enrollWorker" class="status warn" style="margin-top:10px">Busque el trabajador por cédula o desde QR.</div>
+              <p class="muted">Recomendado: mínimo 5 muestras. Frontal, leve izquierda, leve derecha, cerca y otra con iluminación distinta.</p>
+              <div class="toolbar">
+                <span class="pill info" id="sampleCount">0 muestras</span>
+                <span class="pill info" id="modelStatus">Cargando modelos...</span>
+              </div>
+              <div id="enrollMsg" class="status">Modelos biométricos pendientes de carga.</div>
+            </div>
+            <div>
+              <div class="videoBox">
+                <video id="videoEnroll" autoplay playsinline webkit-playsinline muted></video>
+                <div class="ovalGuide"></div>
+              </div>
+              <div class="cameraActions">
+                <button id="btnCamEnroll2" class="secondary">Abrir cámara</button>
+                <button id="btnCapturarEnroll2" class="good">Capturar muestra</button>
+                <button id="btnGuardarBiometria2" class="warn">Guardar biometría</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-historial" class="panel">
+        <div class="panelHeader">
+          <h2>Historial de asistencia</h2>
+          <div class="toolbar">
+            <button id="btnBuscarHistorial" class="secondary">Aplicar</button>
+            <button id="btnExcel" class="good">Excel</button>
+            <button id="btnPDF" class="danger">PDF</button>
+          </div>
+        </div>
+        <div class="panelBody">
+          <div class="grid">
+            <div><label>Desde</label><input id="fDesde" type="date" /></div>
+            <div><label>Hasta</label><input id="fHasta" type="date" /></div>
+            <div><label>Área</label><input id="fArea" /></div>
+            <div><label>Estado</label><select id="fEstado"><option value="">TODOS</option><option>ACEPTADO</option><option>REVISION_MANUAL</option><option>RECHAZADO_BIOMETRIA</option><option>FUERA_DE_EMPRESA</option><option>GPS_IMPRECISO</option><option>QR_INVALIDO</option><option>SIN_BIOMETRIA</option><option>DUPLICADO</option></select></div>
+            <div><label>Tipo</label><select id="fTipo"><option value="">TODOS</option><option>ENTRADA</option><option>SALIDA</option></select></div>
+            <div><label>Buscar trabajador</label><input id="fTexto" /></div>
+          </div>
+          <div class="toolbar"><span class="pill info" id="histCount">0 registros</span></div>
+          <div class="tableWrap"><table id="tblHistorial"></table></div>
+        </div>
+      </section>
+
+      <section id="tab-dashboard" class="panel">
+        <div class="panelHeader">
+          <h2>Dashboard diario</h2>
+          <button id="btnReloadDash" class="secondary">Actualizar</button>
+        </div>
+        <div class="panelBody">
+          <div class="cards">
+            <div class="metric"><span>Entradas hoy</span><strong id="mEntradas">0</strong></div>
+            <div class="metric"><span>Salidas hoy</span><strong id="mSalidas">0</strong></div>
+            <div class="metric"><span>Aceptadas</span><strong id="mAceptadas">0</strong></div>
+            <div class="metric"><span>Revisión</span><strong id="mRevision">0</strong></div>
+            <div class="metric"><span>Rechazadas</span><strong id="mRechazadas">0</strong></div>
+          </div>
+          <div class="tableWrap"><table id="tblResumenArea"></table></div>
+        </div>
+      </section>
+
+      <section id="tab-config" class="panel">
+        <div class="panelHeader">
+          <h2>Configuración SRAB</h2>
+          <div class="toolbar">
+            <button id="btnUsarUbicacionActual" class="warn">Usar mi ubicación actual como empresa</button>
+            <button id="btnGuardarConfig" class="good">Guardar configuración</button>
+          </div>
+        </div>
+        <div class="panelBody">
+          <div class="grid three">
+            <div><label>Distancia aceptada máxima</label><input id="cDistAceptada" type="number" step="0.01" value="0.42" /></div>
+            <div><label>Distancia revisión máxima</label><input id="cDistRevision" type="number" step="0.01" value="0.50" /></div>
+            <div><label>Muestras mínimas biometría</label><input id="cMinMuestras" type="number" value="5" /></div>
+            <div><label>Minutos bloqueo duplicado</label><input id="cDupMin" type="number" value="10" /></div>
+            <div><label>Requerir ubicación</label><select id="cUbicacion"><option value="true">SI</option><option value="false">NO</option></select></div>
+            <div><label>Guardar evidencia</label><select id="cEvidencia"><option value="true">SI</option><option value="false">NO</option></select></div>
+            <div><label>Latitud empresa</label><input id="cLatEmpresa" type="number" step="0.000001" value="0" /></div>
+            <div><label>Longitud empresa</label><input id="cLngEmpresa" type="number" step="0.000001" value="0" /></div>
+            <div><label>Radio permitido metros</label><input id="cRadioEmpresa" type="number" value="150" /></div>
+            <div><label>Precisión máxima GPS metros</label><input id="cGpsAccuracy" type="number" value="120" /></div>
+            <div><label>Nombre empresa</label><input id="cEmpresa" value="OCEANTREASURE S.A." /></div>
+          </div>
+          <div id="configMsg" class="status hidden" style="margin-top:10px"></div>
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, addDoc, getDoc, getDocs, query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+    const APP_VERSION = "SRAB-2026-05-17-HEADER-TIPO-FIX";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const ROLES = {
+      admin: ["jeffersonfigueroa@oceantreasure.local"],
+      rrhh: ["rrhh@oceantreasure.local", "milenalmeida@oceantreasure.local", "soporte@oceantreasure.local"],
+      viewer: ["gerenciageneral@oceantreasure.local"]
+    };
+
+    const FACE_MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let currentUser = null;
+    let currentRole = "none";
+    let modelsReady = false;
+    let enrollSamples = [];
+    let selectedWorker = null;
+    let selectedBioDoc = null;
+    let selectedLocation = null;
+    let locationOk = false;
+    let blinkOk = true;
+    let lastBioValidation = null;
+    let historialCache = [];
+    let qrScanTimer = null;
+
+    let config = {
+      distanciaAceptada: 0.42,
+      distanciaRevision: 0.50,
+      minMuestras: 5,
+      duplicadoMinutos: 10,
+      guardarEvidencia: true,
+      requiereUbicacion: true,
+      empresaLat: 0,
+      empresaLng: 0,
+      radioEmpresaM: 150,
+      gpsAccuracyMaxM: 120,
+      empresa: "OCEANTREASURE S.A."
+    };
+
+    const $ = id => document.getElementById(id);
+    const today = () => new Date().toISOString().slice(0, 10);
+    const pad = n => String(n).padStart(2, "0");
+    const nowTime = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+    const upper = v => (v || "").toString().trim().toUpperCase();
+    const clean = v => (v ?? "").toString().trim();
+    const esc = v => (v ?? "").toString().replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[s]));
+
+    function roleFor(email){
+      const e = (email || "").toLowerCase();
+      if (ROLES.admin.includes(e)) return "admin";
+      if (ROLES.rrhh.includes(e)) return "rrhh";
+      if (ROLES.viewer.includes(e)) return "viewer";
+      return "marcador";
+    }
+    function canEdit(){ return ["admin","rrhh"].includes(currentRole); }
+
+    function showMsg(el, text, type=""){
+      el.className = `status ${type}`.trim();
+      el.textContent = text;
+      el.classList.remove("hidden");
+      el.classList.remove("flowHidden");
+    }
+
+    function setStep(id, state){
+      const el = $(id);
+      el.classList.remove("ok","warn","bad");
+      if (state) el.classList.add(state);
+    }
+
+    function refreshSteps(){
+      setStep("stepLogin", currentUser ? "ok" : "bad");
+      setStep("stepGeo", locationOk ? "ok" : (config.requiereUbicacion ? "warn" : "ok"));
+      setStep("stepQR", selectedWorker ? "ok" : "warn");
+      setStep("stepArea", $("areaToma").value ? "ok" : "warn");
+      setStep("stepBio", lastBioValidation?.estado === "ACEPTADO" ? "ok" : "warn");
+    }
+
+    function renderUserBox(){
+      if (!currentUser){
+        $("userBox").innerHTML = `<div>No autenticado</div>`;
+        return;
+      }
+      $("userBox").innerHTML = `
+        <div>
+          <span class="userLine">Usuario: ${esc(currentUser.email)}</span>
+          <span class="userLine">Rol: ${esc(currentRole.toUpperCase())}</span>
+          <span class="versionLine">${APP_VERSION}</span>
+        </div>
+        <button id="btnLogout" class="light">Salir</button>
+      `;
+      $("btnLogout").onclick = () => signOut(auth);
+    }
+
+    function openTab(tab){
+      document.querySelectorAll(".tabBtn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      $(`tab-${tab}`).classList.add("active");
+    }
+    document.querySelectorAll(".tabBtn").forEach(btn => btn.addEventListener("click", () => openTab(btn.dataset.tab)));
+
+    async function loadModels(){
+      if (modelsReady) return;
+      $("modelStatus").textContent = "Cargando modelos...";
+      await faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL);
+      modelsReady = true;
+      $("modelStatus").textContent = "Modelos listos";
+      showMsg($("enrollMsg"), "Modelos biométricos cargados.", "good");
+    }
+
+    function waitVideoReady(videoEl, timeoutMs=4500){
+      return new Promise((resolve, reject) => {
+        const done = () => {
+          if (videoEl.videoWidth > 0 && videoEl.videoHeight > 0) resolve(true);
+          else reject(new Error("La cámara abrió, pero el video no entregó imagen. Cierre y abra nuevamente."));
+        };
+        if (videoEl.readyState >= 2 && videoEl.videoWidth > 0) return resolve(true);
+        const timer = setTimeout(done, timeoutMs);
+        videoEl.onloadedmetadata = () => { clearTimeout(timer); setTimeout(done, 180); };
+        videoEl.oncanplay = () => {
+          if (videoEl.videoWidth > 0){ clearTimeout(timer); resolve(true); }
+        };
+      });
+    }
+
+    async function startCamera(videoEl, mode="user"){
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        throw new Error("El navegador no permite cámara. Use HTTPS/GitHub Pages y revise permisos.");
+      }
+
+      if (videoEl.srcObject){
+        videoEl.srcObject.getTracks().forEach(t => t.stop());
+        videoEl.srcObject = null;
+      }
+
+      videoEl.setAttribute("autoplay", "");
+      videoEl.setAttribute("playsinline", "");
+      videoEl.setAttribute("webkit-playsinline", "");
+      videoEl.muted = true;
+      videoEl.autoplay = true;
+      videoEl.playsInline = true;
+      videoEl.style.display = "block";
+      videoEl.style.visibility = "visible";
+      videoEl.style.opacity = "1";
+
+      const options = [
+        { video: { facingMode: { ideal: mode }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+        { video: { facingMode: mode }, audio: false },
+        { video: true, audio: false }
+      ];
+
+      let stream = null;
+      let lastError = null;
+      for (const constraints of options){
+        try { stream = await navigator.mediaDevices.getUserMedia(constraints); break; }
+        catch(err){ lastError = err; }
+      }
+      if (!stream) throw lastError || new Error("No se pudo acceder a cámara.");
+
+      videoEl.srcObject = stream;
+      try { await videoEl.play(); }
+      catch(e){ await new Promise(r => setTimeout(r, 250)); await videoEl.play(); }
+      await waitVideoReady(videoEl);
+      // QR debe mostrarse normal para poder encuadrar y leer correctamente.
+      // Biometría se mantiene tipo espejo para comodidad del usuario.
+      if (videoEl.id === "videoQR") {
+        videoEl.style.transform = "none";
+      } else {
+        videoEl.style.transform = "scaleX(-1) translateZ(0)";
+      }
+      videoEl.parentElement.style.transform = "translateZ(0)";
+      return true;
+    }
+
+    function stopCamera(videoEl){
+      if (videoEl?.srcObject){
+        videoEl.srcObject.getTracks().forEach(t => t.stop());
+        videoEl.srcObject = null;
+      }
+    }
+
+    async function detectSingleFace(videoEl){
+      if (!modelsReady) await loadModels();
+      if (!videoEl.videoWidth || !videoEl.videoHeight) throw new Error("La cámara aún no entrega imagen.");
+      const detections = await faceapi
+        .detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+        .withFaceLandmarks()
+        .withFaceDescriptors();
+
+      if (!detections.length) throw new Error("No se detectó rostro. Intente con mejor iluminación.");
+      if (detections.length > 1) throw new Error("Se detectó más de un rostro. Debe estar una sola persona.");
+      return detections[0];
+    }
+
+    function descriptorToArray(descriptor){ return Array.from(descriptor).map(n => Number(n)); }
+    function arrayToDescriptor(arr){ return new Float32Array(arr.map(Number)); }
+
+    function descriptorListFromDoc(data){
+      if (!data) return [];
+      if (data.faceDescriptorsMap && typeof data.faceDescriptorsMap === "object"){
+        return Object.values(data.faceDescriptorsMap).filter(Array.isArray);
+      }
+      if (Array.isArray(data.faceDescriptors)){
+        if (data.faceDescriptors.every(Array.isArray)) return data.faceDescriptors;
+        return [data.faceDescriptors];
+      }
+      return [];
+    }
+
+    function captureVideoImage(videoEl, quality=0.82){
+      if (!videoEl.videoWidth || !videoEl.videoHeight){
+        throw new Error("La cámara todavía no entrega imagen.");
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = videoEl.videoWidth;
+      canvas.height = videoEl.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", quality);
+    }
+
+    async function uploadDataUrl(path, dataUrl){
+      const r = ref(storage, path);
+      await uploadString(r, dataUrl, "data_url");
+      return await getDownloadURL(r);
+    }
+
+    function getPosition(options={}){
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) return reject(new Error("Este dispositivo no permite geolocalización."));
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 15000,
+          ...options
+        });
+      });
+    }
+
+    function distanceMeters(lat1,lng1,lat2,lng2){
+      const R = 6371000;
+      const toRad = d => d * Math.PI / 180;
+      const dLat = toRad(lat2-lat1);
+      const dLng = toRad(lng2-lng1);
+      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    async function validateLocation(){
+      try{
+        showMsg($("flowMsg"), "Validando ubicación GPS...", "warn");
+        if (!config.requiereUbicacion){
+          locationOk = true;
+          selectedLocation = null;
+          showMsg($("flowMsg"), "Ubicación no requerida por configuración.", "good");
+          refreshSteps();
+          return true;
+        }
+        if (!Number(config.empresaLat) || !Number(config.empresaLng)){
+          locationOk = false;
+          showMsg($("flowMsg"), "Debe configurar latitud y longitud de la empresa antes de validar ubicación.", "danger");
+          refreshSteps();
+          return false;
+        }
+        const pos = await getPosition();
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy || 9999;
+        const dist = distanceMeters(lat, lng, Number(config.empresaLat), Number(config.empresaLng));
+        selectedLocation = {
+          lat, lng, accuracy,
+          distanciaEmpresaMetros: Math.round(dist),
+          dentroEmpresa: dist <= Number(config.radioEmpresaM),
+          precisionAceptada: accuracy <= Number(config.gpsAccuracyMaxM)
+        };
+
+        if (!selectedLocation.precisionAceptada){
+          locationOk = false;
+          showMsg($("flowMsg"), `GPS impreciso: ±${Math.round(accuracy)} m. Máximo permitido: ${config.gpsAccuracyMaxM} m.`, "danger");
+        } else if (!selectedLocation.dentroEmpresa){
+          locationOk = false;
+          showMsg($("flowMsg"), `Fuera de empresa. Distancia aproximada: ${Math.round(dist)} m. Radio permitido: ${config.radioEmpresaM} m.`, "danger");
+        } else {
+          locationOk = true;
+          showMsg($("flowMsg"), `Ubicación validada dentro de empresa. Distancia: ${Math.round(dist)} m · precisión ±${Math.round(accuracy)} m.`, "good");
+        }
+        refreshSteps();
+        return locationOk;
+      }catch(err){
+        locationOk = false;
+        showMsg($("flowMsg"), `No se pudo validar ubicación: ${err.message}`, "danger");
+        refreshSteps();
+        return false;
+      }
+    }
+
+    async function loadConfig(){
+      const snap = await getDoc(doc(db, "sra_configuracion", "general"));
+      if (snap.exists()) config = { ...config, ...snap.data() };
+      $("cDistAceptada").value = config.distanciaAceptada;
+      $("cDistRevision").value = config.distanciaRevision;
+      $("cMinMuestras").value = config.minMuestras;
+      $("cDupMin").value = config.duplicadoMinutos;
+      $("cEvidencia").value = String(config.guardarEvidencia);
+      $("cUbicacion").value = String(config.requiereUbicacion);
+      $("cLatEmpresa").value = config.empresaLat;
+      $("cLngEmpresa").value = config.empresaLng;
+      $("cRadioEmpresa").value = config.radioEmpresaM;
+      $("cGpsAccuracy").value = config.gpsAccuracyMaxM;
+      $("cEmpresa").value = config.empresa;
+    }
+
+    async function saveConfig(){
+      if (!canEdit()) return showMsg($("configMsg"), "Solo RRHH/Admin puede guardar configuración.", "danger");
+      config = {
+        distanciaAceptada: Number($("cDistAceptada").value || 0.42),
+        distanciaRevision: Number($("cDistRevision").value || 0.50),
+        minMuestras: Number($("cMinMuestras").value || 5),
+        duplicadoMinutos: Number($("cDupMin").value || 10),
+        guardarEvidencia: $("cEvidencia").value === "true",
+        requiereUbicacion: $("cUbicacion").value === "true",
+        empresaLat: Number($("cLatEmpresa").value || 0),
+        empresaLng: Number($("cLngEmpresa").value || 0),
+        radioEmpresaM: Number($("cRadioEmpresa").value || 150),
+        gpsAccuracyMaxM: Number($("cGpsAccuracy").value || 120),
+        empresa: $("cEmpresa").value || "OCEANTREASURE S.A."
+      };
+      await setDoc(doc(db, "sra_configuracion", "general"), {
+        ...config,
+        actualizadoEn: serverTimestamp(),
+        actualizadoPor: currentUser.email
+      }, { merge: true });
+      showMsg($("configMsg"), "Configuración guardada correctamente.", "good");
+      refreshSteps();
+    }
+
+    async function useCurrentAsCompanyLocation(){
+      if (!canEdit()) return showMsg($("configMsg"), "Solo RRHH/Admin puede configurar ubicación de empresa.", "danger");
+      try{
+        showMsg($("configMsg"), "Tomando ubicación actual...", "warn");
+        const pos = await getPosition({ maximumAge: 0 });
+        $("cLatEmpresa").value = pos.coords.latitude.toFixed(6);
+        $("cLngEmpresa").value = pos.coords.longitude.toFixed(6);
+        showMsg($("configMsg"), `Ubicación cargada. Precisión actual ±${Math.round(pos.coords.accuracy)} m. Presione Guardar configuración.`, "good");
+      }catch(err){
+        showMsg($("configMsg"), err.message, "danger");
+      }
+    }
+
+    function fixedPhotoPath(id, kind){
+      const file = kind === "persona" ? "persona.jpg" : `${kind}.jpg`;
+      return `rrhh_talento/${id}/${file}`;
+    }
+
+    function cacheBustUrl(url){
+      if (!url) return "";
+      return url + (url.includes("?") ? "&" : "?") + "v=" + Date.now();
+    }
+
+    async function getFixedPhotoUrl(id, kind){
+      try{
+        const r = ref(storage, fixedPhotoPath(id, kind));
+        const url = await getDownloadURL(r);
+        return cacheBustUrl(url);
+      }catch(_){
+        return "";
+      }
+    }
+
+    async function hydrateSRHPhotoUrls(id, data){
+      const out = { ...(data || {}) };
+      const fresh = await getFixedPhotoUrl(id, "persona");
+      if (fresh) {
+        out.fotoPersonaUrl = fresh;
+        out.fotoPersonaPath = fixedPhotoPath(id, "persona");
+      }
+      return out;
+    }
+
+    function parseQRIdentity(raw){
+      const text = clean(raw);
+      const out = { raw: text, id: "", cedula: "" };
+      if (!text) return out;
+
+      try{
+        const u = new URL(text);
+        const id = u.searchParams.get("id") || u.searchParams.get("trabajadorId") || u.searchParams.get("srhId") || "";
+        const ced = u.searchParams.get("cedula") || u.searchParams.get("ced") || u.searchParams.get("documento") || "";
+        out.id = String(id).replace(/\D/g, "");
+        out.cedula = String(ced).replace(/\D/g, "");
+      }catch(_){}
+
+      try{
+        const obj = JSON.parse(text);
+        out.id = out.id || String(obj.id || obj.trabajadorId || obj.srhId || "").replace(/\D/g, "");
+        out.cedula = out.cedula || String(obj.cedula || obj.ced || obj.documento || "").replace(/\D/g, "");
+      }catch(_){}
+
+      const idLine = text.match(/\bID\s*:?\s*(\d{10,16})/i);
+      const cedLine = text.match(/\b(?:CEDULA|CÉDULA|CED|DOCUMENTO)\s*:?\s*(\d{10,13})/i);
+      if (idLine) out.id = out.id || idLine[1];
+      if (cedLine) out.cedula = out.cedula || cedLine[1].slice(0, 10);
+
+      if (!out.id && !out.cedula){
+        const nums = text.match(/\d{10,16}/g) || [];
+        const idCandidate = nums.find(n => n.length >= 14 && n.endsWith("0001"));
+        const cedCandidate = nums.find(n => n.length >= 10 && n.length <= 13);
+        if (idCandidate) out.id = idCandidate;
+        if (cedCandidate) out.cedula = cedCandidate.slice(0, 10);
+      }
+
+      if (!out.cedula && out.id && out.id.endsWith("0001") && out.id.length >= 14) {
+        out.cedula = out.id.slice(0, -4);
+      }
+      if (!out.id && out.cedula) {
+        out.id = out.cedula + "0001";
+      }
+      return out;
+    }
+
+    function parseQRValue(raw){
+      const x = parseQRIdentity(raw);
+      return x.cedula || x.id || "";
+    }
+
+    function getQRFieldText(raw, labels){
+      const text = clean(raw);
+      if (!text) return "";
+      const escaped = labels.map(l => l.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+      const re = new RegExp(`(?:${escaped})\\s*:?\\s*([^\\n\\r|;]+)`, "i");
+      const m = text.match(re);
+      return m ? upper(m[1].trim()) : "";
+    }
+
+    function parseSRHExtraFromQR(raw){
+      return {
+        nombres: getQRFieldText(raw, ["NOMBRE", "NOMBRES", "TRABAJADOR"]),
+        area: getQRFieldText(raw, ["AREA", "ÁREA", "AREA TRABAJO", "ÁREA TRABAJO"]),
+        cuadrilla: getQRFieldText(raw, ["CUADRILLA"]),
+        cargo: getQRFieldText(raw, ["CARGO", "PUESTO", "FUNCION", "FUNCIÓN", "CARGO TRABAJO", "CARGO LABORAL"]),
+        estado: getQRFieldText(raw, ["ESTADO"])
+      };
+    }
+
+
+    async function scanQROnce(){
+      const video = $("videoQR");
+      if (!video.videoWidth || !video.videoHeight) throw new Error("Abra la cámara QR primero.");
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+
+      // Intento 1: frame normal. Esta es la lectura principal.
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
+
+      // Intento 2: fallback espejado por compatibilidad con algunos WebView/cámaras.
+      if (!code){
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
+      }
+
+      if (!code) throw new Error("No se detectó QR. Acerque la credencial al recuadro verde y evite reflejos.");
+      return code.data;
+    }
+
+    async function scanQRLoop(){
+      try{
+        if (config.requiereUbicacion && !locationOk) {
+          showMsg($("flowMsg"), "Primero valide ubicación antes de escanear QR.", "danger");
+          refreshSteps();
+          return;
+        }
+        showMsg($("flowMsg"), "Escaneando QR...", "warn");
+        const raw = await scanQROnce();
+        const ident = parseQRIdentity(raw);
+        $("manualCedula").value = ident.cedula || ident.id || raw;
+        await loadWorkerByCedula(raw, raw);
+      }catch(err){
+        showMsg($("flowMsg"), err.message, "warn");
+      }
+    }
+
+    function normalizeWorker(id, data, credData=null, qrExtra=null){
+      const raw = data || {};
+      const cred = credData || {};
+      const qr = qrExtra || {};
+      const cedula = clean(raw.cedula || cred.cedula || raw.identificacion || raw.documento || (String(id).endsWith("0001") ? String(id).slice(0, -4) : id));
+      const nombresSolo = upper(raw.nombres || cred.nombres || "");
+      const apellidosSolo = upper(raw.apellidos || cred.apellidos || "");
+      const nombres = upper(`${apellidosSolo} ${nombresSolo}`.trim() || raw.nombreCompleto || cred.nombreCompleto || raw.apellidosNombres || cred.apellidosNombres || raw.trabajador || cred.trabajador || raw.nombre || cred.nombre || qr.nombres || "");
+      const area = upper(
+        raw.areaTrabajo ||
+        cred.areaTrabajo ||
+        raw.area ||
+        cred.area ||
+        raw.areaLaboral ||
+        cred.areaLaboral ||
+        raw.departamento ||
+        cred.departamento ||
+        raw.sector ||
+        cred.sector ||
+        qr.area ||
+        raw.cuadrilla ||
+        cred.cuadrilla ||
+        qr.cuadrilla ||
+        ""
+      );
+      const cargo = upper(raw.cargo || cred.cargo || raw.puesto || cred.puesto || raw.funcion || cred.funcion || qr.cargo || "");
+      const estado = upper(raw.listaNegra === "SI" || cred.estado === "BLOQUEADO" ? "BLOQUEADO" : (raw.estado || cred.estado || qr.estado || "ACTIVO"));
+      const fotoUrl = raw.fotoPersonaUrl || cred.fotoPersonaUrl || raw.fotoUrl || cred.fotoUrl || raw.fotoURL || cred.fotoURL || raw.personaUrl || cred.personaUrl || raw.foto || cred.foto || "";
+      const cuadrilla = upper(raw.cuadrilla || cred.cuadrilla || qr.cuadrilla || "");
+      return { id, cedula, nombres, nombresSolo, apellidosSolo, area, cargo, estado, fotoUrl, cuadrilla, raw, credencial: credData || null };
+    }
+
+
+    function blacklistMessageSRH(blocked){
+      const data = blocked?.data || blocked || {};
+      const motivo = data.motivo || data.observacion || data.detalle || "Trabajador bloqueado en lista negra.";
+      return `Trabajador bloqueado en SRH / Lista negra. ${motivo}`;
+    }
+
+    async function getBlacklistedById(value){
+      const identity = parseQRIdentity(value);
+      const ced = clean(identity.cedula || value);
+      const id = clean(identity.id || (ced ? ced + "0001" : value));
+      const idsToTry = Array.from(new Set([
+        id,
+        ced ? ced + "0001" : "",
+        ced
+      ].filter(Boolean)));
+
+      // 1) Búsqueda directa por ID de documento
+      for (const testId of idsToTry){
+        try{
+          const snap = await getDoc(doc(db, "rrhh_lista_negra", testId));
+          if (snap.exists()) return { id: snap.id, data: snap.data() || {} };
+        }catch(err){
+          console.warn("No se pudo consultar lista negra por ID:", err);
+        }
+      }
+
+      // 2) Búsqueda por campos básicos sin orderBy para evitar índices compuestos
+      const fields = ["cedula", "identificacion", "documento", "id"];
+      for (const f of fields){
+        for (const testId of idsToTry){
+          try{
+            const qs = await getDocs(query(collection(db, "rrhh_lista_negra"), where(f, "==", testId), limit(1)));
+            if (!qs.empty) return { id: qs.docs[0].id, data: qs.docs[0].data() || {} };
+          }catch(err){
+            console.warn("No se pudo consultar lista negra por campo:", f, err);
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function ensureAreaOption(area){
+      const areaClean = upper(area);
+      const input = $("areaToma");
+      if (!areaClean) {
+        input.value = "";
+        refreshSteps();
+        return "";
+      }
+
+      // Normaliza nombres frecuentes que vienen desde Talento Humano.
+      const map = {
+        "MÁQUINA": "MAQUINA",
+        "MAQUINA": "MAQUINA",
+        "PRE CAJAS": "PRECAJAS",
+        "PRECAJAS": "PRECAJAS",
+        "PRE-CAJAS": "PRECAJAS",
+        "CONGELACIÓN": "CONGELACION",
+        "CONGELACION": "CONGELACION",
+        "CÁMARA": "CAMARA",
+        "CAMARA": "CAMARA",
+        "AVANCE DESCABEZADO": "AVANCE DESCABEZADO",
+        "APOYO DESCABEZADO": "APOYO DESCABEZADO",
+        "DESCABEZADO": "DESCABEZADO",
+        "MASTERIZADO": "MASTERIZADO",
+        "SERVICIOS GENERALES": "SERVICIOS GENERALES",
+        "ADMINISTRACIÓN": "ADMINISTRACION",
+        "ADMINISTRACION": "ADMINISTRACION"
+      };
+
+      const target = map[areaClean] || areaClean;
+      input.value = target;
+      refreshSteps();
+      return target;
+    }
+
+
+    function ensureCargoFromWorker(){
+      if (!selectedWorker) {
+        if ($("cargoToma")) $("cargoToma").value = "";
+        return "";
+      }
+
+      const cargo = upper(
+        selectedWorker.cargo ||
+        selectedWorker.raw?.cargo ||
+        selectedWorker.raw?.puesto ||
+        selectedWorker.raw?.cargoTrabajo ||
+        selectedWorker.credencial?.cargo ||
+        selectedWorker.credencial?.puesto ||
+        selectedWorker.credencial?.cargoTrabajo ||
+        ""
+      );
+
+      if ($("cargoToma")) $("cargoToma").value = cargo || "";
+      return cargo;
+    }
+
+    function autoLoadAreaFromWorker(){
+      if (!selectedWorker) return "";
+      const sourceArea =
+        selectedWorker.area ||
+        selectedWorker.raw?.areaTrabajo ||
+        selectedWorker.credencial?.areaTrabajo ||
+        selectedWorker.raw?.area ||
+        selectedWorker.credencial?.area ||
+        selectedWorker.raw?.cuadrilla ||
+        selectedWorker.credencial?.cuadrilla ||
+        selectedWorker.cuadrilla ||
+        "";
+      const loadedArea = ensureAreaOption(sourceArea);
+      const loadedCargo = ensureCargoFromWorker();
+
+      if (loadedArea){
+        showMsg($("flowMsg"), `Credencial cargada: ${selectedWorker.nombres || selectedWorker.cedula}. Área: ${loadedArea}${loadedCargo ? " · Cargo: " + loadedCargo : ""}.`, "good");
+      }
+      return loadedArea;
+    }
+
+
+    async function findSRHDocByCedula(value){
+      const identity = parseQRIdentity(value);
+      const ced = clean(identity.cedula);
+      const id = clean(identity.id || (ced ? ced + "0001" : ""));
+      if (!ced && !id) throw new Error("Cédula/ID vacío.");
+
+      const idsToTry = Array.from(new Set([
+        id,
+        ced ? ced + "0001" : "",
+        ced
+      ].filter(Boolean)));
+
+      for (const testId of idsToTry){
+        const blocked = await getBlacklistedById(testId);
+        if (blocked) throw new Error(blacklistMessageSRH(blocked));
+      }
+
+      for (const testId of idsToTry){
+        const activeSnap = await getDoc(doc(db, "rrhh_talento", testId));
+        if (activeSnap.exists()) {
+          let data = { ...(activeSnap.data() || {}) };
+          data = await hydrateSRHPhotoUrls(testId, data);
+          let credData = null;
+          try{
+            const credSnap = await getDoc(doc(db, "rrhh_credenciales", testId));
+            if (credSnap.exists()) credData = credSnap.data() || {};
+          }catch(_){}
+          // Si el área no está en la ficha activa pero sí en credenciales, se usará credData.
+          return { id: testId, data, credData };
+        }
+      }
+
+      const fields = ["cedula", "identificacion", "documento"];
+      for (const f of fields){
+        if (!ced) continue;
+        const qs = await getDocs(query(collection(db, "rrhh_talento"), where(f, "==", ced), limit(1)));
+        if (!qs.empty) {
+          const docu = qs.docs[0];
+          let data = { ...(docu.data() || {}) };
+          data = await hydrateSRHPhotoUrls(docu.id, data);
+          let credData = null;
+          try{
+            const credSnap = await getDoc(doc(db, "rrhh_credenciales", docu.id));
+            if (credSnap.exists()) credData = credSnap.data() || {};
+          }catch(_){}
+          return { id: docu.id, data, credData };
+        }
+      }
+
+      for (const testId of idsToTry){
+        const credSnap = await getDoc(doc(db, "rrhh_credenciales", testId));
+        if (credSnap.exists()){
+          const cd = credSnap.data() || {};
+          const cdCed = clean(cd.cedula || ced || (testId.endsWith("0001") ? testId.slice(0, -4) : ""));
+          const activeId = clean(cd.id || testId || (cdCed ? cdCed + "0001" : ""));
+          const activeSnap = await getDoc(doc(db, "rrhh_talento", activeId));
+          if (activeSnap.exists()) {
+            let data = { ...(activeSnap.data() || {}) };
+            data = await hydrateSRHPhotoUrls(activeId, data);
+            return { id: activeId, data, credData: cd };
+          }
+          return { id: activeId || testId, data: cd, credData: cd };
+        }
+      }
+
+      throw new Error("No se encontró el trabajador activo en SRH/Talento Humano.");
+    }
+
+    async function loadBioDoc(cedula){
+      const c = clean(cedula);
+      const snap = await getDoc(doc(db, "sra_personal", c));
+      if (snap.exists()) return { id: snap.id, ...snap.data() };
+      return null;
+    }
+
+    async function loadWorkerByCedula(cedula, rawQR=""){
+      try{
+        const inputValue = cedula || $("manualCedula").value;
+        const ident = parseQRIdentity(inputValue);
+        const lookupValue = rawQR || inputValue || ident.id || ident.cedula;
+        if (!lookupValue) throw new Error("No se pudo identificar cédula/ID desde el QR o campo manual.");
+
+        const found = await findSRHDocByCedula(lookupValue);
+        const qrExtra = parseSRHExtraFromQR(rawQR || inputValue || "");
+        selectedWorker = normalizeWorker(found.id, found.data, found.credData || null, qrExtra);
+        selectedWorker.qrRaw = rawQR || inputValue || "";
+        selectedBioDoc = await loadBioDoc(selectedWorker.cedula);
+        renderCredential();
+        autoLoadAreaFromWorker();
+
+        if (!$("areaToma").value) {
+          showMsg($("flowMsg"), `Credencial cargada: ${selectedWorker.nombres || selectedWorker.cedula}, pero no se encontró área en Talento Humano ni en el QR. Revise el campo areaTrabajo/cuadrilla en SRH.`, "warn");
+        }
+
+        refreshSteps();
+        return selectedWorker;
+      }catch(err){
+        selectedWorker = null;
+        selectedBioDoc = null;
+        renderCredential();
+        showMsg($("flowMsg"), err.message, "danger");
+        refreshSteps();
+        return null;
+      }
+    }
+
+    function renderCredential(){
+      if (!selectedWorker){
+        $("credencialBox").classList.add("hidden");
+        $("credEmpty").classList.remove("hidden");
+        return;
+      }
+      $("credencialBox").classList.remove("hidden");
+      $("credEmpty").classList.add("hidden");
+      $("credNombre").textContent = selectedWorker.nombres || "SIN NOMBRE";
+      $("credCedula").textContent = selectedWorker.cedula || "-";
+      $("credArea").textContent = selectedWorker.cuadrilla ? `${selectedWorker.area || "-"} · ${selectedWorker.cuadrilla}` : (selectedWorker.area || "-");
+      $("credCargo").textContent = selectedWorker.cargo || "-";
+      $("credEstado").innerHTML = `<span class="pill ${selectedWorker.estado === "ACTIVO" ? "ok" : "bad"}">${esc(selectedWorker.estado || "-")}</span>`;
+      const hasBio = !!(selectedBioDoc && descriptorListFromDoc(selectedBioDoc).length);
+      $("credBio").innerHTML = hasBio ? `<span class="pill ok">REGISTRADA</span>` : `<span class="pill rev">PENDIENTE</span>`;
+      $("credQR").innerHTML = selectedWorker.qrRaw ? `<span class="pill ok">VALIDADO</span>` : `<span class="pill info">MANUAL</span>`;
+      $("credFoto").src = selectedWorker.fotoUrl || "./logo.png?v=1";
+      $("enrollCedula").value = selectedWorker.cedula || "";
+      $("enrollWorker").textContent = `${selectedWorker.cedula} — ${selectedWorker.nombres || ""} — ${selectedWorker.area || ""}`;
+      $("enrollWorker").className = "status good";
+    }
+
+    function areaMatches(){
+      const areaSel = upper($("areaToma").value);
+      const areaWorker = upper(selectedWorker?.area || "");
+      if (!areaSel || !areaWorker) return true;
+      if (areaWorker.includes(areaSel) || areaSel.includes(areaWorker)) return true;
+      if (areaSel.includes("DESCABEZADO") && areaWorker.includes("DESCABEZADO")) return true;
+      if (areaSel === "PRECAJAS" && areaWorker.includes("PRECAJA")) return true;
+      return false;
+    }
+
+    function distanceToScore(distance){
+      return Math.max(0, Math.min(100, Math.round((1 - Number(distance)) * 100)));
+    }
+
+    async function validateFaceOneToOne(){
+      if (!selectedWorker) throw new Error("Primero escanee QR o cargue trabajador.");
+      if (!selectedBioDoc) selectedBioDoc = await loadBioDoc(selectedWorker.cedula);
+      const samples = descriptorListFromDoc(selectedBioDoc);
+      if (!samples.length) throw new Error("Este trabajador no tiene biometría registrada.");
+
+      const det = await detectSingleFace($("videoBioMark"));
+      const current = det.descriptor;
+      const distances = samples.map(s => faceapi.euclideanDistance(current, arrayToDescriptor(s)));
+      const bestDistance = Math.min(...distances);
+      const avgBest = distances.sort((a,b)=>a-b).slice(0, Math.min(3, distances.length)).reduce((a,b)=>a+b,0) / Math.min(3, distances.length);
+      const distance = Math.min(bestDistance, avgBest);
+      const score = distanceToScore(distance);
+
+      let estado = "RECHAZADO_BIOMETRIA";
+      if (distance <= config.distanciaAceptada && blinkOk) estado = "ACEPTADO";
+      else if (distance <= config.distanciaRevision && blinkOk) estado = "REVISION_MANUAL";
+      else if (!blinkOk) estado = "REVISION_MANUAL";
+
+      lastBioValidation = {
+        distance,
+        score,
+        estado,
+        blinkOk,
+        samples: samples.length
+      };
+
+      $("bioDist").value = distance.toFixed(4);
+      $("bioScore").value = `${score}%`;
+      $("bioLive").value = blinkOk ? "NO_REQUERIDO" : "PENDIENTE";
+      $("bioEstado").value = estado;
+
+      const type = estado === "ACEPTADO" ? "good" : estado === "REVISION_MANUAL" ? "warn" : "danger";
+      showMsg($("bioMsg"), `Biometría 1 a 1 validada: ${estado} · coincidencia ${score}% · distancia ${distance.toFixed(4)}.`, type);
+      refreshSteps();
+      return lastBioValidation;
+    }
+
+    function eyeAspectRatio(points){
+      const dist = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+      return (dist(points[1], points[5]) + dist(points[2], points[4])) / (2 * dist(points[0], points[3]));
+    }
+
+    async function validateBlink(){
+      if (!modelsReady) await loadModels();
+      const video = $("videoBioMark");
+      if (!video.videoWidth) throw new Error("Abra la cámara biométrica primero.");
+
+      showMsg($("bioMsg"), "Pida al trabajador parpadear ahora. Detectando ojos abiertos → cerrados → abiertos...", "warn");
+      blinkOk = true;
+      $("bioLive").value = "PENDIENTE";
+
+      let sawOpenBefore = false;
+      let sawClosed = false;
+      let openAfter = false;
+      const start = Date.now();
+
+      while (Date.now() - start < 6500){
+        const det = await faceapi
+          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+          .withFaceLandmarks();
+
+        if (det){
+          const pts = det.landmarks.positions;
+          const left = pts.slice(36, 42);
+          const right = pts.slice(42, 48);
+          const ear = (eyeAspectRatio(left) + eyeAspectRatio(right)) / 2;
+
+          if (ear > 0.245 && !sawClosed) sawOpenBefore = true;
+          if (sawOpenBefore && ear < 0.205) sawClosed = true;
+          if (sawOpenBefore && sawClosed && ear > 0.235){ openAfter = true; break; }
+        }
+        await new Promise(r => setTimeout(r, 120));
+      }
+
+      blinkOk = sawOpenBefore && sawClosed && openAfter;
+      $("bioLive").value = blinkOk ? "NO_REQUERIDO" : "NO_VALIDADO";
+
+      if (blinkOk) showMsg($("bioMsg"), "Validación aprobada: parpadeo detectado.", "good");
+      else showMsg($("bioMsg"), "No se pudo validar parpadeo. Reintente con el rostro centrado y buena luz.", "danger");
+      refreshSteps();
+      return blinkOk;
+    }
+
+    async function lastAttendanceFor(cedula, tipo){
+      // Evita índice compuesto con cedula + tipo + orderBy.
+      // Se consulta por cédula y el filtro/orden se realiza en cliente.
+      const snap = await getDocs(query(
+        collection(db, "sra_asistencias"),
+        where("cedula", "==", cedula),
+        limit(25)
+      ));
+
+      const rows = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(r => r.tipo === tipo)
+        .sort((a, b) => Number(b.creadoMs || 0) - Number(a.creadoMs || 0));
+
+      return rows.length ? rows[0] : null;
+    }
+
+    async function registerAttendance(){
+      try{
+        if (!currentUser) throw new Error("Debe iniciar sesión.");
+        if (!$("areaToma").value) autoLoadAreaFromWorker();
+        if (!$("areaToma").value) throw new Error("El área no se ha cargado. Escanee el QR de la credencial para cargarla desde Talento Humano o revise areaTrabajo/cuadrilla en SRH.");
+        if (!selectedWorker) throw new Error("Escanee QR o cargue trabajador.");
+        if (selectedWorker.estado && selectedWorker.estado !== "ACTIVO") throw new Error("Trabajador inactivo. No se registra asistencia.");
+        if (!areaMatches()) throw new Error("El área del trabajador no coincide con el área seleccionada.");
+        if (config.requiereUbicacion && !locationOk) throw new Error("Debe validar ubicación dentro de empresa.");
+        const tipo = $("tipoAsistencia").value;
+
+        const validation = await validateFaceOneToOne();
+        if (!["ACEPTADO", "REVISION_MANUAL"].includes(validation.estado)){
+          throw new Error(`Biometría rechazada: ${validation.estado}`);
+        }
+
+        const last = await lastAttendanceFor(selectedWorker.cedula, tipo);
+        if (last?.creadoMs && Date.now() - Number(last.creadoMs) < config.duplicadoMinutos * 60000){
+          lastBioValidation.estado = "DUPLICADO";
+          $("bioEstado").value = "DUPLICADO";
+          throw new Error(`Marcación duplicada bloqueada por ${config.duplicadoMinutos} minutos.`);
+        }
+
+        let evidenciaUrl = "";
+        if (config.guardarEvidencia){
+          evidenciaUrl = await uploadDataUrl(
+            `sra/asistencias/${today()}/${selectedWorker.cedula}_${tipo}_${Date.now()}.jpg`,
+            captureVideoImage($("videoBioMark"), .78)
+          );
+        }
+
+        const data = {
+          trabajadorId: selectedWorker.id,
+          cedula: selectedWorker.cedula,
+          nombres: selectedWorker.nombres,
+          areaTrabajador: selectedWorker.area,
+          areaSeleccionada: upper($("areaToma").value),
+          area: upper($("areaToma").value),
+          cargo: $("cargoToma")?.value || selectedWorker.cargo,
+          estadoTrabajador: selectedWorker.estado,
+          tipo,
+          fecha: today(),
+          hora: nowTime(),
+
+          qrValidado: !!selectedWorker.qrRaw,
+          qrRaw: selectedWorker.qrRaw || "",
+          biometriaValidada: validation.estado === "ACEPTADO",
+          pruebaValidación: blinkOk ? "NO_REQUERIDO" : "NO_VALIDADO",
+
+          distancia: validation.distance,
+          distanciaFacial: validation.distance,
+          coincidencia: validation.score,
+          estado: validation.estado,
+
+          ubicacion: selectedLocation,
+          validacionUbicacion: selectedLocation?.dentroEmpresa ? "DENTRO_EMPRESA" : (config.requiereUbicacion ? "NO_VALIDADA" : "NO_REQUERIDA"),
+
+          tomadoPor: currentUser.email,
+          rolTomador: currentRole,
+          dispositivo: navigator.userAgent,
+          fotoEvidenciaUrl: evidenciaUrl,
+          creadoMs: Date.now(),
+          creadoEn: serverTimestamp()
+        };
+
+        await addDoc(collection(db, "sra_asistencias"), data);
+        showMsg($("bioMsg"), `${tipo} registrada correctamente: ${selectedWorker.nombres} · ${validation.estado}.`, "good");
+        showMsg($("flowMsg"), `Asistencia registrada. ${$("modoLote").value === "CONTINUAR" ? "Puede escanear el siguiente QR." : "Flujo detenido."}`, "good");
+        await loadDashboard();
+        await loadHistorial();
+
+        if ($("modoLote").value === "CONTINUAR"){
+          resetWorkerOnly();
+          openTab("toma");
+        }
+      }catch(err){
+        showMsg($("bioMsg"), err.message, "danger");
+      }
+    }
+
+    function resetWorkerOnly(){
+      selectedWorker = null;
+      selectedBioDoc = null;
+      blinkOk = true;
+      lastBioValidation = null;
+      $("manualCedula").value = "";
+      $("areaToma").value = "";
+      if ($("cargoToma")) $("cargoToma").value = "";
+      $("bioDist").value = "";
+      $("bioScore").value = "";
+      $("bioLive").value = "";
+      $("bioEstado").value = "";
+      $("bioPanel").classList.add("hidden");
+      renderCredential();
+      refreshSteps();
+    }
+
+    function resetFlow(){
+      resetWorkerOnly();
+      locationOk = false;
+      selectedLocation = null;
+      $("areaToma").value = "";
+      $("flowMsg").classList.add("flowHidden"); $("flowMsg").textContent = "";
+      refreshSteps();
+    }
+
+    async function findAndShowEnrollWorker(){
+      try{
+        const c = parseQRValue($("enrollCedula").value);
+        if (!c) throw new Error("Ingrese cédula.");
+        const found = await findSRHDocByCedula(c);
+        selectedWorker = normalizeWorker(found.id, found.data, found.credData || null);
+        selectedWorker.qrRaw = "";
+        selectedBioDoc = await loadBioDoc(selectedWorker.cedula);
+        $("enrollCedula").value = selectedWorker.cedula;
+        $("enrollWorker").textContent = `${selectedWorker.cedula} — ${selectedWorker.nombres} — ${selectedWorker.area}`;
+        $("enrollWorker").className = "status good";
+        renderCredential();
+      }catch(err){
+        showMsg($("enrollWorker"), err.message, "danger");
+      }
+    }
+
+    async function captureEnrollSample(){
+      try{
+        if (!$("enrollCedula").value) throw new Error("Busque primero el trabajador por cédula.");
+        const det = await detectSingleFace($("videoEnroll"));
+        enrollSamples.push(descriptorToArray(det.descriptor));
+        $("sampleCount").textContent = `${enrollSamples.length} muestras`;
+        showMsg($("enrollMsg"), `Muestra ${enrollSamples.length} capturada correctamente.`, "good");
+      }catch(err){
+        showMsg($("enrollMsg"), err.message, "danger");
+      }
+    }
+
+    async function saveBiometria(){
+      try{
+        if (!canEdit()) throw new Error("Solo RRHH/Admin puede guardar biometría.");
+        const cedula = parseQRValue($("enrollCedula").value);
+        if (!cedula) throw new Error("Cédula vacía.");
+        if (enrollSamples.length < Number(config.minMuestras || 5)){
+          throw new Error(`Capture mínimo ${config.minMuestras} muestras biométricas.`);
+        }
+
+        let worker = selectedWorker;
+        if (!worker || worker.cedula !== cedula){
+          const found = await findSRHDocByCedula(cedula);
+          worker = normalizeWorker(found.id, found.data, found.credData || null);
+        }
+
+        const faceDescriptorsMap = {};
+        enrollSamples.forEach((arr, i) => {
+          faceDescriptorsMap[`m${String(i + 1).padStart(2, "0")}`] = arr;
+        });
+
+        let fotoBaseUrl = "";
+        try{
+          fotoBaseUrl = await uploadDataUrl(`sra/biometria/${cedula}/foto_base_${Date.now()}.jpg`, captureVideoImage($("videoEnroll")));
+        }catch(uploadErr){
+          console.warn("No se pudo subir foto base, se guardará biometría sin foto:", uploadErr);
+        }
+
+        await setDoc(doc(db, "sra_personal", cedula), {
+          cedula: worker.cedula,
+          nombres: worker.nombres,
+          area: worker.area,
+          cargo: $("cargoToma")?.value || worker.cargo,
+          turno: worker.raw?.turno || "",
+          estado: worker.estado || "ACTIVO",
+          srhDocId: worker.id,
+          fotoBaseUrl,
+          faceDescriptorsMap,
+          biometriaEstado: "REGISTRADA",
+          muestras: enrollSamples.length,
+          actualizadoEn: serverTimestamp(),
+          actualizadoPor: currentUser.email
+        }, { merge: true });
+
+        enrollSamples = [];
+        $("sampleCount").textContent = "0 muestras";
+        selectedBioDoc = await loadBioDoc(cedula);
+        showMsg($("enrollMsg"), "Biometría guardada correctamente y vinculada a SRH.", "good");
+        renderCredential();
+      }catch(err){
+        showMsg($("enrollMsg"), err.message, "danger");
+      }
+    }
+
+    async function loadHistorial(){
+      const desde = $("fDesde").value || today();
+      const hasta = $("fHasta").value || today();
+
+      // IMPORTANTE:
+      // Se evita orderBy("fecha", "desc") + orderBy("hora", "desc")
+      // porque Firestore exige índice compuesto. Consultamos por rango
+      // y ordenamos en el navegador.
+      const snap = await getDocs(query(
+        collection(db, "sra_asistencias"),
+        where("fecha", ">=", desde),
+        where("fecha", "<=", hasta)
+      ));
+
+      historialCache = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const fa = `${a.fecha || ""} ${a.hora || ""}`;
+          const fb = `${b.fecha || ""} ${b.hora || ""}`;
+          return fb.localeCompare(fa);
+        });
+
+      renderHistorial();
+    }
+
+    function estadoPill(estado){
+      const ok = ["ACEPTADO"];
+      const rev = ["REVISION_MANUAL","GPS_IMPRECISO","DUPLICADO"];
+      const cls = ok.includes(estado) ? "ok" : rev.includes(estado) ? "rev" : "bad";
+      return `<span class="pill ${cls}">${esc(estado || "")}</span>`;
+    }
+
+    function filteredHistRows(){
+      const area = upper($("fArea").value);
+      const estado = $("fEstado").value;
+      const tipo = $("fTipo").value;
+      const texto = upper($("fTexto").value);
+      return historialCache.filter(r =>
+        (!area || [r.area, r.areaSeleccionada, r.areaTrabajador].join(" ").includes(area)) &&
+        (!estado || r.estado === estado) &&
+        (!tipo || r.tipo === tipo) &&
+        (!texto || [r.cedula, r.nombres, r.area, r.cargo].join(" ").includes(texto))
+      );
+    }
+
+    function renderHistorial(){
+      const rows = filteredHistRows();
+      $("histCount").textContent = `${rows.length} registros`;
+      $("tblHistorial").innerHTML = `
+        <thead><tr><th>Fecha</th><th>Hora</th><th>Tipo</th><th>Cédula</th><th>Trabajador</th><th>Área seleccionada</th><th>Área trabajador</th><th>Cargo</th><th>Coinc.</th><th>Dist.</th><th>Validación</th><th>Ubicación</th><th>Estado</th><th>Tomado por</th></tr></thead>
+        <tbody>${rows.map(r => `
+          <tr>
+            <td>${esc(r.fecha)}</td><td>${esc(r.hora)}</td><td><strong>${esc(r.tipo)}</strong></td>
+            <td>${esc(r.cedula)}</td><td>${esc(r.nombres)}</td>
+            <td>${esc(r.areaSeleccionada || r.area)}</td><td>${esc(r.areaTrabajador || "")}</td><td>${esc(r.cargo)}</td>
+            <td>${esc(r.coincidencia)}%</td><td>${Number(r.distancia || r.distanciaFacial || 0).toFixed(4)}</td>
+            <td>${esc(r.pruebaValidación || "")}</td>
+            <td>${r.ubicacion ? `${Math.round(r.ubicacion.distanciaEmpresaMetros || 0)} m` : ""}</td>
+            <td>${estadoPill(r.estado)}</td><td>${esc(r.tomadoPor || r.creadoPor || "")}</td>
+          </tr>`).join("")}</tbody>`;
+    }
+
+    function exportExcel(){
+      const rows = filteredHistRows().map(r => ({
+        Fecha:r.fecha, Hora:r.hora, Tipo:r.tipo, Cedula:r.cedula, Trabajador:r.nombres,
+        AreaSeleccionada:r.areaSeleccionada || r.area, AreaTrabajador:r.areaTrabajador, Cargo:r.cargo,
+        Coincidencia:r.coincidencia, Distancia:r.distancia || r.distanciaFacial, PruebaValidación:r.pruebaValidación,
+        Ubicacion:r.ubicacion ? `${r.ubicacion.distanciaEmpresaMetros} m` : "",
+        Estado:r.estado, TomadoPor:r.tomadoPor
+      }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Asistencia");
+      XLSX.writeFile(wb, `SRAB_Asistencia_${today()}.xlsx`);
+    }
+
+    function exportPDF(){
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+      pdf.setFontSize(14); pdf.setTextColor(8,47,87);
+      pdf.text(`${config.empresa} — Reporte SRAB`, 40, 35);
+      pdf.setFontSize(9); pdf.setTextColor(80);
+      pdf.text(`Generado: ${new Date().toLocaleString("es-EC")} · Usuario: ${currentUser.email}`, 40, 52);
+      pdf.autoTable({
+        startY:70,
+        head:[["Fecha","Hora","Tipo","Cédula","Trabajador","Área","Coinc.","Dist.","Validación","Ubicación","Estado"]],
+        body:filteredHistRows().map(r => [
+          r.fecha, r.hora, r.tipo, r.cedula, r.nombres,
+          r.areaSeleccionada || r.area, `${r.coincidencia}%`, Number(r.distancia || r.distanciaFacial || 0).toFixed(4),
+          r.pruebaValidación || "", r.ubicacion ? `${r.ubicacion.distanciaEmpresaMetros} m` : "", r.estado
+        ]),
+        styles:{fontSize:7,cellPadding:3},
+        headStyles:{fillColor:[8,47,87]}
+      });
+      pdf.save(`SRAB_Asistencia_${today()}.pdf`);
+    }
+
+    async function loadDashboard(){
+      const fecha = today();
+      const snap = await getDocs(query(collection(db, "sra_asistencias"), where("fecha", "==", fecha)));
+      const rows = snap.docs.map(d => d.data());
+      $("mEntradas").textContent = rows.filter(r => r.tipo === "ENTRADA").length;
+      $("mSalidas").textContent = rows.filter(r => r.tipo === "SALIDA").length;
+      $("mAceptadas").textContent = rows.filter(r => r.estado === "ACEPTADO").length;
+      $("mRevision").textContent = rows.filter(r => r.estado === "REVISION_MANUAL").length;
+      $("mRechazadas").textContent = rows.filter(r => !["ACEPTADO","REVISION_MANUAL"].includes(r.estado)).length;
+
+      const byArea = {};
+      rows.forEach(r => {
+        const k = r.areaSeleccionada || r.area || "SIN AREA";
+        byArea[k] ||= { area:k, entradas:0, salidas:0, aceptadas:0, revision:0, rechazadas:0 };
+        if (r.tipo === "ENTRADA") byArea[k].entradas++;
+        if (r.tipo === "SALIDA") byArea[k].salidas++;
+        if (r.estado === "ACEPTADO") byArea[k].aceptadas++;
+        else if (r.estado === "REVISION_MANUAL") byArea[k].revision++;
+        else byArea[k].rechazadas++;
+      });
+      const areaRows = Object.values(byArea).sort((a,b)=>a.area.localeCompare(b.area));
+      $("tblResumenArea").innerHTML = `<thead><tr><th>Área</th><th>Entradas</th><th>Salidas</th><th>Aceptadas</th><th>Revisión</th><th>Rechazadas</th></tr></thead><tbody>${areaRows.map(r => `<tr><td><strong>${esc(r.area)}</strong></td><td>${r.entradas}</td><td>${r.salidas}</td><td>${r.aceptadas}</td><td>${r.revision}</td><td>${r.rechazadas}</td></tr>`).join("")}</tbody>`;
+    }
+
+    async function openQRCamera(){
+      try{
+        showMsg($("flowMsg"), "Abriendo cámara QR...", "warn");
+        await startCamera($("videoQR"), "environment");
+        showMsg($("flowMsg"), "Cámara QR abierta. Coloque la credencial dentro del recuadro verde.", "good");
+      }catch(err){
+        showMsg($("flowMsg"), err.message, "danger");
+      }
+    }
+
+    async function openBioCamera(){
+      try{
+        $("bioPanel").classList.remove("hidden");
+        showMsg($("bioMsg"), "Abriendo cámara biométrica...", "warn");
+        await startCamera($("videoBioMark"), "user");
+        showMsg($("bioMsg"), "Cámara biométrica abierta. Puede guardar la asistencia después de validar el rostro.", "good");
+      }catch(err){
+        showMsg($("bioMsg"), err.message, "danger");
+      }
+    }
+
+    async function openEnrollCamera(){
+      try{
+        showMsg($("enrollMsg"), "Abriendo cámara...", "warn");
+        await startCamera($("videoEnroll"), "user");
+        showMsg($("enrollMsg"), "Cámara abierta. Capture las muestras biométricas.", "good");
+      }catch(err){
+        showMsg($("enrollMsg"), err.message, "danger");
+      }
+    }
+
+    // Eventos
+
+    function setTipoAsistencia(tipo){
+      $("tipoAsistencia").value = tipo;
+      document.querySelectorAll(".tipoBtn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tipo === tipo);
+      });
+    }
+
+    document.querySelectorAll(".tipoBtn").forEach(btn => {
+      btn.addEventListener("click", () => setTipoAsistencia(btn.dataset.tipo));
+    });
+
+
+    $("btnLogin").onclick = async () => {
+      try{ await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPass").value); }
+      catch(err){ showMsg($("loginMsg"), "No se pudo iniciar sesión. Revise correo o contraseña.", "danger"); }
+    };
+
+    $("btnValidarUbicacion").onclick = validateLocation;
+    $("btnResetFlujo").onclick = resetFlow;
+    // Área cargada automáticamente desde SRH al escanear QR.
+    $("btnCamQR").onclick = openQRCamera;
+    $("btnScanQR").onclick = scanQRLoop;
+    $("btnBuscarCedula").onclick = () => {
+      if (config.requiereUbicacion && !locationOk) {
+        showMsg($("flowMsg"), "Primero valide ubicación antes de buscar por cédula.", "danger");
+        refreshSteps();
+        return;
+      }
+      loadWorkerByCedula(parseQRValue($("manualCedula").value), "");
+    };
+    $("btnTomarBio").onclick = openBioCamera;
+    $("btnRegistrarBioRapida").onclick = () => { openTab("biometria"); $("enrollCedula").value = selectedWorker?.cedula || $("manualCedula").value; };
+    $("btnCamBioMark").onclick = openBioCamera;
+    $("btnCamBioMark2").onclick = openBioCamera;
+    $("btnRegistrarAsistencia").onclick = registerAttendance;
+    $("btnRegistrarAsistencia2").onclick = registerAttendance;
+
+    $("btnBuscarEnroll").onclick = findAndShowEnrollWorker;
+    $("btnCamEnroll").onclick = openEnrollCamera;
+    $("btnCamEnroll2").onclick = openEnrollCamera;
+    $("btnCapturarEnroll").onclick = captureEnrollSample;
+    $("btnCapturarEnroll2").onclick = captureEnrollSample;
+    $("btnGuardarBiometria").onclick = saveBiometria;
+    $("btnGuardarBiometria2").onclick = saveBiometria;
+
+    $("btnBuscarHistorial").onclick = loadHistorial;
+    $("btnExcel").onclick = exportExcel;
+    $("btnPDF").onclick = exportPDF;
+    ["fArea","fEstado","fTipo","fTexto"].forEach(id => $(id).addEventListener("input", renderHistorial));
+    $("btnReloadDash").onclick = loadDashboard;
+    $("btnGuardarConfig").onclick = saveConfig;
+    $("btnUsarUbicacionActual").onclick = useCurrentAsCompanyLocation;
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+      currentRole = user ? roleFor(user.email) : "none";
+      renderUserBox();
+      if (!user){
+        $("loginView").classList.remove("hidden");
+        $("appView").classList.add("hidden");
+        return;
+      }
+      $("loginView").classList.add("hidden");
+      $("appView").classList.remove("hidden");
+      $("fDesde").value = today();
+      $("fHasta").value = today();
+
+      if (!canEdit()){
+        document.querySelector('[data-tab="config"]').classList.toggle("hidden", currentRole !== "admin");
+        document.querySelector('[data-tab="biometria"]').classList.add("hidden");
+      }
+
+      try{
+        await loadModels();
+        await loadConfig();
+
+        try { await loadDashboard(); }
+        catch (dashErr) { console.warn("Dashboard no cargó:", dashErr); }
+
+        try { await loadHistorial(); }
+        catch (histErr) {
+          console.warn("Historial no cargó:", histErr);
+          showMsg($("flowMsg"), "Sistema listo. Historial pendiente de cargar: " + histErr.message, "warn");
+        }
+
+        refreshSteps();
+      }catch(err){
+        showMsg($("flowMsg"), err.message, "danger");
+      }
+    });
+  </script>
+</body>
+</html>
