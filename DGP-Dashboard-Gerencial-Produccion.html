@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>DGP | Dashboard Gerencial de Producción</title>
+  <link rel="icon" href="favicon.ico?v=1" />
+  <link rel="shortcut icon" href="favicon.ico?v=1" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root{
+      --navy:#061d35; --navy2:#0b345d; --blue:#0d74c9; --cyan:#1fb6ff; --gold:#d4a017;
+      --bg:#eef4f9; --card:#ffffff; --line:#d7e2ec; --text:#0f172a; --muted:#64748b;
+      --green:#0f8a4b; --red:#c62828; --orange:#d97706; --shadow:0 18px 44px rgba(8,43,76,.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:
+      radial-gradient(circle at top left, rgba(31,182,255,.18), transparent 30%),
+      radial-gradient(circle at top right, rgba(212,160,23,.12), transparent 26%),
+      linear-gradient(180deg,#f3f8fd 0%,#ffffff 48%,#eef4f9 100%);}
+    .hidden{display:none!important}
+    .login{min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(135deg,#061d35,#0b345d 58%,#071827)}
+    .login-card{width:min(460px,96vw);background:rgba(255,255,255,.97);border:1px solid rgba(255,255,255,.35);border-radius:26px;box-shadow:0 28px 85px rgba(0,0,0,.34);padding:28px}
+    .login-logo{display:block;width:230px;height:118px;object-fit:contain;margin:0 auto 8px;filter:drop-shadow(0 10px 18px rgba(8,43,76,.18))}
+    .login h1{margin:0;text-align:center;color:var(--navy);font-size:22px;letter-spacing:.4px}.login p{margin:6px 0 22px;text-align:center;color:var(--muted);font-size:13px;line-height:1.35}
+    label{display:block;font-size:11px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin:0 0 5px}
+    input,select{width:100%;border:1px solid #c9d6e2;border-radius:12px;padding:10px 12px;background:#fff;font:inherit;outline:none} input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(31,182,255,.13)}
+    .field{margin-bottom:10px}.btn{border:1px solid #adc0d3;border-radius:13px;background:linear-gradient(180deg,#fff,#eef5fb);color:var(--navy);padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(8,43,76,.08);transition:.14s}.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(8,43,76,.13)}.btn.primary{background:linear-gradient(135deg,var(--blue),var(--navy2));color:#fff;border-color:var(--blue)}.btn.gold{background:linear-gradient(135deg,#f8e9b0,var(--gold));color:#302100;border-color:#c79314}.btn.danger{color:var(--red);border-color:#f0b4af;background:#fff5f5}.btn.small{padding:7px 10px;border-radius:10px;font-size:12px}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .msg{font-size:12px;margin-top:10px;text-align:center;color:var(--red);min-height:18px}
+    .app{display:none;min-height:100vh}.topbar{position:sticky;top:0;z-index:30;background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;border-bottom:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(8,43,76,.18)}
+    .top-inner{max-width:1600px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:120px;height:52px;object-fit:contain}.brand h2{margin:0;font-size:17px;letter-spacing:.4px}.brand span{font-size:12px;color:#bde8ff}.user{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(255,255,255,.08);font-size:12px}.dot{width:9px;height:9px;border-radius:50%;background:#94a3b8}.dot.ok{background:#22c55e}.dot.live{background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.15)}
+    .wrap{max-width:1600px;margin:0 auto;padding:14px 16px 24px}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-bottom:12px}.hero-card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:18px}.hero h1{margin:0;color:var(--navy);font-size:28px}.hero p{margin:6px 0 0;color:var(--muted);font-size:13px}.status-box{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mini{border:1px solid var(--line);border-radius:16px;padding:10px;background:linear-gradient(180deg,#fff,#f7fbff)}.mini .t{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase}.mini .v{font-size:15px;font-weight:900;margin-top:4px;color:var(--navy)}
+    .filters{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:12px;margin-bottom:12px}.filters .wide{grid-column:span 2}.filters .actions{grid-column:span 2;display:flex;gap:8px;flex-wrap:wrap}
+    .kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:12px}.kpi{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px;min-height:104px}.kpi:before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--blue),var(--cyan))}.kpi.gold:before{background:linear-gradient(90deg,var(--gold),#ffd166)}.kpi.green:before{background:linear-gradient(90deg,var(--green),#22c55e)}.kpi.red:before{background:linear-gradient(90deg,var(--red),#fb7185)}.kpi .t{font-size:11px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:.04em}.kpi .v{font-size:23px;font-weight:950;margin-top:10px;color:var(--navy);white-space:nowrap}.kpi .s{font-size:11px;color:var(--muted);margin-top:4px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:14px;min-height:120px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-7{grid-column:span 7}.span-8{grid-column:span 8}.span-12{grid-column:span 12}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}.card h3{margin:0;color:var(--navy);font-size:16px}.card small{color:var(--muted);font-weight:700}.chartBox{height:310px}.chartBox.sm{height:250px}canvas{width:100%!important;height:100%!important}
+    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:16px}table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}th,td{border-bottom:1px solid var(--line);padding:8px 9px;white-space:nowrap;text-align:left}th{background:linear-gradient(180deg,var(--navy2),var(--navy));color:#fff;font-weight:900;position:sticky;top:0}td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}tbody tr:nth-child(even){background:#f8fbfe}tbody tr:hover{background:#eef7ff}.tag{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900;border:1px solid var(--line);background:#fff}.tag.ok{color:var(--green);background:#ecfdf5;border-color:#bbf7d0}.tag.warn{color:#92400e;background:#fffbeb;border-color:#fde68a}.tag.bad{color:var(--red);background:#fff1f2;border-color:#fecdd3}.footer-note{margin-top:12px;color:var(--muted);font-size:11px;text-align:right}.loading{opacity:.72;pointer-events:none}.empty{padding:18px;text-align:center;color:var(--muted)}
+    @media (max-width:1300px){.kpis{grid-template-columns:repeat(4,1fr)}.span-3,.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12}.hero{grid-template-columns:1fr}.filters{grid-template-columns:repeat(4,1fr)}.filters .actions{grid-column:span 4}.filters .wide{grid-column:span 2}}
+    @media (max-width:760px){.top-inner{align-items:flex-start;flex-direction:column}.brand img{width:105px;height:46px}.hero h1{font-size:22px}.kpis{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}.filters .wide,.filters .actions{grid-column:span 1}.status-box{grid-template-columns:1fr}.wrap{padding:10px}.kpi .v{font-size:19px}.chartBox{height:270px}}
+    @media print{.topbar,.filters,.btn{display:none!important}.wrap{padding:0}.card,.kpi,.hero-card{box-shadow:none!important}.grid,.kpis,.hero{display:block}.card,.kpi,.hero-card{margin-bottom:10px;break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login">
+    <div class="login-card">
+      <img class="login-logo" src="logo_pdf_blanco.png" onerror="this.src='logo.png';this.onerror=null" alt="Oceantreasure" />
+      <h1>DGP — Dashboard Gerencial</h1>
+      <p>Centro ejecutivo de Producción en tiempo real: recepción, compra, cola, descabezado, liquidaciones y mano de obra.</p>
+      <div class="field"><label>Correo</label><input id="loginEmail" type="email" autocomplete="username" placeholder="usuario@oceantreasure.local" /></div>
+      <div class="field"><label>Contraseña</label><input id="loginPass" type="password" autocomplete="current-password" /></div>
+      <button id="btnLogin" class="btn primary" style="width:100%">INGRESAR</button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+  </section>
+
+  <section id="appView" class="app">
+    <header class="topbar">
+      <div class="top-inner">
+        <div class="brand">
+          <img src="logo_pdf_blanco.png" onerror="this.src='logo.png';this.onerror=null" alt="Oceantreasure" />
+          <div><h2>DGP — Dashboard Gerencial de Producción</h2><span>Recepción · Compra · Cola · Descabezado · Liquidación · Mano de Obra</span></div>
+        </div>
+        <div class="user">
+          <span class="pill"><span id="syncDot" class="dot"></span><span id="syncText">Sin cargar</span></span>
+          <span class="pill" id="userEmail">—</span>
+          <button class="btn small" id="btnLogout">Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap" id="mainWrap">
+      <section class="hero">
+        <div class="hero-card">
+          <h1>Centro de mando productivo</h1>
+          <p>Vista consolidada para decisiones de Gerencia de Producción. Usa <b>APLICAR</b> para cargar el rango; activa <b>EN VIVO</b> solo cuando necesites monitoreo permanente.</p>
+        </div>
+        <div class="hero-card status-box">
+          <div class="mini"><div class="t">Última actualización</div><div class="v" id="lastUpdate">—</div></div>
+          <div class="mini"><div class="t">Registros leídos</div><div class="v" id="docsRead">0</div></div>
+          <div class="mini"><div class="t">Modo</div><div class="v" id="modeLabel">Manual</div></div>
+        </div>
+      </section>
+
+      <section class="filters">
+        <div><label>Desde</label><input type="date" id="fDesde"></div>
+        <div><label>Hasta</label><input type="date" id="fHasta"></div>
+        <div class="wide"><label>Proveedor</label><input type="text" id="fProveedor" placeholder="Todos"></div>
+        <div><label>Estatus</label><select id="fEstatus"><option value="">Todos</option><option>ENTERO</option><option>COLA</option></select></div>
+        <div><label>Fuente</label><select id="fFuente"><option value="">Todas</option><option value="SCRM">SCRM</option><option value="SGC">SGC</option><option value="PCD">PCD</option><option value="SID">SID</option><option value="SLP">SLP</option><option value="CMO">CMO</option></select></div>
+        <div class="actions">
+          <button class="btn primary" id="btnAplicar">APLICAR</button>
+          <button class="btn gold" id="btnLive">EN VIVO</button>
+          <button class="btn" id="btnPdf">PDF</button>
+          <button class="btn" id="btnExcel">EXCEL</button>
+        </div>
+      </section>
+
+      <section class="kpis">
+        <div class="kpi"><div class="t">Libras recibidas</div><div class="v" id="kRecibidas">0,00</div><div class="s">SCRM</div></div>
+        <div class="kpi"><div class="t">Libras programadas</div><div class="v" id="kProgramadas">0,00</div><div class="s">Planificación recepción</div></div>
+        <div class="kpi green"><div class="t">Empacado</div><div class="v" id="kEmpacado">0,00</div><div class="s">Registro SCRM/SLP</div></div>
+        <div class="kpi gold"><div class="t">Rendimiento</div><div class="v" id="kRend">0,00%</div><div class="s">Empacado / base productiva</div></div>
+        <div class="kpi"><div class="t">Peso cola</div><div class="v" id="kCola">0,00</div><div class="s">PCD</div></div>
+        <div class="kpi red"><div class="t">Basura</div><div class="v" id="kBasura">0,00</div><div class="s">SCRM + PCD</div></div>
+        <div class="kpi"><div class="t">$ Liquidado</div><div class="v" id="kDolares">$ 0,00</div><div class="s">SLP</div></div>
+        <div class="kpi"><div class="t">Costo M.O.</div><div class="v" id="kCostoMo">$ 0,00</div><div class="s">CMO</div></div>
+      </section>
+
+      <section class="grid">
+        <div class="card span-8"><div class="card-head"><div><h3>Tendencia diaria integral</h3><small>Recepción, compras, cola y descabezado por día</small></div></div><div class="chartBox"><canvas id="chartTrend"></canvas></div></div>
+        <div class="card span-4"><div class="card-head"><div><h3>ENTERO vs COLA</h3><small>Composición de materia prima recibida</small></div></div><div class="chartBox sm"><canvas id="chartStatus"></canvas></div></div>
+        <div class="card span-6"><div class="card-head"><div><h3>Top proveedores por libras</h3><small>Ranking consolidado desde recepción</small></div></div><div class="chartBox"><canvas id="chartProviders"></canvas></div></div>
+        <div class="card span-6"><div class="card-head"><div><h3>Rendimiento por proveedor</h3><small>Promedio ponderado cuando existe empacado y base</small></div></div><div class="chartBox"><canvas id="chartRend"></canvas></div></div>
+        <div class="card span-6"><div class="card-head"><div><h3>Mano de obra</h3><small>Libras procesadas vs valor nominal CMO</small></div></div><div class="chartBox"><canvas id="chartCmo"></canvas></div></div>
+        <div class="card span-6"><div class="card-head"><div><h3>Liquidaciones</h3><small>Dólares por controlador / planta</small></div></div><div class="chartBox"><canvas id="chartSlp"></canvas></div></div>
+        <div class="card span-12">
+          <div class="card-head"><div><h3>Resumen gerencial por proveedor</h3><small>Consolidado para revisión ejecutiva</small></div><button class="btn small" id="btnFull">Pantalla completa</button></div>
+          <div class="tableWrap"><table id="tblResumen"><thead><tr><th>Proveedor</th><th>Registros</th><th>Libras recibidas</th><th>Programadas</th><th>Empacado</th><th>Rend.</th><th>Basura</th><th>Peso cola</th><th>$ Liquidado</th><th>Estado</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="card span-12">
+          <div class="card-head"><div><h3>Últimos movimientos consolidados</h3><small>Auditoría rápida por fuente de información</small></div></div>
+          <div class="tableWrap"><table id="tblMov"><thead><tr><th>Fuente</th><th>Fecha</th><th>Sec/Liq/Rep</th><th>Proveedor/Cuadrilla</th><th>Estatus</th><th class="num">Libras</th><th class="num">Empacado/Valor</th><th>Detalle</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </section>
+      <div class="footer-note">DGP lee información de los módulos existentes y no modifica registros productivos.</div>
+    </main>
+  </section>
+
+<script>
+(function(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+    authDomain: "oceantreasure-app.firebaseapp.com",
+    projectId: "oceantreasure-app",
+    storageBucket: "oceantreasure-app.firebasestorage.app",
+    messagingSenderId: "553014659258",
+    appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+    measurementId: "G-HMMQKJY8NJ"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  try{ db.enablePersistence({synchronizeTabs:true}); }catch(_){ }
+
+  const ALLOWED = new Set([
+    "jeffersonfigueroa@oceantreasure.local",
+    "gerenciageneral@oceantreasure.local",
+    "milenalmeida@oceantreasure.local"
+  ]);
+  const COL = {
+    SCRM:"scrm_recepcion",
+    SGC:"sgc_compra_registros",
+    SGC_META:"sgc_compra_meta",
+    PCD:"pcd_registro_cola",
+    SID:"sid_informe_descabezado",
+    SLP:"slp_liquidaciones_pago",
+    CMO:"cmo_days"
+  };
+
+  const $ = id => document.getElementById(id);
+  const nf0 = new Intl.NumberFormat('es-EC',{maximumFractionDigits:0});
+  const nf2 = new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const money = new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const pct = new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+  let currentUser = null, live = false, unsubs = [], raw = {}, normalized = {}, charts = {}, currentSummary = null;
+
+  function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function addDays(iso, n){ const [y,m,d]=iso.split('-').map(Number); const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+n); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
+  function toNum(v){ if(v==null || v==='') return 0; if(typeof v==='number') return Number.isFinite(v)?v:0; let s=String(v).trim().replace(/\s/g,''); if(!s) return 0; if(s.includes(',') && s.includes('.')) s=s.replace(/\./g,'').replace(',', '.'); else if(s.includes(',')) s=s.replace(',', '.'); const n=Number(s.replace(/[^0-9.-]/g,'')); return Number.isFinite(n)?n:0; }
+  function clean(v){ return String(v??'').trim(); }
+  function upper(v){ return clean(v).toUpperCase(); }
+  function fmt(v){ return nf2.format(toNum(v)); }
+  function fmt0(v){ return nf0.format(toNum(v)); }
+  function moneyFmt(v){ return '$ '+money.format(toNum(v)); }
+  function dateStrFromTS(ts){ if(ts && typeof ts.toDate==='function'){ const d=ts.toDate(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; } return ''; }
+  function getDate(x){
+    return clean(x.fechaLlegada || x.fecha || x.date || x.dia || x.createdAtIso?.slice?.(0,10) || x.updatedAtIso?.slice?.(0,10) || dateStrFromTS(x.createdAt) || dateStrFromTS(x.updatedAt) || (String(x.stamp||'').match(/\d{4}-\d{2}-\d{2}/)||[''])[0]);
+  }
+  function inRange(x){ const d=getDate(x); const desde=$('fDesde').value, hasta=$('fHasta').value; return (!desde || d>=desde) && (!hasta || d<=hasta); }
+  function passFilters(item){
+    const prov = upper($('fProveedor').value); const est = upper($('fEstatus').value); const fuente = $('fFuente').value;
+    if(fuente && item.fuente !== fuente) return false;
+    if(prov && !upper(item.proveedor || item.cuadrilla || '').includes(prov)) return false;
+    if(est && upper(item.estatus)!==est) return false;
+    return true;
+  }
+  function setSync(state, text){ const dot=$('syncDot'); dot.className='dot '+(state||''); $('syncText').textContent=text||'—'; }
+  function stamp(){ return new Date().toLocaleString('es-EC',{dateStyle:'short',timeStyle:'medium'}); }
+
+  $('fDesde').value = today(); $('fHasta').value = today();
+
+  $('btnLogin').onclick = async()=>{
+    $('loginMsg').textContent = '';
+    try{ await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); await auth.signInWithEmailAndPassword($('loginEmail').value.trim(), $('loginPass').value); }
+    catch(e){ $('loginMsg').textContent = 'No se pudo iniciar sesión. Revisa usuario, contraseña o permisos.'; }
+  };
+  $('btnLogout').onclick = ()=>auth.signOut();
+
+  auth.onAuthStateChanged(async user=>{
+    if(!user){ currentUser=null; $('loginView').style.display='grid'; $('appView').style.display='none'; stopLive(); return; }
+    const em=String(user.email||'').toLowerCase();
+    if(!ALLOWED.has(em)){ await auth.signOut(); $('loginMsg').textContent='Acceso denegado para este dashboard.'; return; }
+    currentUser=user; $('userEmail').textContent=em; $('loginView').style.display='none'; $('appView').style.display='block';
+    await loadAll(false);
+  });
+
+  $('btnAplicar').onclick = ()=>loadAll(false);
+  $('btnLive').onclick = ()=>{ live ? stopLive() : startLive(); };
+  $('btnPdf').onclick = exportPdf;
+  $('btnExcel').onclick = exportExcel;
+  $('btnFull').onclick = ()=>{ const el=document.documentElement; if(!document.fullscreenElement) el.requestFullscreen?.(); else document.exitFullscreen?.(); };
+
+  async function fetchCol(name, dateField){
+    const desde=$('fDesde').value, hasta=$('fHasta').value;
+    try{
+      if(dateField && desde && hasta){
+        const snap = await db.collection(name).where(dateField, '>=', desde).where(dateField, '<=', hasta).limit(1500).get();
+        return snap.docs.map(d=>({id:d.id,...d.data()}));
+      }
+    }catch(e){ console.warn('Consulta por rango falló en', name, e?.code || e); }
+    try{
+      const snap = await db.collection(name).limit(1500).get();
+      return snap.docs.map(d=>({id:d.id,...d.data()})).filter(inRange);
+    }catch(e){ console.warn('Consulta general falló en', name, e?.code || e); return []; }
+  }
+
+  async function loadAll(fromLive){
+    stopLive(false); live = !!fromLive;
+    $('mainWrap').classList.add('loading'); setSync(fromLive?'live':'ok', fromLive?'Actualización en vivo':'Cargando datos…');
+    try{
+      const [scrm,sgc,pcd,sid,slp,cmo] = await Promise.all([
+        fetchCol(COL.SCRM,'fechaLlegada'), fetchCol(COL.SGC,'fecha'), fetchCol(COL.PCD,'fecha'), fetchCol(COL.SID,'fecha'), fetchCol(COL.SLP,null), fetchCol(COL.CMO,null)
+      ]);
+      raw = {scrm,sgc,pcd,sid,slp,cmo};
+      build();
+      setSync(live?'live':'ok', live?'En vivo activo':'Datos cargados');
+    }catch(e){ console.error(e); setSync('', 'Error al cargar'); alert('No se pudo cargar todo el dashboard. Revisa permisos/reglas Firestore.'); }
+    finally{ $('mainWrap').classList.remove('loading'); }
+  }
+
+  function startLive(){
+    stopLive(false); live = true; $('btnLive').textContent='DETENER'; $('modeLabel').textContent='En vivo'; setSync('live','En vivo activo');
+    const map = [
+      [COL.SCRM,'scrm'], [COL.SGC,'sgc'], [COL.PCD,'pcd'], [COL.SID,'sid'], [COL.SLP,'slp'], [COL.CMO,'cmo']
+    ];
+    raw = {scrm:[],sgc:[],pcd:[],sid:[],slp:[],cmo:[]};
+    map.forEach(([col,key])=>{
+      const unsub = db.collection(col).limit(1500).onSnapshot(s=>{ raw[key]=s.docs.map(d=>({id:d.id,...d.data()})).filter(inRange); build(); }, e=>console.warn('Live error', col, e));
+      unsubs.push(unsub);
+    });
+  }
+  function stopLive(update=true){ unsubs.forEach(u=>{try{u()}catch(_){}}); unsubs=[]; if(update){ live=false; $('btnLive').textContent='EN VIVO'; $('modeLabel').textContent='Manual'; setSync('ok','Modo manual'); } }
+
+  function normSCRM(x){ const recibidas=toNum(x.totalLibras||x.libras||x.LIBRAS); const basura=toNum(x.basura); const emp=toNum(x.empacado); const prom=toNum(x.promedio); const base = prom ? (prom-basura) : (recibidas-basura); const rend = base>0 && emp>0 ? emp/base*100 : toNum(x.rend); return {fuente:'SCRM',fecha:getDate(x),secuencial:x.secuencial||'',proveedor:x.razonSocial||x.proveedor||'',estatus:x.estatus||'',libras:recibidas,programadas:toNum(x.totalProgramadas),empacado:emp,basura,rendimiento:rend,detalle:`Carros: ${toNum(x.totalCarros)} | Bines: ${toNum(x.totalBines)}`}; }
+  function normSGC(x){ return {fuente:'SGC',fecha:getDate(x),secuencial:'',proveedor:x.proveedor||'',estatus:x.estatus||'',libras:toNum(x.kilos||x.libras||x.totalLibras),programadas:0,empacado:0,basura:0,rendimiento:0,dolares:toNum(x.monto),detalle:`Comprador: ${x.comprador||'—'} | Sector: ${x.sector||'—'}`}; }
+  function normPCD(x){ const cola=toNum(x.totalPesoCola || x.__local?.totalPesoCola); return {fuente:'PCD',fecha:getDate(x),secuencial:x.secuencial||x.regNumber||'',proveedor:x.proveedor||'',estatus:'COLA',libras:toNum(x.librasGuia),pesoCola:cola,basura:toNum(x.basuraLbs),kvt:toNum(x.totalKvt||x.__local?.totalKvt),detalle:`Reg: ${x.regNumber||'—'} | Circuito: ${x.circuito||'—'}`}; }
+  function normSID(x){ const cola=toNum(x.pesoCola); const entero=toNum(x.elevadoEntero); const cabeza=toNum(x.cabezaPosible||x.pesadaCabezas); const cuad=Array.isArray(x.cuadrillas)?x.cuadrillas.join(' + '):(x.cuadrilla||''); return {fuente:'SID',fecha:getDate(x),secuencial:x.reportNumber||'',proveedor:cuad,cuadrilla:cuad,estatus:'',libras:cabeza||entero||cola,descabezado:cabeza,pesoCola:cola,detalle:`Reporte: ${x.reportNumber||'—'} | Personas: ${x.numPersonas||'—'}`}; }
+  function normSLP(x){ const h=x.header||{}; const val=toNum(h.dolaresPlanta??x.dolaresPlanta)+toNum(h.dolaresControlador??x.dolaresControlador)+toNum(h.dolaresPorFuera??x.dolaresPorFuera || x.diffDollars || x.dolaresInvPago); return {fuente:'SLP',fecha:getDate(x),secuencial:h.liquidacionNo||x.liquidacionNo||'',proveedor:h.proveedor||x.proveedor||'',estatus:'',libras:toNum(h.recibido??x.recibido),empacado:toNum(h.empacado??x.empacado),rendimiento:toNum(h.rendimiento??x.rendimiento),dolares:val,detalle:`Controlador: ${h.controlador||x.controlador||'—'} | Destino: ${h.dolaresDestino||x.dolaresDestino||'—'}`}; }
+  function normCMO(x){ const y=toNum(x.year||x.y), m=toNum(x.month||x.m), d=toNum(x.day||x.dia); const fecha=(y&&m&&d)?`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`:getDate(x); return {fuente:'CMO',fecha,secuencial:'',proveedor:'MANO DE OBRA',estatus:'',libras:toNum(x.librasProcesadas),costoMo:toNum(x.valorNominal),detalle:`Cupo: ${x.cupo||0} | ${x.diaHint||''}`}; }
+
+  function build(){
+    normalized = {
+      scrm:(raw.scrm||[]).map(normSCRM), sgc:(raw.sgc||[]).map(normSGC), pcd:(raw.pcd||[]).map(normPCD), sid:(raw.sid||[]).map(normSID), slp:(raw.slp||[]).map(normSLP), cmo:(raw.cmo||[]).map(normCMO)
+    };
+    let all = Object.values(normalized).flat().filter(passFilters);
+    const totals = all.reduce((a,x)=>{ a.docs++; a.recibidas += x.fuente==='SCRM'?toNum(x.libras):0; a.programadas += toNum(x.programadas); a.empacado += toNum(x.empacado); a.basura += toNum(x.basura); a.cola += toNum(x.pesoCola); a.dolares += toNum(x.dolares); a.costoMo += toNum(x.costoMo); return a; }, {docs:0,recibidas:0,programadas:0,empacado:0,basura:0,cola:0,dolares:0,costoMo:0});
+    const base = totals.recibidas - totals.basura; const rend = base>0 && totals.empacado>0 ? totals.empacado/base*100 : 0;
+    currentSummary = {all, totals, rend};
+    renderKpis(totals,rend); renderCharts(all); renderTables(all); $('lastUpdate').textContent=stamp(); $('docsRead').textContent=fmt0(totals.docs); $('modeLabel').textContent=live?'En vivo':'Manual';
+  }
+  function renderKpis(t,r){ $('kRecibidas').textContent=fmt(t.recibidas); $('kProgramadas').textContent=fmt(t.programadas); $('kEmpacado').textContent=fmt(t.empacado); $('kRend').textContent=pct.format(r)+'%'; $('kCola').textContent=fmt(t.cola); $('kBasura').textContent=fmt(t.basura); $('kDolares').textContent=moneyFmt(t.dolares); $('kCostoMo').textContent=moneyFmt(t.costoMo); }
+  function groupBy(arr,keyFn){ const m=new Map(); arr.forEach(x=>{ const k=keyFn(x)||'—'; if(!m.has(k))m.set(k,[]); m.get(k).push(x); }); return m; }
+  function daysBetween(){ const out=[]; let d=$('fDesde').value||today(), h=$('fHasta').value||d; for(let i=0;i<370 && d<=h;i++,d=addDays(d,1)) out.push(d); return out; }
+  function sum(arr,fn){ return arr.reduce((a,x)=>a+toNum(fn(x)),0); }
+  function updateChart(id,type,data,options){ if(charts[id]) charts[id].destroy(); charts[id]=new Chart($(id), {type,data,options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{mode:'index',intersect:false}},interaction:{mode:'nearest',intersect:false},...options}}); }
+  function renderCharts(all){
+    const days=daysBetween(); const byDay=groupBy(all,x=>x.fecha);
+    updateChart('chartTrend','line',{labels:days,datasets:[
+      {label:'Recepción SCRM',data:days.map(d=>sum(byDay.get(d)||[],x=>x.fuente==='SCRM'?x.libras:0)),tension:.35},
+      {label:'Compra SGC',data:days.map(d=>sum(byDay.get(d)||[],x=>x.fuente==='SGC'?x.libras:0)),tension:.35},
+      {label:'Peso cola PCD',data:days.map(d=>sum(byDay.get(d)||[],x=>x.pesoCola)),tension:.35},
+      {label:'Descabezado SID',data:days.map(d=>sum(byDay.get(d)||[],x=>x.descabezado)),tension:.35}
+    ]},{scales:{y:{beginAtZero:true}}});
+    const entero=sum(all,x=>x.fuente==='SCRM'&&upper(x.estatus)==='ENTERO'?x.libras:0), cola=sum(all,x=>x.fuente==='SCRM'&&upper(x.estatus)==='COLA'?x.libras:0);
+    updateChart('chartStatus','doughnut',{labels:['ENTERO','COLA'],datasets:[{data:[entero,cola]}]},{});
+    const provRows=Array.from(groupBy(all.filter(x=>x.fuente==='SCRM'),x=>upper(x.proveedor)||'—')).map(([k,v])=>({k,v:sum(v,x=>x.libras)})).sort((a,b)=>b.v-a.v).slice(0,10);
+    updateChart('chartProviders','bar',{labels:provRows.map(x=>x.k),datasets:[{label:'Libras',data:provRows.map(x=>x.v)}]},{indexAxis:'y',scales:{x:{beginAtZero:true}}});
+    const rendRows=Array.from(groupBy(all.filter(x=>x.fuente==='SCRM'),x=>upper(x.proveedor)||'—')).map(([k,v])=>{ const emp=sum(v,x=>x.empacado), base=sum(v,x=>x.libras)-sum(v,x=>x.basura); return {k,v:base>0?emp/base*100:0}; }).filter(x=>x.v>0).sort((a,b)=>b.v-a.v).slice(0,10);
+    updateChart('chartRend','bar',{labels:rendRows.map(x=>x.k),datasets:[{label:'Rendimiento %',data:rendRows.map(x=>x.v)}]},{indexAxis:'y',scales:{x:{beginAtZero:true,ticks:{callback:v=>v+'%'}}}});
+    updateChart('chartCmo','line',{labels:days,datasets:[{label:'Libras procesadas',data:days.map(d=>sum(byDay.get(d)||[],x=>x.fuente==='CMO'?x.libras:0)),tension:.35},{label:'Valor nominal $',data:days.map(d=>sum(byDay.get(d)||[],x=>x.costoMo)),tension:.35}]},{scales:{y:{beginAtZero:true}}});
+    const ctrlRows=Array.from(groupBy(all.filter(x=>x.fuente==='SLP'),x=>upper((x.detalle||'').replace('Controlador:','').split('|')[0].trim())||'PLANTA')).map(([k,v])=>({k,v:sum(v,x=>x.dolares)})).sort((a,b)=>b.v-a.v).slice(0,10);
+    updateChart('chartSlp','bar',{labels:ctrlRows.map(x=>x.k),datasets:[{label:'Dólares',data:ctrlRows.map(x=>x.v)}]},{scales:{y:{beginAtZero:true}}});
+  }
+  function renderTables(all){
+    const groups=Array.from(groupBy(all,x=>upper(x.proveedor||x.cuadrilla)||'—')).map(([k,v])=>{ const recib=sum(v,x=>x.fuente==='SCRM'?x.libras:0), prog=sum(v,x=>x.programadas), emp=sum(v,x=>x.empacado), bas=sum(v,x=>x.basura), cola=sum(v,x=>x.pesoCola), dol=sum(v,x=>x.dolares); const rr=(recib-bas)>0 && emp>0 ? emp/(recib-bas)*100 : 0; return {proveedor:k,reg:v.length,recib,prog,emp,rr,bas,cola,dol}; }).sort((a,b)=>b.recib-a.recib).slice(0,60);
+    $('tblResumen').querySelector('tbody').innerHTML = groups.length ? groups.map(r=>`<tr><td><b>${r.proveedor}</b></td><td class="num">${fmt0(r.reg)}</td><td class="num">${fmt(r.recib)}</td><td class="num">${fmt(r.prog)}</td><td class="num">${fmt(r.emp)}</td><td class="num">${pct.format(r.rr)}%</td><td class="num">${fmt(r.bas)}</td><td class="num">${fmt(r.cola)}</td><td class="num">${moneyFmt(r.dol)}</td><td>${statusTag(r.rr,r.recib)}</td></tr>`).join('') : `<tr><td colspan="10" class="empty">Sin datos en el rango seleccionado</td></tr>`;
+    const mov=all.slice().sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha))).slice(0,90);
+    $('tblMov').querySelector('tbody').innerHTML = mov.length ? mov.map(x=>`<tr><td><span class="tag ${tagClass(x.fuente)}">${x.fuente}</span></td><td>${x.fecha||'—'}</td><td>${x.secuencial||'—'}</td><td><b>${x.proveedor||x.cuadrilla||'—'}</b></td><td>${x.estatus||'—'}</td><td class="num">${fmt(x.libras||x.pesoCola)}</td><td class="num">${x.dolares?moneyFmt(x.dolares):fmt(x.empacado||x.costoMo)}</td><td>${x.detalle||'—'}</td></tr>`).join('') : `<tr><td colspan="8" class="empty">Sin movimientos para mostrar</td></tr>`;
+  }
+  function tagClass(f){ return f==='SCRM'||f==='SLP'?'ok':(f==='PCD'||f==='SID'?'warn':''); }
+  function statusTag(r,recib){ if(!recib) return '<span class="tag">—</span>'; if(r>=65) return '<span class="tag ok">ÓPTIMO</span>'; if(r>0) return '<span class="tag warn">REVISAR</span>'; return '<span class="tag bad">SIN EMPACADO</span>'; }
+
+  function exportExcel(){ if(!currentSummary) return; const wb=XLSX.utils.book_new(); const k=[['Indicador','Valor'],['Libras recibidas',currentSummary.totals.recibidas],['Programadas',currentSummary.totals.programadas],['Empacado',currentSummary.totals.empacado],['Rendimiento %',currentSummary.rend],['Peso cola',currentSummary.totals.cola],['Basura',currentSummary.totals.basura],['$ Liquidado',currentSummary.totals.dolares],['Costo M.O.',currentSummary.totals.costoMo]]; XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(k),'KPIs'); const rows=currentSummary.all.map(x=>({Fuente:x.fuente,Fecha:x.fecha,Secuencial:x.secuencial,Proveedor:x.proveedor,Estatus:x.estatus,Libras:x.libras,Programadas:x.programadas,Empacado:x.empacado,Basura:x.basura,PesoCola:x.pesoCola,Dolares:x.dolares,CostoMO:x.costoMo,Detalle:x.detalle})); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Movimientos'); XLSX.writeFile(wb,`DGP_Dashboard_${today()}.xlsx`); }
+  async function exportPdf(){
+    if(!currentSummary) return; const {jsPDF}=window.jspdf; const doc=new jsPDF('landscape','pt','a4'); const W=doc.internal.pageSize.getWidth();
+    doc.setFillColor(6,29,53); doc.rect(0,0,W,74,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('DGP — DASHBOARD GERENCIAL DE PRODUCCIÓN', 36, 32); doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.text(`Periodo: ${$('fDesde').value} al ${$('fHasta').value}   |   Generado: ${stamp()}   |   Usuario: ${currentUser?.email||''}`,36,52);
+    let y=92; const t=currentSummary.totals; const cards=[['Libras recibidas',fmt(t.recibidas)],['Programadas',fmt(t.programadas)],['Empacado',fmt(t.empacado)],['Rendimiento',pct.format(currentSummary.rend)+'%'],['Peso cola',fmt(t.cola)],['Basura',fmt(t.basura)],['$ Liquidado',moneyFmt(t.dolares)],['Costo M.O.',moneyFmt(t.costoMo)]]; const gap=8, cw=(W-72-gap*3)/4, ch=54;
+    cards.forEach((c,i)=>{ const x=36+(i%4)*(cw+gap), yy=y+Math.floor(i/4)*(ch+gap); doc.setDrawColor(215,226,236); doc.setFillColor(255,255,255); doc.roundedRect(x,yy,cw,ch,8,8,'FD'); doc.setTextColor(92,107,130); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.text(c[0].toUpperCase(),x+10,yy+18); doc.setTextColor(6,29,53); doc.setFontSize(15); doc.text(String(c[1]),x+10,yy+41); });
+    y += (ch*2)+gap+24; doc.setTextColor(6,29,53); doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Resumen gerencial por proveedor',36,y); y+=12;
+    const body=Array.from($('tblResumen').querySelectorAll('tbody tr')).slice(0,25).map(tr=>Array.from(tr.children).slice(0,9).map(td=>td.innerText));
+    doc.autoTable({startY:y,head:[['Proveedor','Reg.','Recibidas','Programadas','Empacado','Rend.','Basura','Cola','$ Liq.']],body,theme:'grid',styles:{fontSize:7,cellPadding:3,overflow:'linebreak'},headStyles:{fillColor:[11,52,93],textColor:255},columnStyles:{0:{cellWidth:180},2:{halign:'right'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'},6:{halign:'right'},7:{halign:'right'},8:{halign:'right'}}});
+    const finalY=doc.lastAutoTable.finalY+28; doc.setDrawColor(215,226,236); doc.line(36,finalY,W-36,finalY); doc.setTextColor(100,116,139); doc.setFontSize(8); doc.text('Documento generado automáticamente por DGP. La página consolida datos de los módulos productivos existentes y no modifica registros.',36,finalY+16);
+    doc.save(`DGP_Dashboard_Gerencial_${today()}.pdf`);
+  }
+})();
+</script>
+</body>
+</html>
