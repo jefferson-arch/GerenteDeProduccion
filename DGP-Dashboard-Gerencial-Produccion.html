@@ -1,0 +1,1131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>DGP | Dashboard Gerencial de Producción</title>
+  <link rel="icon" href="favicon.ico?v=1" />
+  <link rel="shortcut icon" href="favicon.ico?v=1" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root{
+      --navy:#061d35; --navy2:#0b345d; --blue:#0d74c9; --cyan:#1fb6ff; --gold:#d4a017;
+      --bg:#eef4f9; --card:#ffffff; --line:#d7e2ec; --text:#0f172a; --muted:#64748b;
+      --green:#0f8a4b; --red:#c62828; --orange:#d97706; --shadow:0 18px 44px rgba(8,43,76,.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:
+      radial-gradient(circle at top left, rgba(31,182,255,.18), transparent 30%),
+      radial-gradient(circle at top right, rgba(212,160,23,.12), transparent 26%),
+      linear-gradient(180deg,#f3f8fd 0%,#ffffff 48%,#eef4f9 100%);}
+    .hidden{display:none!important}
+    .login{min-height:100vh;display:grid;place-items:center;padding:22px;background:linear-gradient(135deg,#f4f9ff 0%,#dcecff 48%,#cfe2fa 100%)}
+    .login-card{width:min(460px,96vw);background:linear-gradient(160deg,#071b31 0%,#0b345d 58%,#123f67 100%);border:1px solid rgba(255,255,255,.16);border-radius:26px;box-shadow:0 28px 85px rgba(8,43,76,.30);padding:28px}
+    .login-logo{display:block;width:230px;height:118px;object-fit:contain;margin:0 auto 8px;filter:drop-shadow(0 12px 24px rgba(0,0,0,.35))}
+    .login h1{margin:0;text-align:center;color:#ffffff;font-size:22px;letter-spacing:.4px}.login p{margin:6px 0 22px;text-align:center;color:#dbeafe;font-size:13px;line-height:1.35}
+    label{display:block;font-size:11px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin:0 0 5px}.login label{color:#e2e8f0}
+    input,select{width:100%;border:1px solid #c9d6e2;border-radius:12px;padding:10px 12px;background:#fff;font:inherit;outline:none} input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(31,182,255,.13)} .login input{background:rgba(255,255,255,.96);border-color:rgba(191,219,254,.55);color:#0f172a} .login input::placeholder{color:#64748b}
+    .field{margin-bottom:10px}.btn{border:1px solid #adc0d3;border-radius:13px;background:linear-gradient(180deg,#fff,#eef5fb);color:var(--navy);padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(8,43,76,.08);transition:.14s}.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(8,43,76,.13)}.btn.primary{background:linear-gradient(135deg,var(--blue),var(--navy2));color:#fff;border-color:var(--blue)}.btn.gold{background:linear-gradient(135deg,#f8e9b0,var(--gold));color:#302100;border-color:#c79314}.btn.danger{color:var(--red);border-color:#f0b4af;background:#fff5f5}.btn.small{padding:7px 10px;border-radius:10px;font-size:12px}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .msg{font-size:12px;margin-top:10px;text-align:center;color:var(--red);min-height:18px}.login .msg{color:#fecaca;font-weight:700}
+    .app{display:none;min-height:100vh}.topbar{position:sticky;top:0;z-index:30;background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;border-bottom:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(8,43,76,.18)}
+    .top-inner{max-width:1600px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:120px;height:52px;object-fit:contain}.brand h2{margin:0;font-size:17px;letter-spacing:.4px}.brand span{font-size:12px;color:#bde8ff}.user{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(255,255,255,.08);font-size:12px}.dot{width:9px;height:9px;border-radius:50%;background:#94a3b8}.dot.ok{background:#22c55e}.dot.live{background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.15)}
+    .wrap{max-width:1600px;margin:0 auto;padding:14px 16px 24px}.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;margin-bottom:12px;align-items:stretch}.hero-card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:18px}.hero h1{margin:0;color:var(--navy);font-size:28px}.hero p{margin:6px 0 0;color:var(--muted);font-size:13px}.hero-actions{display:flex;align-items:center;justify-content:center;min-width:390px}.hero-actions .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.status-box{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mini{border:1px solid var(--line);border-radius:16px;padding:10px;background:linear-gradient(180deg,#fff,#f7fbff)}.mini .t{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase}.mini .v{font-size:15px;font-weight:900;margin-top:4px;color:var(--navy)}
+    .filters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:12px;margin-bottom:12px}.filters .wide{grid-column:span 2}.filters .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .matrixKpiWrap{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(360px,.8fr);gap:14px;align-items:start;margin-bottom:16px}.kpis{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;margin-bottom:12px}.kpis-side{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:0;align-content:start}.kpis-side .kpi{grid-column:span 1;min-height:96px}.kpi{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px;min-height:104px}.kpi:before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--blue),var(--cyan))}.kpi.gold:before{background:linear-gradient(90deg,var(--gold),#ffd166)}.kpi.green:before{background:linear-gradient(90deg,var(--green),#22c55e)}.kpi.red:before{background:linear-gradient(90deg,var(--red),#fb7185)}.kpi .t{font-size:11px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:.04em}.kpi .v{font-size:23px;font-weight:950;margin-top:10px;color:var(--navy);white-space:nowrap}.kpi .s{font-size:11px;color:var(--muted);margin-top:4px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:14px;min-height:120px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-7{grid-column:span 7}.span-8{grid-column:span 8}.span-12{grid-column:span 12}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}.card h3{margin:0;color:var(--navy);font-size:16px}.card small{color:var(--muted);font-weight:700}.chartBox{height:310px}.chartBox.sm{height:250px}.chartBox.lg{height:340px}canvas{width:100%!important;height:100%!important}
+    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:16px}table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}
+    .matrix-card{position:relative;overflow:hidden;background:#ffffff;border:1px solid #d5dee7;border-radius:20px;box-shadow:0 16px 34px rgba(6,29,53,.10);padding:12px 14px 12px;margin-bottom:0}.matrix-card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#0b345d,#224d77)}.matrix-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;padding:0}.matrix-title h3{margin:0;color:var(--navy);font-size:18px;line-height:1.05;font-weight:950;display:flex;align-items:center;gap:10px}.matrix-title small{display:block;color:#607693;font-weight:800;font-size:11px;margin-top:4px}.matrix-card .tableWrap{overflow:visible;border:none;border-radius:14px;background:#ffffff;box-shadow:inset 0 0 0 1px #d9e2eb}.matrix-table{width:100%;min-width:0;font-size:12px}.matrix-table th{font-size:12px;letter-spacing:.04em;text-align:left;padding:9px 12px;background:linear-gradient(180deg,#0b345d,#072846)}.matrix-table th:last-child{text-align:right}.matrix-table td{padding:8px 12px;border-bottom:1px solid #e6edf3}.matrix-table td:nth-child(1){font-weight:900;letter-spacing:.02em;color:var(--navy);width:72%}.matrix-table td:nth-child(2){font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;width:28%}.matrix-table td.num{font-size:14px;text-align:right}.matrix-label{display:flex;align-items:center;gap:8px}.matrix-icon{width:20px;height:20px;border-radius:7px;border:1px solid #d1dce8;background:#f8fafc;color:#334155;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}.matrix-value{display:inline-flex;justify-content:flex-end;align-items:center;min-width:116px;padding:6px 10px;border-radius:11px;background:#f8fbff;box-shadow:inset 0 0 0 1px #cdd8e5;color:var(--navy);font-size:16px;font-weight:950}.matrix-note{font-size:11px;color:#5c7390;margin-top:9px;line-height:1.35;padding:8px 10px;border-radius:10px;background:#f8fbff;border:1px solid #dde7f0}.matrix-date{display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:999px;background:#0b345d;font-weight:900;color:#fff;text-transform:capitalize;font-size:12px;white-space:nowrap}.trendTableWrap{margin-top:12px;max-height:220px;overflow:auto;border:1px solid #dde7f0;border-radius:14px;background:#fff}.trendTable{width:100%;border-collapse:collapse;min-width:860px;font-size:11px}.trendTable th,.trendTable td{padding:7px 8px;border-bottom:1px solid #e8eef5;white-space:nowrap}.trendTable th{position:sticky;top:0;background:#f8fbff;color:var(--navy);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.trendTable td.num{text-align:right;font-variant-numeric:tabular-nums}.trendTable td.day{font-weight:900;color:var(--navy);text-align:center}.trendTable .pct{color:#64748b;font-weight:800}.legendChip{display:inline-flex;align-items:center;gap:6px}.legendChip i{display:inline-block;width:10px;height:10px;border-radius:3px}
+th,td{border-bottom:1px solid var(--line);padding:8px 9px;white-space:nowrap;text-align:left}th{background:linear-gradient(180deg,var(--navy2),var(--navy));color:#fff;font-weight:900;position:sticky;top:0}td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}tbody tr:nth-child(even){background:#f8fbfe}tbody tr:hover{background:#eef7ff}.tag{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900;border:1px solid var(--line);background:#fff}.tag.ok{color:var(--green);background:#ecfdf5;border-color:#bbf7d0}.tag.warn{color:#92400e;background:#fffbeb;border-color:#fde68a}.tag.bad{color:var(--red);background:#fff1f2;border-color:#fecdd3}.footer-note{margin-top:12px;color:var(--muted);font-size:11px;text-align:right}.loading{opacity:.72;pointer-events:none}.empty{padding:18px;text-align:center;color:var(--muted)}
+    @media (max-width:1300px){.matrixKpiWrap{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(4,1fr)}.kpis-side{grid-template-columns:repeat(4,1fr)}.span-3,.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12}.hero{grid-template-columns:1fr}.hero-actions{min-width:0}.filters{grid-template-columns:repeat(4,1fr)}.filters .wide{grid-column:span 2}.matrix-title{align-items:flex-start;flex-direction:column}.matrix-date{align-self:flex-start}.trendTable{min-width:760px}}
+    @media (max-width:760px){.top-inner{align-items:flex-start;flex-direction:column}.brand img{width:105px;height:46px}.hero h1{font-size:22px}.hero-actions{min-width:0}.hero-actions .actions{width:100%}.hero-actions .actions .btn{flex:1 1 calc(50% - 8px)}.matrixKpiWrap{grid-template-columns:1fr}.kpis,.kpis-side{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}.filters .wide,.filters .actions{grid-column:span 1}.status-box{grid-template-columns:1fr}.wrap{padding:10px}.kpi .v{font-size:19px}.chartBox{height:270px}}
+    @media print{.topbar,.filters,.btn{display:none!important}.wrap{padding:0}.card,.kpi,.hero-card{box-shadow:none!important}.grid,.kpis,.hero{display:block}.card,.kpi,.hero-card{margin-bottom:10px;break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login">
+    <div class="login-card">
+      <img class="login-logo" src="logo_pdf_blanco.png" onerror="this.src='logo.png';this.onerror=null" alt="Oceantreasure" />
+      <h1>DGP — Dashboard Gerencial</h1>
+      <p>Centro ejecutivo de Producción en tiempo real: recepción, compra, cola, descabezado, liquidaciones y mano de obra.</p>
+      <div class="field"><label>Correo</label><input id="loginEmail" type="email" autocomplete="username" placeholder="usuario@oceantreasure.local" /></div>
+      <div class="field"><label>Contraseña</label><input id="loginPass" type="password" autocomplete="current-password" /></div>
+      <button id="btnLogin" class="btn primary" style="width:100%">INGRESAR</button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+  </section>
+
+  <section id="appView" class="app">
+    <header class="topbar">
+      <div class="top-inner">
+        <div class="brand">
+          <img src="logo_pdf_blanco.png" onerror="this.src='logo.png';this.onerror=null" alt="Oceantreasure" />
+          <div><h2>DGP — Dashboard Gerencial de Producción</h2><span>Recepción · Compra · Cola · Descabezado · Liquidación · Mano de Obra</span></div>
+        </div>
+        <div class="user">
+          <span class="pill"><span id="syncDot" class="dot"></span><span id="syncText">Sin cargar</span></span>
+          <span class="pill" id="userEmail">—</span>
+          <button class="btn small" id="btnLogout">Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap" id="mainWrap">
+      <section class="hero">
+        <div class="hero-card">
+          <h1>Centro de mando productivo</h1>
+          <p>Vista consolidada para decisiones de Gerencia de Producción. Usa <b>APLICAR</b> para cargar el rango; activa <b>EN VIVO</b> solo cuando necesites monitoreo permanente.</p>
+        </div>
+        <div class="hero-card hero-actions">
+          <div class="actions">
+            <button class="btn primary" id="btnAplicar">APLICAR</button>
+            <button class="btn gold" id="btnLive">EN VIVO</button>
+            <button class="btn" id="btnPdf">PDF</button>
+            <button class="btn" id="btnExcel">EXCEL</button>
+          </div>
+          <div class="hidden" aria-hidden="true">
+            <span id="lastUpdate">—</span>
+            <span id="docsRead">0</span>
+            <span id="modeLabel">Manual</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="filters">
+        <div><label>Desde</label><input type="date" id="fDesde"></div>
+        <div><label>Hasta</label><input type="date" id="fHasta"></div>
+        <div class="wide"><label>Proveedor</label><input type="text" id="fProveedor" placeholder="Todos"></div>
+        <div><label>Estatus</label><select id="fEstatus"><option value="">Todos</option><option>ENTERO</option><option>COLA</option></select></div>
+        <div><label>Fuente</label><select id="fFuente"><option value="">Todas</option><option value="SCRM">SCRM</option><option value="SGC">SGC</option><option value="PCD">PCD</option><option value="SID">SID</option><option value="SLP">SLP</option><option value="CMO">CMO</option></select></div>
+      </section>
+
+      <section class="matrixKpiWrap">
+        <section class="matrix-card">
+        <div class="matrix-title">
+          <div><h3>Matriz gerencial DGP</h3><small>Lectura lógica desde SCRM, SID, PCD, CMO y SLP</small></div>
+          <div class="matrix-date" id="matrixFecha">—</div>
+        </div>
+        <div class="tableWrap">
+          <table class="matrix-table" id="tblMatriz"><thead><tr><th>Título</th><th>Detalle</th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="matrix-note">Criterio aplicado: SCRM define las libras programadas y recibidas del día. La espera por descabezar se calcula restando el parcial procesado de cola elevado a entero (cola / 0,66). PCD/SID quedan como control del peso cola y cabeza pesada procesada.</div>
+        </section>
+
+        <section class="kpis kpis-side">
+        <div class="kpi gold"><div class="t">Recibidas cola</div><div class="v" id="kColaRecibida">0,00</div><div class="s">SCRM · fecha filtrada</div></div>
+        <div class="kpi"><div class="t">Programadas cola</div><div class="v" id="kProgramadas">0,00</div><div class="s">Libras programadas de lotes cola</div></div>
+        <div class="kpi green"><div class="t">Cola aprox.</div><div class="v" id="kColaAprox">0,00</div><div class="s">Cola recibida × 0,66</div></div>
+        <div class="kpi green"><div class="t">Empacado cola</div><div class="v" id="kColaEmpacada">0,00</div><div class="s">Empacado registrado en SCRM/SLP</div></div>
+        <div class="kpi red"><div class="t">Saldo cola</div><div class="v" id="kSaldoColaEmpacar">0,00</div><div class="s">Cola aprox. - empacado</div></div>
+        <div class="kpi"><div class="t">Descabezado entero</div><div class="v" id="kColaDescabezada">0,00</div><div class="s">SID · elevado a entero</div></div>
+        <div class="kpi"><div class="t">Peso cola SID</div><div class="v" id="kPesoColaProducido">0,00</div><div class="s">Producto cola generado</div></div>
+        <div class="kpi"><div class="t">Cabeza registrada</div><div class="v" id="kCabeza">0,00</div><div class="s">SID · pesada de cabezas</div></div>
+        <div class="kpi"><div class="t">Entero recibido</div><div class="v" id="kEnteroRecibido">0,00</div><div class="s">SCRM estatus ENTERO</div></div>
+        <div class="kpi green"><div class="t">Entero empacado</div><div class="v" id="kEnteroEmpacado">0,00</div><div class="s">SCRM/SLP estatus ENTERO</div></div>
+        <div class="kpi"><div class="t">$ Liquidado</div><div class="v" id="kDolares">$ 0,00</div><div class="s">SLP · Botón de Oro</div></div>
+        <div class="kpi"><div class="t">Costo M.O.</div><div class="v" id="kCostoMo">$ 0,00</div><div class="s">CMO · jornada</div></div>
+        </section>
+      </section>
+
+      <section class="grid">
+        <div class="card span-6"><div class="card-head"><div><h3>Por descabezar vs descabezado</h3><small>Entero equivalente por descabezar vs SID elevado a entero</small></div></div><div class="chartBox"><canvas id="chartRecDesc"></canvas></div></div>
+        <div class="card span-6"><div class="card-head"><div><h3>Cola disponible vs empacado</h3><small>Cola aproximada recibida vs libras empacadas</small></div></div><div class="chartBox"><canvas id="chartColaEmp"></canvas></div></div>
+        <div class="card span-6"><div class="card-head"><div><h3>Entero recibido vs empacado</h3><small>Control separado de producto entero</small></div></div><div class="chartBox"><canvas id="chartEntero"></canvas></div></div>
+        <div class="card span-6"><div class="card-head"><div><h3>Total ENTERO vs Total COLA</h3><small>Composición gerencial de materia prima del rango operativo</small></div></div><div class="chartBox"><canvas id="chartStatus"></canvas></div></div>
+        <div class="card span-8"><div class="card-head"><div><h3>Tendencia mensual integral</h3><small>Desde el día 1 del mes actual hasta la fecha actual, sin depender del filtro del centro de mando</small></div></div><div class="chartBox lg"><canvas id="chartTrend"></canvas></div><div class="trendTableWrap"><table id="tblTrendMonth" class="trendTable"><thead><tr><th>Día</th><th>Por desc.</th><th>%</th><th>Cola aprox.</th><th>%</th><th>Desc. SID</th><th>%</th><th>Empacado</th><th>%</th></tr></thead><tbody></tbody></table></div></div>
+        <div class="card span-4"><div class="card-head"><div><h3>Mano de obra vs Botón de Oro</h3><small>Acumulado mensual: dólares gastados en M.O. vs utilidad Botón de Oro</small></div></div><div class="chartBox sm"><canvas id="chartMoSlp"></canvas></div></div>
+        <div class="card span-12 hidden" aria-hidden="true">
+          <div class="card-head"><div><h3>Resumen gerencial por proveedor</h3><small>Consolidado para revisión ejecutiva</small></div><button class="btn small" id="btnFull">Pantalla completa</button></div>
+          <div class="tableWrap"><table id="tblResumen"><thead><tr><th>Proveedor/Cuadrilla</th><th>Reg.</th><th>Cola recibida</th><th>Cola aprox.</th><th>Desc. entero</th><th>Empacado cola</th><th>Saldo cola</th><th>Entero recibido</th><th>$ Liquidado</th><th>Estado</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="card span-12 hidden" aria-hidden="true">
+          <div class="card-head"><div><h3>Últimos movimientos consolidados</h3><small>Auditoría rápida por fuente de información</small></div></div>
+          <div class="tableWrap"><table id="tblMov"><thead><tr><th>Fuente</th><th>Fecha</th><th>Sec/Liq/Rep</th><th>Proveedor/Cuadrilla</th><th>Estatus</th><th class="num">Libras</th><th class="num">Empacado/Valor</th><th>Detalle</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </section>
+      <div class="footer-note">DGP lee información de los módulos existentes y no modifica registros productivos.</div>
+    </main>
+  </section>
+
+<script>
+(function(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+    authDomain: "oceantreasure-app.firebaseapp.com",
+    projectId: "oceantreasure-app",
+    storageBucket: "oceantreasure-app.firebasestorage.app",
+    messagingSenderId: "553014659258",
+    appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+    measurementId: "G-HMMQKJY8NJ"
+  };
+  if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  try{ db.enablePersistence({synchronizeTabs:true}); }catch(_){ }
+
+  const ALLOWED = new Set([
+    "jeffersonfigueroa@oceantreasure.local",
+    "gerenciageneral@oceantreasure.local",
+    "milenalmeida@oceantreasure.local"
+  ]);
+  const COL = {
+    SCRM:"scrm_recepcion",
+    SGC:"sgc_compra_registros",
+    SGC_META:"sgc_compra_meta",
+    PCD:"pcd_registro_cola",
+    SID:"sid_informe_descabezado",
+    SLP:"slp_liquidaciones_pago",
+    CMO:"cmo_days"
+  };
+
+  const $ = id => document.getElementById(id);
+  const nf0 = new Intl.NumberFormat('es-EC',{maximumFractionDigits:0});
+  const nf2 = new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const nf3 = new Intl.NumberFormat('es-EC',{minimumFractionDigits:3,maximumFractionDigits:3});
+  const nf4 = new Intl.NumberFormat('es-EC',{minimumFractionDigits:4,maximumFractionDigits:4});
+  const money = new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const pct = new Intl.NumberFormat('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const FACTOR_COLA_A_ENTERO = 0.36; // DGP: cola producida / 0,36 = entero equivalente por descabezar
+  const LBS_POR_CONTENEDOR_CMO = 52224; // CMO: equivalente contenedor = cola mensual procesada / 52.224 lb
+  let currentUser = null, live = false, unsubs = [], raw = {}, normalized = {}, charts = {}, currentSummary = null;
+
+  function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function addDays(iso, n){ const [y,m,d]=iso.split('-').map(Number); const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+n); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
+  function toNum(v){ if(v==null || v==='') return 0; if(typeof v==='number') return Number.isFinite(v)?v:0; let s=String(v).trim().replace(/\s/g,''); if(!s) return 0; if(s.includes(',') && s.includes('.')) s=s.replace(/\./g,'').replace(',', '.'); else if(s.includes(',')) s=s.replace(',', '.'); const n=Number(s.replace(/[^0-9.-]/g,'')); return Number.isFinite(n)?n:0; }
+  function clean(v){ return String(v??'').trim(); }
+  function upper(v){ return clean(v).toUpperCase(); }
+  function fmt(v){ return nf2.format(toNum(v)); }
+  function fmt0(v){ return nf0.format(toNum(v)); }
+  function moneyFmt(v){ return '$ '+money.format(toNum(v)); }
+  function dateStrFromTS(ts){ if(ts && typeof ts.toDate==='function'){ const d=ts.toDate(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; } return ''; }
+  function getDate(x){
+    return clean(x.fechaLlegada || x.fecha || x.date || x.dia || x.createdAtIso?.slice?.(0,10) || x.updatedAtIso?.slice?.(0,10) || dateStrFromTS(x.createdAt) || dateStrFromTS(x.updatedAt) || (String(x.stamp||'').match(/\d{4}-\d{2}-\d{2}/)||[''])[0]);
+  }
+  function inRange(x){ const d=getDate(x); const desde=$('fDesde').value, hasta=$('fHasta').value; return (!desde || d>=desde) && (!hasta || d<=hasta); }
+  function passFilters(item){
+    const prov = upper($('fProveedor').value); const est = upper($('fEstatus').value); const fuente = $('fFuente').value;
+    if(fuente && item.fuente !== fuente) return false;
+    if(prov && !upper(item.proveedor || item.cuadrilla || '').includes(prov)) return false;
+    if(est && upper(item.estatus)!==est) return false;
+    return true;
+  }
+  function passMonthFilters(item){
+    const prov = upper($('fProveedor').value); const est = upper($('fEstatus').value); const fuente = $('fFuente').value;
+    if(fuente && item.fuente !== fuente) return false;
+    if(prov && !upper(item.proveedor || item.cuadrilla || '').includes(prov)) return false;
+    if(est && upper(item.estatus)!==est) return false;
+    return true;
+  }
+  function setSync(state, text){ const dot=$('syncDot'); dot.className='dot '+(state||''); $('syncText').textContent=text||'—'; }
+  function stamp(){ return new Date().toLocaleString('es-EC',{dateStyle:'short',timeStyle:'medium'}); }
+  function stampLong(){
+    const d = new Date();
+    const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    const ss = String(d.getSeconds()).padStart(2,'0');
+    return `${dias[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} de ${meses[d.getMonth()]} del ${d.getFullYear()} | ${hh}:${mm}:${ss}`;
+  }
+
+  $('fDesde').value = today(); $('fHasta').value = today();
+  try{ const lastEmail = localStorage.getItem('dgp_last_email') || ''; if(lastEmail) $('loginEmail').value = lastEmail; }catch(_){ }
+
+  $('btnLogin').onclick = async()=>{
+    $('loginMsg').textContent = '';
+    const email = $('loginEmail').value.trim().toLowerCase();
+    const pass = $('loginPass').value;
+    if(!email || !pass){ $('loginMsg').textContent = 'Ingresa correo y contraseña.'; return; }
+    try{
+      try{ localStorage.setItem('dgp_last_email', email); }catch(_){ }
+      await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      await auth.signInWithEmailAndPassword(email, pass);
+    }catch(e){
+      console.error('Login DGP error:', e);
+      const map = {
+        'auth/invalid-credential':'Credenciales inválidas. Revisa correo y contraseña.',
+        'auth/invalid-email':'El correo no es válido.',
+        'auth/user-not-found':'Ese usuario no existe en Firebase Auth.',
+        'auth/wrong-password':'La contraseña es incorrecta.',
+        'auth/too-many-requests':'Demasiados intentos. Espera un momento e inténtalo otra vez.',
+        'auth/network-request-failed':'Falló la conexión de red. Verifica internet e inténtalo nuevamente.'
+      };
+      $('loginMsg').textContent = map[e?.code] || ('No se pudo iniciar sesión. ' + (e?.message || 'Revisa usuario, contraseña o permisos.'));
+    }
+  };
+  ['loginEmail','loginPass'].forEach(id=>$(id).addEventListener('keydown', ev=>{ if(ev.key==='Enter') $('btnLogin').click(); }));
+  $('btnLogout').onclick = ()=>auth.signOut();
+
+  auth.onAuthStateChanged(async user=>{
+    if(!user){ currentUser=null; $('loginView').style.display='grid'; $('appView').style.display='none'; stopLive(); return; }
+    const em=String(user.email||'').toLowerCase();
+    if(!ALLOWED.has(em)){ await auth.signOut(); $('loginMsg').textContent='Acceso denegado para este dashboard.'; return; }
+    currentUser=user; $('userEmail').textContent=em; $('loginView').style.display='none'; $('appView').style.display='block';
+    await loadAll(false);
+  });
+
+  $('btnAplicar').onclick = ()=>loadAll(false);
+  $('btnLive').onclick = ()=>{ live ? stopLive() : startLive(); };
+  $('btnPdf').onclick = async()=>{
+    try{ await exportPdf(); }
+    catch(e){
+      console.error('Error al generar PDF DGP:', e);
+      alert('No se pudo generar el PDF. Revisa la consola o vuelve a cargar el dashboard.');
+    }
+  };
+  $('btnExcel').onclick = exportExcel;
+  $('btnFull').onclick = ()=>{ const el=document.documentElement; if(!document.fullscreenElement) el.requestFullscreen?.(); else document.exitFullscreen?.(); };
+
+  async function fetchCol(name, dateField){
+    const desde=$('fDesde').value, hasta=$('fHasta').value;
+    try{
+      if(dateField && desde && hasta){
+        const snap = await db.collection(name).where(dateField, '>=', desde).where(dateField, '<=', hasta).limit(1500).get();
+        return snap.docs.map(d=>({id:d.id,...d.data()}));
+      }
+    }catch(e){ console.warn('Consulta por rango falló en', name, e?.code || e); }
+    try{
+      const snap = await db.collection(name).limit(1500).get();
+      return snap.docs.map(d=>({id:d.id,...d.data()})).filter(inRange);
+    }catch(e){ console.warn('Consulta general falló en', name, e?.code || e); return []; }
+  }
+
+
+  async function fetchAll(name){
+    try{
+      const snap = await db.collection(name).limit(3000).get();
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){ console.warn('Consulta completa falló en', name, e?.code || e); return []; }
+  }
+
+  async function loadAll(fromLive){
+    stopLive(false); live = !!fromLive;
+    $('mainWrap').classList.add('loading'); setSync(fromLive?'live':'ok', fromLive?'Actualización en vivo':'Cargando datos…');
+    try{
+      const [scrm,sgc,pcd,sid,slp,cmo] = await Promise.all([
+        fetchAll(COL.SCRM), fetchCol(COL.SGC,'fecha'), fetchAll(COL.PCD), fetchAll(COL.SID), fetchAll(COL.SLP), fetchAll(COL.CMO)
+      ]);
+      raw = {scrm,sgc,pcd,sid,slp,cmo};
+      build();
+      setSync(live?'live':'ok', live?'En vivo activo':'Datos cargados');
+    }catch(e){ console.error(e); setSync('', 'Error al cargar'); alert('No se pudo cargar todo el dashboard. Revisa permisos/reglas Firestore.'); }
+    finally{ $('mainWrap').classList.remove('loading'); }
+  }
+
+  function startLive(){
+    stopLive(false); live = true; $('btnLive').textContent='DETENER'; $('modeLabel').textContent='En vivo'; setSync('live','En vivo activo');
+    const map = [
+      [COL.SCRM,'scrm'], [COL.SGC,'sgc'], [COL.PCD,'pcd'], [COL.SID,'sid'], [COL.SLP,'slp'], [COL.CMO,'cmo']
+    ];
+    raw = {scrm:[],sgc:[],pcd:[],sid:[],slp:[],cmo:[]};
+    map.forEach(([col,key])=>{
+      const unsub = db.collection(col).limit(1500).onSnapshot(s=>{ raw[key]=s.docs.map(d=>({id:d.id,...d.data()})); build(); }, e=>console.warn('Live error', col, e));
+      unsubs.push(unsub);
+    });
+  }
+  function stopLive(update=true){ unsubs.forEach(u=>{try{u()}catch(_){}}); unsubs=[]; if(update){ live=false; $('btnLive').textContent='EN VIVO'; $('modeLabel').textContent='Manual'; setSync('ok','Modo manual'); } }
+
+  function valAny(x, keys){ for(const k of keys){ if(x && x[k]!==undefined && x[k]!==null && x[k]!=='') return x[k]; } return ''; }
+  function normalizeSec(v){
+    const m = String(v ?? '').match(/\d{3,8}/);
+    return m ? m[0] : '';
+  }
+  function extractSecs(obj, out=new Set(), depth=0){
+    if(!obj || depth>6) return out;
+    if(Array.isArray(obj)){ obj.forEach(v=>extractSecs(v,out,depth+1)); return out; }
+    if(typeof obj==='object'){
+      Object.entries(obj).forEach(([k,v])=>{
+        const key=String(k).toLowerCase();
+        const looksLikeSec = key.includes('sec') || key.includes('secuencial') || key.includes('guia') || key.includes('lote');
+        if(looksLikeSec && (typeof v==='string' || typeof v==='number')){
+          const matches = String(v).match(/\d{3,8}/g);
+          if(matches) matches.forEach(n=>out.add(n));
+        }
+        extractSecs(v,out,depth+1);
+      });
+    }
+    return out;
+  }
+  function getSCRMDate(x){ return clean(x.fechaLlegada || x.fecha || x.date || x.dia || x.createdAtIso?.slice?.(0,10) || dateStrFromTS(x.createdAt)); }
+  function normSCRM(x){
+    const recibidas=toNum(valAny(x,['totalLibras','libras','LIBRAS','pesoNeto','librasRecibidas']));
+    const basura=toNum(valAny(x,['basura','basuraLbs','basuraLb']));
+    const emp=toNum(valAny(x,['empacado','librasEmpacadas','empacadoLbs']));
+    const prom=toNum(valAny(x,['promedio','promedioLbs']));
+    const est=upper(valAny(x,['estatus','status','tipo']));
+    const base = prom ? (prom-basura) : (recibidas-basura);
+    const rend = base>0 && emp>0 ? emp/base*100 : toNum(valAny(x,['rend','rendimiento']));
+    const sec=String(valAny(x,['secuencial','sec','SEC','guia','numeroGuia']));
+    const programadas=toNum(valAny(x,['totalProgramadas','programadas','librasProgramadas','PROGRAMADAS']));
+    return {fuente:'SCRM',fecha:getSCRMDate(x),secuencial:sec,proveedor:valAny(x,['razonSocial','proveedor','cliente','razon_social']),estatus:est,libras:recibidas,programadas,empacado:emp,basura,rendimiento:rend,colaAprox:est==='COLA'?recibidas*0.66:0,enteroRecibido:est==='ENTERO'?recibidas:0,enteroEmpacado:est==='ENTERO'?emp:0,detalle:`Carros: ${toNum(valAny(x,['totalCarros','carros']))} | Bines: ${toNum(valAny(x,['totalBines','bines']))}`};
+  }
+  function normSGC(x){ const est=upper(valAny(x,['estatus','status'])); const lbs=toNum(valAny(x,['libras','totalLibras','kilos','volumenCompra'])); return {fuente:'SGC',fecha:getDate(x),secuencial:String(valAny(x,['secuencial','sec'])),proveedor:valAny(x,['proveedor','razonSocial']),estatus:est,libras:lbs,colaAprox:est==='COLA'?toNum(valAny(x,['colaAprox','cola_aprox'])):0,programadas:0,empacado:0,basura:0,rendimiento:0,dolares:toNum(valAny(x,['monto','total','valor'])),detalle:`Comprador: ${valAny(x,['comprador'])||'—'} | Sector: ${valAny(x,['sector'])||'—'}`}; }
+  function normPCD(x){ const cola=toNum(valAny(x,['totalPesoCola','pesoCola','colaLbs']) || x.__local?.totalPesoCola); const sec=String(valAny(x,['secuencial','sec','regNumber'])); return {fuente:'PCD',fecha:getDate(x),secuencial:sec,proveedor:valAny(x,['proveedor','razonSocial']),estatus:'COLA',libras:toNum(valAny(x,['librasGuia','libras','totalLibras'])),pesoCola:cola,basura:toNum(valAny(x,['basuraLbs','basura'])),kvt:toNum(valAny(x,['totalKvt','kvt'])||x.__local?.totalKvt),detalle:`Reg: ${valAny(x,['regNumber'])||'—'} | Circuito: ${valAny(x,['circuito'])||'—'}`}; }
+  function normSID(x){
+    const cola=toNum(valAny(x,['pesoCola','totalPesoCola']));
+    const entero=toNum(valAny(x,['elevadoEntero','elevadoAEntero','enteroEquivalente']));
+    const cabezaPosible=toNum(valAny(x,['cabezaPosible','cabeza_posible']));
+    const pesadaCabezas=toNum(valAny(x,['pesadaCabezas','pesoCabeza','cabezas','cabezaRegistrada']));
+    const descuentoCabeza=toNum(valAny(x,['descuentoCabeza','descuentoCabezas','descuento','descuentoLbs','descuentoTotalCabeza','descuentoTotal']));
+    // Para DGP se reporta CABEZA PESADA bruta del SID.
+    // El descuento queda como referencia, pero no se resta a este KPI.
+    const cabeza=pesadaCabezas || cabezaPosible;
+    const cuad=Array.isArray(x.cuadrillas)?x.cuadrillas.join(' + '):(valAny(x,['cuadrilla','cuadrillaNombre','circuito'])||'');
+    const secs=Array.from(extractSecs(x));
+    return {fuente:'SID',fecha:getDate(x),secuencial:valAny(x,['reportNumber','informeNo','numeroInforme'])||'',proveedor:cuad,cuadrilla:cuad,estatus:'DESCABEZADO',libras:entero||cola,descabezado:entero,pesoCola:cola,cabezaRegistrada:cabeza,cabezaPosible,pesadaCabezas,descuentoCabeza,secuencialesOrigen:secs,detalle:`Reporte: ${valAny(x,['reportNumber','informeNo'])||'—'} | Personas: ${valAny(x,['numPersonas','personas'])||'—'} | Sec: ${secs.join(', ')||'—'}`};
+  }
+  function normSLP(x){
+    const h=x.header||{};
+    const planta=toNum(h.dolaresPlanta ?? x.dolaresPlanta ?? x.planta);
+    const controlador=toNum(h.dolaresControlador ?? x.dolaresControlador ?? x.controladorValor);
+    const porFuera=toNum(h.dolaresPorFuera ?? x.dolaresPorFuera ?? x.porFuera);
+    const diff=toNum(x.diffDollars ?? x.dolaresInvPago ?? h.dolaresInvPago);
+    const val=planta+controlador+porFuera || diff;
+    const botonOroDirecto=toNum(h.botonOro ?? h.botonDeOro ?? x.botonOro ?? x.botonDeOro);
+    const botonOro=botonOroDirecto || (val ? val*0.75 : 0);
+    const botonOroMes=toNum(h.botonOroMes ?? h.botonOroAcumuladoMes ?? x.botonOroMes ?? x.botonOroAcumuladoMes ?? x.botonOroAcumulado);
+    const est=upper(h.estatus||x.estatus||''); const emp=toNum(h.empacado ?? x.empacado);
+    return {fuente:'SLP',fecha:getDate(x),secuencial:h.liquidacionNo||x.liquidacionNo||'',proveedor:h.proveedor||x.proveedor||'',estatus:est,libras:toNum(h.recibido ?? x.recibido),empacado:emp,colaEmpacada:est==='COLA'||!est?emp:0,enteroEmpacado:est==='ENTERO'?emp:0,rendimiento:toNum(h.rendimiento ?? x.rendimiento),dolares:val,botonOro,botonOroMes,detalle:`Controlador: ${h.controlador||x.controlador||'—'} | Destino: ${h.dolaresDestino||x.dolaresDestino||'—'}`}; }
+  function normCMO(x){
+    const y=toNum(x.year||x.y), m=toNum(x.month||x.m), d=toNum(x.day||x.dia);
+    const fecha=(y&&m&&d)?`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`:getDate(x);
+    const libras=toNum(x.librasProcesadas ?? x.librasJornada ?? x.libras ?? x.colaLbs ?? x.cola ?? x.totalLibras);
+    const enteroLbs=toNum(x.enteroLbs ?? x.entero ?? x.librasEntero ?? x.totalEntero);
+    const colaLbs=toNum(x.colaLbs ?? x.cola ?? x.librasCola ?? x.totalCola ?? libras);
+    const costoMo=toNum(x.valorNominal ?? x.valorNominalJornada ?? x.totalNominal ?? x.costoMes ?? x.costoMo);
+    const costoMes=toNum(x.costoMes ?? x.costoMesAcumulado ?? x.costoMoMes ?? x.totalMes ?? x.valorNominalMes);
+    const contenedores=toNum(x.equivCont ?? x.equivContMes ?? x.equivContenedor ?? x.equivContenedores ?? x.equivalenteContenedor ?? x.equivalenteContenedores ?? x.contenedoresProcesados ?? x.contenedores ?? x.contProcesados);
+    const promedio=toNum(x.promedioMes ?? x.costoProduccionMes ?? x.promedioCostoMes ?? x.promedio ?? x.costoPromedio);
+    const costoProduccion=toNum(x.costoProduccion ?? x.costoProduccionJornada ?? x.promedio) || (libras?costoMo/libras:0);
+    return {fuente:'CMO',fecha,secuencial:'',proveedor:'MANO DE OBRA',estatus:'',libras,costoMo,costoProduccion,contenedores,costoProduccionMes:promedio,costoMes,colaLbs,enteroLbs,promedio,detalle:`Cupo: ${x.cupo||x.cupoJornada||0} | ${x.diaHint||''}`}; }
+
+  function isDateInRange(d){ const desde=$('fDesde').value, hasta=$('fHasta').value; return (!desde || d>=desde) && (!hasta || d<=hasta); }
+  function build(){
+    const sidRawInRange=(raw.sid||[]).filter(inRange);
+    const pcdRawInRange=(raw.pcd||[]).filter(inRange);
+    const sidSecs=new Set(); sidRawInRange.forEach(x=>extractSecs(x,sidSecs));
+    const pcdSecs=new Set(); pcdRawInRange.forEach(x=>extractSecs(x,pcdSecs));
+    const carrySecs=new Set([...sidSecs, ...pcdSecs]);
+    normalized = {
+      scrm:(raw.scrm||[]).map(normSCRM), sgc:(raw.sgc||[]).map(normSGC), pcd:(raw.pcd||[]).map(normPCD), sid:(raw.sid||[]).map(normSID), slp:(raw.slp||[]).map(normSLP), cmo:(raw.cmo||[]).map(normCMO)
+    };
+    let all = Object.values(normalized).flat().filter(x=>{
+      const byDate=isDateInRange(x.fecha);
+      const sec=normalizeSec(x.secuencial);
+      const byCarry=x.fuente==='SCRM' && sec && carrySecs.has(sec);
+      if(byCarry) x.arrastreDgp = true;
+      // Ajuste gerencial: SCRM se toma estrictamente por fecha de recepción.
+      // Los secuenciales de arrastre se usan solo para identificar PCD/SID,
+      // pero no deben sumar nuevamente libras programadas ni recibidas de días anteriores.
+      return byDate && passFilters(x);
+    });
+    const hasta=$('fHasta').value || today();
+    const ym=hasta.slice(0,7);
+    const monthSlp=(normalized.slp||[]).filter(x=>String(x.fecha||'').slice(0,7)===ym && (!hasta || String(x.fecha||'')<=hasta));
+    const monthCmo=(normalized.cmo||[]).filter(x=>String(x.fecha||'').slice(0,7)===ym && (!hasta || String(x.fecha||'')<=hasta));
+    const totals = calcTotals(all, monthSlp, monthCmo);
+    const rend = totals.colaAprox>0 && totals.colaEmpacadaGerencial>0 ? totals.colaEmpacadaGerencial/totals.colaAprox*100 : 0;
+    currentSummary = {all, totals, rend, sidSecs:Array.from(sidSecs), pcdSecs:Array.from(pcdSecs), carrySecs:Array.from(carrySecs), monthSlp, monthCmo};
+    renderKpis(totals,rend); renderMatrix(totals); renderCharts(all,totals); renderTables(all,totals); $('lastUpdate').textContent=stamp(); $('docsRead').textContent=fmt0(totals.docs); $('modeLabel').textContent=live?'En vivo':'Manual';
+  }
+
+  function isColaDgp(x){
+    return upper(x.estatus)==='COLA' || !!x.arrastreDgp;
+  }
+
+  function calcTotals(all, monthSlp=[], monthCmo=[]){
+    const t = all.reduce((a,x)=>{
+      a.docs++;
+      if(x.fuente==='SCRM'){
+        if(isColaDgp(x)) {
+          a.colaRecibida += toNum(x.libras);
+          a.programadasCola += toNum(x.programadas);
+          a.colaAprox += (toNum(x.colaAprox) || toNum(x.libras)*0.66);
+          a.colaEmpacada += toNum(x.empacado);
+          a.colaEmpacadaScrm += toNum(x.empacado);
+        }
+        if(upper(x.estatus)==='ENTERO') { a.enteroRecibido += toNum(x.libras); a.enteroEmpacado += toNum(x.empacado); }
+        a.basura += toNum(x.basura);
+      }
+      if(x.fuente==='SID'){ a.descabezadoEntero += toNum(x.descabezado); a.pesoColaProducido += toNum(x.pesoCola); a.cabeza += toNum(x.cabezaRegistrada); }
+      if(x.fuente==='PCD'){ a.pesoColaPcd += toNum(x.pesoCola); a.basura += toNum(x.basura); }
+      if(x.fuente==='SLP'){ a.dolares += toNum(x.dolares); a.botonOro += toNum(x.botonOro); a.colaEmpacada += toNum(x.colaEmpacada||0); a.enteroEmpacado += toNum(x.enteroEmpacado||0); }
+      if(x.fuente==='CMO'){ a.costoMo += toNum(x.costoMo); a.librasMo += toNum(x.libras); a.costoProduccion = toNum(x.costoProduccion)||a.costoProduccion; a.contenedores = toNum(x.contenedores)||a.contenedores; a.costoProduccionMes = toNum(x.costoProduccionMes)||a.costoProduccionMes; }
+      return a;
+    }, {docs:0,colaRecibida:0,programadasCola:0,colaAprox:0,colaEmpacada:0,colaEmpacadaScrm:0,colaEmpacadaGerencial:0,enteroRecibido:0,enteroEmpacado:0,basura:0,descabezadoEntero:0,pesoColaProducido:0,pesoColaPcd:0,cabeza:0,dolares:0,botonOro:0,botonOroAcum:0,costoMo:0,librasMo:0,costoProduccion:0,contenedores:0,costoProduccionMes:0,cmoCostoMes:0,cmoColaMes:0,cmoEnteroMes:0,cmoEquivCont:0,cmoPromedioMes:0,sidC1:0,sidC2:0,colaPorClasificar:0,colaPorDescabezar:0,pendienteDescabezado:0,parcialColaElevadoEntero:0});
+    const colaEnteroEqPcd = t.pesoColaPcd ? (t.pesoColaPcd / FACTOR_COLA_A_ENTERO) : 0;
+    const colaEnteroEqSid = t.pesoColaProducido ? (t.pesoColaProducido / FACTOR_COLA_A_ENTERO) : 0;
+
+    // Base del día: lo programado y recibido viene únicamente de SCRM en la fecha filtrada.
+    // PCD/SID pueden contener cola de lotes anteriores procesada hoy, por eso quedan separados
+    // como control de descabezado, pero no inflan las libras recibidas del día.
+    t.colaPorDescabezar = t.colaRecibida;
+
+    // Espera por descabezar: recepción total cola del día menos el parcial ya procesado.
+    // El parcial viene del campo EMPACADO de SCRM y se eleva a entero dividiendo para 0,66.
+    // Ejemplo: 10.100,00 / 0,66 = 15.303,03; 103.900,00 - 15.303,03 = 88.596,97.
+    t.parcialColaElevadoEntero = t.colaEmpacadaScrm ? (t.colaEmpacadaScrm / 0.66) : 0;
+    t.pendienteDescabezado = Math.max(0, t.colaRecibida - t.parcialColaElevadoEntero);
+    t.descabezadoBaseOperativa = Math.max(colaEnteroEqPcd, colaEnteroEqSid, t.descabezadoEntero);
+
+    const sidRows=all.filter(x=>x.fuente==='SID').sort((a,b)=>toNum(b.descabezado)-toNum(a.descabezado));
+    t.sidC1 = sidRows[0]?toNum(sidRows[0].descabezado):0;
+    t.sidC2 = sidRows[1]?toNum(sidRows[1].descabezado):0;
+    t.colaEmpacadaGerencial = t.librasMo || t.colaEmpacada;
+    t.colaPorClasificar = (t.pesoColaPcd || t.pesoColaProducido) - t.colaEmpacadaGerencial;
+    t.botonOroAcum = monthSlp.reduce((m,x)=>Math.max(m,toNum(x.botonOroMes)),0) || monthSlp.reduce((a,x)=>a+toNum(x.botonOro),0);
+    t.cmoCostoMes = monthCmo.reduce((a,x)=>a+(toNum(x.costoMes)||toNum(x.costoMo)),0);
+    t.cmoColaMes = monthCmo.reduce((a,x)=>a+(toNum(x.colaLbs)||toNum(x.libras)),0);
+    t.cmoEnteroMes = monthCmo.reduce((a,x)=>a+toNum(x.enteroLbs),0);
+    t.cmoEquivCont = monthCmo.reduce((a,x)=>a+toNum(x.contenedores),0);
+    if(!t.cmoEquivCont && t.cmoColaMes) t.cmoEquivCont = t.cmoColaMes / LBS_POR_CONTENEDOR_CMO;
+    t.cmoPromedioMes = (monthCmo.reduce((m,x)=>toNum(x.promedio)||toNum(x.costoProduccionMes)||m,0)) || (t.cmoColaMes ? t.cmoCostoMes/t.cmoColaMes : 0);
+    if(!t.costoProduccionMes) t.costoProduccionMes = t.cmoPromedioMes;
+    if(!t.contenedores) t.contenedores = t.cmoEquivCont;
+    if(!t.costoMo) t.costoMo = t.cmoCostoMes;
+    if(!t.librasMo) t.librasMo = t.cmoColaMes;
+    return t;
+  }
+  function renderKpis(t,r){
+    const saldo=Math.max(0,t.colaAprox-t.colaEmpacadaGerencial);
+    $('kColaRecibida').textContent=fmt(t.colaRecibida); $('kProgramadas').textContent=fmt(t.programadasCola); $('kColaAprox').textContent=fmt(t.colaAprox); $('kColaEmpacada').textContent=fmt(t.colaEmpacadaGerencial); $('kSaldoColaEmpacar').textContent=fmt(saldo); $('kColaDescabezada').textContent=fmt(t.descabezadoEntero); $('kPesoColaProducido').textContent=fmt(t.pesoColaProducido); $('kCabeza').textContent=fmt(t.cabeza); $('kEnteroRecibido').textContent=fmt(t.enteroRecibido); $('kEnteroEmpacado').textContent=fmt(t.enteroEmpacado); $('kDolares').textContent=moneyFmt(t.dolares); $('kCostoMo').textContent=moneyFmt(t.cmoCostoMes||t.costoMo);
+  }
+
+  function dashNum(v, currency=false){
+    const n=toNum(v);
+    if(!n) return '-';
+    return currency ? moneyFmt(n) : fmt(n);
+  }
+  function matrixIcon(title){
+    if(/COSTO|DOLARES|BOTON/.test(title)) return '$';
+    if(/CONTENEDORES/.test(title)) return '□';
+    if(/DESCABEZADAS|DESCABEZAR|CABEZAS/.test(title)) return '◔';
+    if(/COLA/.test(title)) return '◉';
+    if(/ENTERO/.test(title)) return '◎';
+    if(/PROGRAMADAS/.test(title)) return '≡';
+    return '•';
+  }
+  function renderTrendTable(rows){
+    const tb = $('tblTrendMonth')?.querySelector('tbody');
+    if(!tb) return;
+    tb.innerHTML = rows.map(r=>`<tr><td class="day">${r.day}</td><td class="num">${r.porDesc?fmt(r.porDesc):'-'}</td><td class="num pct">${r.porDescPct}</td><td class="num">${r.colaAprox?fmt(r.colaAprox):'-'}</td><td class="num pct">${r.colaAproxPct}</td><td class="num">${r.descSid?fmt(r.descSid):'-'}</td><td class="num pct">${r.descSidPct}</td><td class="num">${r.empacado?fmt(r.empacado):'-'}</td><td class="num pct">${r.empacadoPct}</td></tr>`).join('');
+  }
+  function renderMatrix(t){
+    const hasta=$('fHasta').value || today();
+    const dt = new Date(hasta+'T00:00:00');
+    $('matrixFecha').textContent = dt.toLocaleDateString('es-EC',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    const totalDesc=t.descabezadoEntero;
+    const porDesc=t.pendienteDescabezado;
+    const colaBaseDesc=t.colaRecibida;
+    const colaLbs=t.pesoColaPcd || t.pesoColaProducido;
+    const rows=[
+      ['LIBRAS RECIBIDAS ENTERO','SCRM — Sistema de Control de Recepción de Materia Prima',dashNum(t.enteroRecibido)],
+      ['LIBRAS RECIBIDAS TOTALES COLA','SCRM — fecha filtrada',dashNum(colaBaseDesc)],
+      ['LIBRAS PROGRAMADAS','SCRM — Sistema de Control de Recepción de Materia Prima',dashNum(t.programadasCola)],
+      ['LIBRAS DESCABEZADAS C1','SID - Informe Descabezado',dashNum(t.sidC1)],
+      ['LIBRAS DESCABEZADAS C2','SID - Informe Descabezado',dashNum(t.sidC2)],
+      ['ESPERA POR DESCABEZAR','SCRM parcial procesado elevado a entero',dashNum(porDesc)],
+      ['LIBRAS DESCABEZADAS','SID - Informe Descabezado',dashNum(totalDesc)],
+      ['LIBRAS DE CABEZAS','SID - Informe Descabezado',dashNum(t.cabeza)],
+      ['LIBRAS DE COLA','PCD - Registro peso cola',dashNum(colaLbs)],
+      ['LIBRAS DE ENTERO POR CLASIFICAR','SCRM — Sistema de Control de Recepción de Materia Prima',dashNum(Math.max(0,t.enteroRecibido-t.enteroEmpacado))],
+      ['LIBRAS DE ENTERO EMPACADO','SCRM — Sistema de Control de Recepción de Materia Prima',dashNum(t.enteroEmpacado)],
+      ['LIBRAS DE COLA POR CLASIFICAR','PCD - Registro peso cola',dashNum(t.colaPorClasificar)],
+      ['LIBRAS DE COLA EMPACADA','CMO — Costos por Mano de Obra (OCEANTREASURE)',dashNum(t.colaEmpacadaGerencial)],
+      ['LIBRAS TOTALES EMPACADAS','SCRM — Sistema de Control de Recepción de Materia Prima',dashNum(t.colaEmpacadaGerencial+t.enteroEmpacado)],
+      ['DOLARES MANO DE OBRA','CMO — Costos por Mano de Obra (OCEANTREASURE)',dashNum(t.costoMo,true)],
+      ['COSTO DE PRODUCCIÓN','CMO — Costos por Mano de Obra (OCEANTREASURE)',t.costoProduccion?nf4.format(t.costoProduccion):'-'],
+      ['CONTENEDORES PROCESADOS','CMO — Costos por Mano de Obra (OCEANTREASURE)',t.cmoEquivCont?nf2.format(t.cmoEquivCont):(t.contenedores?nf2.format(t.contenedores):'-')],
+      ['COSTO DE PRODUCCIÓN DEL MES','CMO — Costos por Mano de Obra (OCEANTREASURE)',t.cmoCostoMes?moneyFmt(t.cmoCostoMes):'-'],
+      ['COLA PROCESADA DEL MES','CMO — Costos por Mano de Obra (OCEANTREASURE)',t.cmoColaMes?fmt(t.cmoColaMes):'-'],
+      ['ENTERO PROCESADO DEL MES','CMO — Costos por Mano de Obra (OCEANTREASURE)',t.cmoEnteroMes?fmt(t.cmoEnteroMes):'-'],
+      ['PROMEDIO COSTO MES','CMO — Costos por Mano de Obra (OCEANTREASURE)',t.cmoPromedioMes?nf4.format(t.cmoPromedioMes):'-'],
+      ['BOTON DE ORO','SLP - Liquidacion de Pago',dashNum(t.botonOro,true)],
+      ['BOTON DE ORO ACUMULADO DEL MES','SLP - Liquidacion de Pago',dashNum(t.botonOroAcum||t.botonOro,true)]
+    ];
+    $('tblMatriz').querySelector('tbody').innerHTML = rows.map(r=>`<tr><td><span class="matrix-label"><span class="matrix-icon">${matrixIcon(r[0])}</span><span>${r[0]}</span></span></td><td class="num"><span class="matrix-value">${r[2]}</span></td></tr>`).join('');
+  }
+
+  function groupBy(arr,keyFn){ const m=new Map(); arr.forEach(x=>{ const k=keyFn(x)||'—'; if(!m.has(k))m.set(k,[]); m.get(k).push(x); }); return m; }
+  function daysBetween(){ const out=[]; let d=$('fDesde').value||today(), h=$('fHasta').value||d; for(let i=0;i<370 && d<=h;i++,d=addDays(d,1)) out.push(d); return out; }
+  function monthDaysForTrend(){
+    const base = today();
+    const [y,m,dmax] = base.split('-').map(Number);
+    const out = [];
+    for(let d=1; d<=dmax; d++) out.push(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+    return out;
+  }
+  function isColaSCRMStrict(x){ return x.fuente==='SCRM' && upper(x.estatus)==='COLA'; }
+  function buildMonthlyTrendRows(){
+    const monthDays = monthDaysForTrend();
+    const currentMonth = today().slice(0,7);
+    const allMonth = Object.values(normalized).flat().filter(x=>{
+      const f = String(x.fecha||'');
+      return f.slice(0,7)===currentMonth && f<=today();
+    });
+    const byMonthDay = groupBy(allMonth,x=>x.fecha);
+    return monthDays.map(d=>{
+      const rows = byMonthDay.get(d)||[];
+      const porDesc = sum(rows,x=>isColaSCRMStrict(x)?x.libras:0);
+      const colaAprox = porDesc * 0.66;
+      const descSid = sum(rows,x=>x.fuente==='SID'?x.descabezado:0);
+      const empacado = sum(rows,x=>x.fuente==='CMO'?x.libras:0);
+      const total = porDesc + colaAprox + descSid + empacado;
+      return {day:d.slice(8,10), fecha:d, porDesc, colaAprox, descSid, empacado, porDescPct:pctFmt(porDesc,total), colaAproxPct:pctFmt(colaAprox,total), descSidPct:pctFmt(descSid,total), empacadoPct:pctFmt(empacado,total)};
+    });
+  }
+  function getCmoMonthRows(){
+    const currentMonth = today().slice(0,7);
+    return (normalized.cmo||[])
+      .filter(x=>String(x.fecha||'').slice(0,7)===currentMonth && String(x.fecha||'')<=today())
+      .sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
+  }
+  function sum(arr,fn){ return arr.reduce((a,x)=>a+toNum(fn(x)),0); }
+  const BAR_COLOR_MAP = {
+    chartRecDesc:['#0b5cab','#16a34a','#f59e0b'],
+    chartColaEmp:['#2563eb','#0f766e','#f97316'],
+    chartEntero:['#1d4ed8','#0ea5e9','#f59e0b'],
+    chartMoSlp:['#b91c1c','#0f766e'],
+    chartTrend:['#0b5cab','#e11d48','#f97316','#d4a017']
+  };
+  const TREND_DATASET_COLORS = ['#0b5cab','#e11d48','#f97316','#d4a017'];
+  function applyBarColors(id, data){
+    const colors = BAR_COLOR_MAP[id] || ['#0b5cab','#64748b','#94a3b8','#d4a017'];
+    if(id==='chartTrend'){
+      data.datasets = data.datasets.map((ds, idx)=>({
+        ...ds,
+        backgroundColor: TREND_DATASET_COLORS[idx % TREND_DATASET_COLORS.length],
+        borderColor: TREND_DATASET_COLORS[idx % TREND_DATASET_COLORS.length],
+        pointBackgroundColor: TREND_DATASET_COLORS[idx % TREND_DATASET_COLORS.length],
+        pointBorderColor: TREND_DATASET_COLORS[idx % TREND_DATASET_COLORS.length]
+      }));
+      return data;
+    }
+    if(data.datasets && data.datasets[0]){
+      data.datasets[0].backgroundColor = data.labels.map((_,i)=> colors[i % colors.length]);
+      data.datasets[0].borderColor = data.labels.map((_,i)=> colors[i % colors.length]);
+      data.datasets[0].borderWidth = 1;
+      data.datasets[0].borderRadius = 8;
+      data.datasets[0].maxBarThickness = 60;
+    }
+    return data;
+  }
+  function pctFmt(val,total){ if(!total || !val) return '0%'; return nf2.format(val*100/total)+'%'; }
+  const barValueLabelPlugin = {
+    id:'barValueLabelPlugin',
+    afterDatasetsDraw(chart){
+      if(chart.config.type!=='bar') return;
+      if(chart.canvas && chart.canvas.id==='chartTrend') return;
+      const {ctx, data} = chart;
+      ctx.save();
+      ctx.font = '10px Inter, Segoe UI, Arial';
+      ctx.fillStyle = '#334155';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      const datasets = data.datasets || [];
+      datasets.forEach((ds, di)=>{
+        const meta = chart.getDatasetMeta(di);
+        if(meta.hidden) return;
+        const vals = ds.data || [];
+        const total = vals.reduce((a,b)=>a+Number(b||0),0);
+        meta.data.forEach((bar, i)=>{
+          const v = Number(vals[i]||0);
+          if(!v) return;
+          const pct = pctFmt(v,total);
+          ctx.fillText(pct, bar.x, bar.y - 6);
+        });
+      });
+      ctx.restore();
+    }
+  };
+  Chart.register(barValueLabelPlugin);
+  function updateChart(id,type,data,options){
+    const prepared = type==='bar' ? applyBarColors(id, JSON.parse(JSON.stringify(data))) : data;
+    const baseOptions = {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{mode:'index',intersect:false}},interaction:{mode:'nearest',intersect:false}};
+    if(charts[id]) charts[id].destroy();
+    charts[id]=new Chart($(id), {type,data:prepared,options:{...baseOptions,...options}});
+  }
+  function renderCharts(all,t){
+    const days=daysBetween(); const byDay=groupBy(all,x=>x.fecha);
+    updateChart('chartRecDesc','bar',{labels:['Recibidas cola','Parcial elevado a entero','Espera por descabezar'],datasets:[{label:'Libras',data:[t.colaRecibida,t.parcialColaElevadoEntero,t.pendienteDescabezado||0]}]},{scales:{y:{beginAtZero:true}},plugins:{tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)} (${pctFmt(c.raw,(c.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0))})`}}}});
+    updateChart('chartColaEmp','bar',{labels:['Cola aprox. disponible','Empacado cola','Saldo cola'],datasets:[{label:'Libras',data:[t.colaAprox,t.colaEmpacadaGerencial,Math.max(0,t.colaAprox-t.colaEmpacadaGerencial)]}]},{scales:{y:{beginAtZero:true}},plugins:{tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)} (${pctFmt(c.raw,(c.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0))})`}}}});
+    updateChart('chartEntero','bar',{labels:['Entero recibido','Entero empacado','Pendiente entero'],datasets:[{label:'Libras',data:[t.enteroRecibido,t.enteroEmpacado,Math.max(0,t.enteroRecibido-t.enteroEmpacado)]}]},{scales:{y:{beginAtZero:true}},plugins:{tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)} (${pctFmt(c.raw,(c.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0))})`}}}});
+    updateChart('chartStatus','doughnut',{labels:['ENTERO recibido','COLA recibida'],datasets:[{data:[t.enteroRecibido,t.colaRecibida],backgroundColor:['#0b5cab','#d4a017'],borderColor:['#0b5cab','#d4a017']}]},{plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)} (${pctFmt(c.raw,(c.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0))})`}}}});
+    const monthKey = today().slice(0,7);
+    const trendRows = buildMonthlyTrendRows();
+    renderTrendTable(trendRows);
+    updateChart('chartTrend','line',{labels:trendRows.map(r=>r.day),datasets:[
+      {label:'Por descabezar',data:trendRows.map(r=>r.porDesc), tension:.35, fill:false, pointRadius:3, pointHoverRadius:5, borderWidth:3},
+      {label:'Cola aprox.',data:trendRows.map(r=>r.colaAprox), tension:.35, fill:false, pointRadius:3, pointHoverRadius:5, borderWidth:3},
+      {label:'Descabezado entero SID',data:trendRows.map(r=>r.descSid), tension:.35, fill:false, pointRadius:3, pointHoverRadius:5, borderWidth:3},
+      {label:'Empacado cola',data:trendRows.map(r=>r.empacado), tension:.35, fill:false, pointRadius:3, pointHoverRadius:5, borderWidth:3}
+    ]},{scales:{y:{beginAtZero:true}},plugins:{tooltip:{mode:'index',intersect:false,callbacks:{title:items=> monthKey+'-'+String(items[0].label).padStart(2,'0'), label:c=>{ const dayTotal = c.chart.data.datasets.reduce((a,ds)=>a+Number(ds.data[c.dataIndex]||0),0); return `${c.dataset.label}: ${fmt(c.raw)} (${pctFmt(c.raw,dayTotal)})`; }}}}});
+    updateChart('chartMoSlp','bar',{labels:['Gasto M.O. mes','Botón de Oro acum.'],datasets:[{label:'Dólares',data:[t.cmoCostoMes||t.costoMo,t.botonOroAcum||t.botonOro]}]},{scales:{y:{beginAtZero:true}},plugins:{tooltip:{callbacks:{label:c=>`${c.label}: ${moneyFmt(c.raw)} (${pctFmt(c.raw,(c.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0))})`}}}});
+  }
+  function renderTables(all,t){
+    const groups=Array.from(groupBy(all,x=>upper(x.proveedor||x.cuadrilla)||'—')).map(([k,v])=>{ const colaRec=sum(v,x=>x.fuente==='SCRM'&&isColaDgp(x)?x.libras:0), colaA=sum(v,x=>x.fuente==='SCRM'&&isColaDgp(x)?(x.colaAprox||x.libras*0.66):0), desc=sum(v,x=>x.fuente==='SID'?x.descabezado:0), emp=sum(v,x=>(x.fuente==='SCRM'&&isColaDgp(x))?x.empacado:0)+sum(v,x=>x.fuente==='SLP'?x.colaEmpacada:0), ent=sum(v,x=>x.fuente==='SCRM'&&upper(x.estatus)==='ENTERO'?x.libras:0), dol=sum(v,x=>x.dolares); return {proveedor:k,reg:v.length,colaRec,colaA,desc,emp,saldo:Math.max(0,colaA-emp),ent,dol}; }).sort((a,b)=>(b.colaRec+b.desc+b.emp)-(a.colaRec+a.desc+a.emp)).slice(0,60);
+    $('tblResumen').querySelector('tbody').innerHTML = groups.length ? groups.map(r=>`<tr><td><b>${r.proveedor}</b></td><td class="num">${fmt0(r.reg)}</td><td class="num">${fmt(r.colaRec)}</td><td class="num">${fmt(r.colaA)}</td><td class="num">${fmt(r.desc)}</td><td class="num">${fmt(r.emp)}</td><td class="num">${fmt(r.saldo)}</td><td class="num">${fmt(r.ent)}</td><td class="num">${moneyFmt(r.dol)}</td><td>${statusTag(r.emp,r.colaA)}</td></tr>`).join('') : `<tr><td colspan="10" class="empty">Sin datos en el rango seleccionado</td></tr>`;
+    const mov=all.slice().sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha))).slice(0,120);
+    $('tblMov').querySelector('tbody').innerHTML = mov.length ? mov.map(x=>`<tr><td><span class="tag ${tagClass(x.fuente)}">${x.fuente}</span></td><td>${x.fecha||'—'}</td><td>${x.secuencial||'—'}</td><td><b>${x.proveedor||x.cuadrilla||'—'}</b></td><td>${x.estatus||'—'}</td><td class="num">${fmt(x.libras||x.pesoCola)}</td><td class="num">${x.dolares?moneyFmt(x.dolares):fmt(x.empacado||x.costoMo||x.descabezado)}</td><td>${x.arrastreDgp?'Arrastre DGP por SID/PCD | ':''}${x.detalle||'—'}</td></tr>`).join('') : `<tr><td colspan="8" class="empty">Sin movimientos para mostrar</td></tr>`;
+  }
+  function tagClass(f){ return f==='SCRM'||f==='SLP'?'ok':(f==='PCD'||f==='SID'?'warn':''); }
+  function statusTag(emp,base){ if(!base) return '<span class="tag">—</span>'; const r=emp/base*100; if(r>=65) return '<span class="tag ok">ÓPTIMO</span>'; if(r>0) return '<span class="tag warn">EN PROCESO</span>'; return '<span class="tag bad">SIN EMPACADO</span>'; }
+
+  function exportExcel(){ if(!currentSummary) return; const wb=XLSX.utils.book_new(); const t=currentSummary.totals; const k=[['Indicador','Valor'],['Libras recibidas cola SCRM',t.colaRecibida],['Programadas cola',t.programadasCola],['Cola aprox. recibida',t.colaAprox],['Empacado cola',t.colaEmpacadaGerencial],['Saldo cola por empacar',Math.max(0,t.colaAprox-t.colaEmpacadaGerencial)],['Espera por descabezar',t.pendienteDescabezado||0],['Parcial cola elevado a entero',t.parcialColaElevadoEntero||0],['Descabezado entero SID',t.descabezadoEntero],['Peso cola SID',t.pesoColaProducido],['Cabeza registrada',t.cabeza],['Entero recibido',t.enteroRecibido],['Entero empacado',t.enteroEmpacado],['Botón de Oro',t.botonOro],['Botón de Oro acumulado mes',t.botonOroAcum],['Costo M.O. mes CMO',t.cmoCostoMes||t.costoMo],['Secuenciales arrastrados por SID/PCD',(currentSummary.carrySecs||[]).join(', ')]]; XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(k),'KPIs'); const rows=currentSummary.all.map(x=>({Fuente:x.fuente,Fecha:x.fecha,Secuencial:x.secuencial,Proveedor:x.proveedor,Estatus:x.estatus,Libras:x.libras,Programadas:x.programadas,ColaAprox:x.colaAprox,DescabezadoEntero:x.descabezado,Empacado:x.empacado,Basura:x.basura,PesoCola:x.pesoCola,Dolares:x.dolares,CostoMO:x.costoMo,Detalle:x.detalle})); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Movimientos'); XLSX.writeFile(wb,`DGP_Dashboard_${today()}.xlsx`); }
+
+  async function fileToDataUrl(url){
+    try{
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return await new Promise((resolve,reject)=>{
+        const fr = new FileReader();
+        fr.onload = ()=>resolve(fr.result);
+        fr.onerror = reject;
+        fr.readAsDataURL(blob);
+      });
+    }catch(_){ return null; }
+  }
+
+  async function getImageMeta(dataUrl){
+    return await new Promise(resolve=>{
+      const img = new Image();
+      img.onload = ()=>resolve({src:dataUrl,width:img.naturalWidth||1,height:img.naturalHeight||1});
+      img.onerror = ()=>resolve({src:dataUrl,width:1,height:1});
+      img.src = dataUrl;
+    });
+  }
+
+  async function makePdfDonut(cfg){
+    const canvas = document.createElement('canvas');
+    const size = cfg.size || 220;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    const baseTotal = Math.max(0, toNum(cfg.total));
+    const rawProgress = Math.max(0, toNum(cfg.progress));
+    const fullRing = !!cfg.fullRing;
+    const drawProgress = fullRing ? 1 : Math.min(rawProgress, baseTotal || rawProgress);
+    const total = fullRing ? 1 : Math.max(baseTotal, drawProgress);
+    const remainder = fullRing ? 0 : Math.max(0, total - drawProgress);
+    const percent = fullRing ? 100 : (baseTotal ? (rawProgress/baseTotal)*100 : 0);
+    const dataVals = remainder > 0 ? [drawProgress, remainder] : [drawProgress || 1];
+    const bgColors = remainder > 0 ? [cfg.color||'#0b5cab', cfg.restColor||'#E9EEF4'] : [cfg.color||'#0b5cab'];
+    const borderColors = remainder > 0 ? ['#FFFFFF','#FFFFFF'] : ['#FFFFFF'];
+
+    const chart = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels: remainder > 0 ? [cfg.progressLabel||'Avance', cfg.remainderLabel||'Pendiente'] : [cfg.progressLabel||'Indicador'],
+        datasets:[{
+          data:dataVals,
+          backgroundColor:bgColors,
+          borderColor:borderColors,
+          borderWidth:3,
+          hoverOffset:0,
+          spacing:1
+        }]
+      },
+      options:{
+        responsive:false,
+        animation:false,
+        cutout:'73%',
+        plugins:{legend:{display:false}, tooltip:{enabled:false}},
+        layout:{padding:12}
+      }
+    });
+    await new Promise(r=>setTimeout(r,20));
+    const mainText = cfg.centerValue || (nf2.format(percent)+'%');
+    const subText = cfg.centerSub || 'avance';
+    ctx.save();
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText(mainText, size/2, (size/2)-4);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px Arial';
+    ctx.fillText(subText, size/2, (size/2)+14);
+    ctx.restore();
+    const url = canvas.toDataURL('image/png');
+    chart.destroy();
+    return {url, percent, total:baseTotal, progress:rawProgress, remainder:Math.max(0, baseTotal-rawProgress)};
+  }
+
+
+  async function makePdfTrendChart(trendRows){
+    const canvas = document.createElement('canvas');
+    canvas.width = 1120;
+    // Más bajo para que el gráfico CMO entre completo en la mitad inferior del PDF.
+    canvas.height = 250;
+    const ctx = canvas.getContext('2d');
+    const chart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: trendRows.map(r=>r.day),
+        datasets:[
+          {label:'Por descabezar',data:trendRows.map(r=>r.porDesc),borderColor:'#0b5cab',backgroundColor:'#0b5cab',tension:.28,pointRadius:2,borderWidth:3},
+          {label:'Cola aprox.',data:trendRows.map(r=>r.colaAprox),borderColor:'#e11d48',backgroundColor:'#e11d48',tension:.28,pointRadius:2,borderWidth:3},
+          {label:'Descabezado entero SID',data:trendRows.map(r=>r.descSid),borderColor:'#f97316',backgroundColor:'#f97316',tension:.28,pointRadius:2,borderWidth:3},
+          {label:'Empacado cola CMO',data:trendRows.map(r=>r.empacado),borderColor:'#d4a017',backgroundColor:'#d4a017',tension:.28,pointRadius:2,borderWidth:3}
+        ]
+      },
+      options:{
+        responsive:false,
+        animation:false,
+        maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{boxWidth:18,font:{size:13}}},tooltip:{enabled:false}},
+        scales:{
+          x:{grid:{color:'#e5e7eb'},ticks:{font:{size:11}}},
+          y:{beginAtZero:true,grid:{color:'#e5e7eb'},ticks:{font:{size:11},callback:v=>nf0.format(v)}}
+        }
+      }
+    });
+    await new Promise(r=>setTimeout(r,30));
+    const url = canvas.toDataURL('image/png');
+    chart.destroy();
+    return url;
+  }
+
+
+  async function makePdfCmoProductionChart(cmoRows){
+    const monthDays = monthDaysForTrend();
+    const byDay = new Map();
+    (cmoRows||[]).forEach(x=>byDay.set(String(x.fecha||''), x));
+    const labels = monthDays.map(d=>String(Number(d.slice(8,10))));
+    const libras = monthDays.map(d=>toNum(byDay.get(d)?.libras));
+    // Para el PDF, los días sin registro o con costo 0 no deben dibujar línea hacia abajo,
+    // porque eso distorsiona el gráfico. Se usan null para romper el trazo.
+    const costo = monthDays.map(d=>{
+      const row = byDay.get(d);
+      const v = toNum(row?.costoProduccion);
+      return (row && v > 0) ? v : null;
+    });
+    const costoVals = costo.filter(v=>Number.isFinite(v) && v > 0);
+    const totalCosto = (cmoRows||[]).reduce((a,x)=>a+toNum(x.costoMo),0);
+    const totalLibras = (cmoRows||[]).reduce((a,x)=>a+toNum(x.libras),0);
+    const avgCosto = totalLibras ? (totalCosto / totalLibras) : (costoVals.reduce((a,n)=>a+n,0) / Math.max(1,costoVals.length));
+    const promedioMes = labels.map(()=>avgCosto || 0);
+    const maxCosto = Math.max(0.070, ...(costoVals.length ? costoVals : [0]), avgCosto||0);
+    const y1Max = Math.max(0.072, maxCosto + 0.004); // holgura superior controlada
+    const canvas = document.createElement('canvas');
+    canvas.width = 1240;
+    canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+    const chart = new Chart(ctx, {
+      data:{
+        labels,
+        datasets:[
+          {
+            type:'bar',
+            label:'LIBRAS PROCESADAS',
+            data:libras,
+            yAxisID:'y',
+            backgroundColor:'rgba(147,197,253,0.62)',
+            borderColor:'rgba(147,197,253,0.95)',
+            borderWidth:1,
+            maxBarThickness:24,
+            order:3
+          },
+          {
+            type:'line',
+            label:'COSTO DE PRODUCCIÓN',
+            data:costo,
+            yAxisID:'y1',
+            borderColor:'#e65f7d',
+            backgroundColor:'rgba(230,95,125,0.18)',
+            pointBackgroundColor:'#e65f7d',
+            pointBorderColor:'#e65f7d',
+            spanGaps:false,
+            tension:.22,
+            pointRadius:4,
+            pointHoverRadius:4,
+            borderWidth:4,
+            order:1
+          },
+          {
+            type:'line',
+            label:'COSTO PROMEDIO MES',
+            data:promedioMes,
+            yAxisID:'y1',
+            borderColor:'#22c55e',
+            backgroundColor:'#22c55e',
+            pointRadius:0,
+            borderWidth:3,
+            borderDash:[10,6],
+            tension:0,
+            order:2
+          }
+        ]
+      },
+      options:{
+        responsive:false,
+        animation:false,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'top',align:'center',labels:{boxWidth:18,boxHeight:10,padding:14,font:{size:12},color:'#111827'}, fullSize:false},
+          tooltip:{enabled:false},
+          title:{display:false}
+        },
+        layout:{padding:{top:10,right:30,bottom:20,left:10}},
+        scales:{
+          x:{offset:false,grid:{color:'#e5e7eb'},ticks:{font:{size:10},color:'#111827',maxRotation:0,minRotation:0,padding:4}},
+          y:{position:'left',beginAtZero:true,grid:{color:'#e5e7eb'},ticks:{font:{size:10},color:'#111827',callback:v=>nf0.format(v),padding:4}},
+          y1:{position:'right',min:0.020,max:y1Max,grid:{drawOnChartArea:false},ticks:{font:{size:10},color:'#111827',callback:v=>nf3.format(v),padding:4}}
+        }
+      }
+    });
+    await new Promise(r=>setTimeout(r,50));
+    const url = canvas.toDataURL('image/png');
+    chart.destroy();
+    return url;
+  }
+
+  async function exportPdf(){
+    if(!currentSummary) return;
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF('landscape','pt','a4');
+    const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight();
+    const t=currentSummary.totals;
+
+    const logoData = await fileToDataUrl('logo_pdf_blanco.png') || await fileToDataUrl('logo.png');
+    const firmaData = await fileToDataUrl('firma.png');
+    const logoMeta = logoData ? await getImageMeta(logoData) : null;
+    const firmaMeta = firmaData ? await getImageMeta(firmaData) : null;
+
+    const librasRecibidas = toNum(t.enteroRecibido) + toNum(t.colaRecibida);
+    const cabezaPesada = toNum(t.cabeza);
+    const colaTotal = toNum(t.pesoColaPcd || t.pesoColaProducido);
+    const totalEmpacadas = toNum(t.colaEmpacadaGerencial) + toNum(t.enteroEmpacado);
+    const recCentHoy = totalEmpacadas ? toNum(t.botonOro) / totalEmpacadas : 0;
+    const recCentMes = toNum(t.cmoColaMes) ? toNum(t.botonOroAcum || t.botonOro) / toNum(t.cmoColaMes) : 0;
+
+    doc.setFillColor(6,29,53);
+    doc.rect(0,0,W,74,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(17);
+    doc.text('DGP — DASHBOARD GERENCIAL DE PRODUCCIÓN', 36, 29);
+    doc.setFontSize(9);
+    doc.setFont('helvetica','normal');
+    doc.text(`Periodo: ${$('fDesde').value} al ${$('fHasta').value}   |   Generado: ${stampLong()}   |   Usuario: ${currentUser?.email||''}`,36,49);
+
+    if(logoMeta){
+      try{
+        const boxW = 92, boxH = 50;
+        const r = Math.min(boxW/logoMeta.width, boxH/logoMeta.height);
+        const drawW = logoMeta.width * r;
+        const drawH = logoMeta.height * r;
+        const lx = W - 36 - drawW;
+        const ly = 12 + (boxH - drawH)/2;
+        doc.addImage(logoMeta.src, 'PNG', lx, ly, drawW, drawH, undefined, 'FAST');
+      }catch(_){ }
+    }
+
+    const cardPalette = [
+      [238,244,255],[241,247,252],[239,251,246],[255,248,238],[245,243,252],[249,243,251],
+      [255,245,243],[240,248,255],[255,247,242],[243,250,246],[243,245,255],[246,248,250],
+      [255,244,244],[242,250,251],[249,245,255],[244,247,255],[244,251,246],[255,248,242]
+    ];
+    // Tarjetas ejecutivas reorganizadas en 4 columnas x 4 filas, sin numeración.
+    // Orden visual solicitado por Gerencia de Producción.
+    const cards = [
+      ['LIBRAS PROGRAMADAS', fmt(t.programadasCola)],
+      ['PESO COLA DEL DESCABEZADO', fmt(colaTotal)],
+      ['CMO · COLA PROCESADA', fmt(t.cmoColaMes)],
+      ['COSTO PROMEDIO MES', nf4.format(t.cmoPromedioMes || t.costoProduccionMes)],
+
+      ['LIBRAS RECIBIDAS TOTALES', fmt(librasRecibidas)],
+      ['COLA EMPACADA EN MÁQUINA', fmt(t.colaEmpacadaGerencial)],
+      ['ENTERO EMPACADO', fmt(t.enteroEmpacado)],
+      ['MANO DE OBRA HOY ($/LB)', nf4.format(t.costoProduccion)],
+
+      ['LIBRAS DESCABEZADAS', fmt(t.descabezadoEntero)],
+      ['ESPERA POR CLASIFICAR', fmt(t.colaPorClasificar)],
+      ['CMO · ENTERO PROCESADO', fmt(t.cmoEnteroMes)],
+      ['BOTÓN DE ORO ACUM. MES', moneyFmt(t.botonOroAcum || t.botonOro)],
+
+      ['ESPERA POR DESCABEZAR', fmt(t.pendienteDescabezado||0)],
+      ['CABEZA PESADA', fmt(cabezaPesada)],
+      ['CONTENEDORES PROM. MES', nf2.format(t.cmoEquivCont)],
+      ['BOTÓN DE ORO DE HOY', moneyFmt(t.botonOro)]
+    ];
+
+    let y=84;
+    const cols = 4, gap=7, left=34, cardW=(W-left*2-gap*(cols-1))/cols, cardH=35;
+    cards.forEach((c,i)=>{
+      const x = left + (i%cols)*(cardW+gap);
+      const yy = y + Math.floor(i/cols)*(cardH+gap);
+      const fill = cardPalette[i % cardPalette.length];
+      doc.setDrawColor(212,222,232);
+      doc.setFillColor(fill[0],fill[1],fill[2]);
+      doc.roundedRect(x,yy,cardW,cardH,8,8,'FD');
+      doc.setTextColor(82,97,116);
+      doc.setFontSize(6.2);
+      doc.setFont('helvetica','bold');
+      doc.text(c[0], x+8, yy+10, {maxWidth:cardW-16});
+      doc.setTextColor(11,28,52);
+      doc.setFontSize(10.5);
+      doc.setFont('helvetica','bold');
+      doc.text(String(c[1]), x+8, yy+27, {maxWidth:cardW-16});
+    });
+
+    y += (cardH*4)+(gap*3)+13;
+    doc.setTextColor(6,29,53);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11.5);
+    doc.text('Indicadores de avance y recuperación', 36, y);
+
+    const boxGap = 7;
+    const boxW = (W - 72 - boxGap*3) / 4;
+    const boxH = 104;
+    const donutSize = 64;
+    const row1Y = y + 8;
+    const row2Y = row1Y + boxH + 8;
+
+    const chart1 = await makePdfDonut({ total: t.colaRecibida, progress: t.parcialColaElevadoEntero, progressLabel:'Parcial procesado', remainderLabel:'Pendiente', color:'#0b5cab', centerSub:'avance' });
+    const chart2 = await makePdfDonut({ total: colaTotal, progress: t.colaEmpacadaGerencial, progressLabel:'Empacada', remainderLabel:'Saldo', color:'#0f766e', centerSub:'avance' });
+    const chart3 = await makePdfDonut({ total: t.programadasCola, progress: librasRecibidas, progressLabel:'Recibidas', remainderLabel:'Pendientes', color:'#d4a017', centerSub:'cumpl.' });
+    const chart4 = await makePdfDonut({ total: t.enteroRecibido, progress: t.enteroEmpacado, progressLabel:'Empacado', remainderLabel:'Pendiente', color:'#7c3aed', centerSub:'avance' });
+    const chart5 = await makePdfDonut({ total: 0.050, progress: t.costoProduccion, progressLabel:'M.O. hoy', remainderLabel:'Margen', color:'#ef4444', centerValue:nf4.format(t.costoProduccion), centerSub:'máx. 0,050' });
+    const chart6 = await makePdfDonut({ total: 0.100, progress: recCentHoy, progressLabel:'Recuperado', remainderLabel:'Meta', color:'#0ea5a4', centerValue:nf3.format(recCentHoy), centerSub:'máx. 0,100' });
+    const chart7 = await makePdfDonut({ total: 0.100, progress: recCentMes, progressLabel:'Recuperado', remainderLabel:'Meta', color:'#f97316', centerValue:nf3.format(recCentMes), centerSub:'máx. 0,100' });
+    const chart8 = await makePdfDonut({ total: 40, progress: t.cmoEquivCont, progressLabel:'Procesados', remainderLabel:'Meta', color:'#2563eb', centerValue:nf2.format(t.cmoEquivCont), centerSub:'máx. 40' });
+
+    const charts = [
+      ['Recepción cola vs espera por descabezar', chart1, [`Recibido: ${fmt(t.colaRecibida)}`, `Parcial elevado a entero: ${fmt(t.parcialColaElevadoEntero)}`, `Espera: ${fmt(t.pendienteDescabezado)}`]],
+      ['Cola descabezada vs cola empacada', chart2, [`Cola total: ${fmt(colaTotal)}`, `Cola empacada: ${fmt(t.colaEmpacadaGerencial)}`, `Avance: ${nf2.format(chart2.percent)}%`]],
+      ['Programadas vs recibidas', chart3, [`Programadas: ${fmt(t.programadasCola)}`, `Recibidas: ${fmt(librasRecibidas)}`, `Cumplimiento: ${nf2.format(chart3.percent)}%`]],
+      ['Entero recibido vs entero empacado', chart4, [`Entero recibido: ${fmt(t.enteroRecibido)}`, `Entero empacado: ${fmt(t.enteroEmpacado)}`, `Avance: ${nf2.format(chart4.percent)}%`]],
+      ['Mano de obra de hoy', chart5, [`M.O. hoy: ${nf4.format(t.costoProduccion)} $/lb`, `Valor M.O.: ${moneyFmt(t.costoMo)}`, `Máximo gráfico: 0,050 $/lb`]],
+      ['Centavos recuperados hoy', chart6, [`Botón Oro hoy: ${moneyFmt(t.botonOro)}`, `Libras empacadas: ${fmt(totalEmpacadas)}`, `Máximo gráfico: 0,100 USD/lb`]],
+      ['Centavos recuperados acumulados del mes', chart7, [`Botón Oro acum.: ${moneyFmt(t.botonOroAcum || t.botonOro)}`, `Cola procesada mes: ${fmt(t.cmoColaMes)}`, `Máximo gráfico: 0,100 USD/lb`]],
+      ['Contenedores prom. mes', chart8, [`Contenedores: ${nf2.format(t.cmoEquivCont)}`, `Máximo gráfico: 40`, `Avance: ${nf2.format(chart8.percent)}%`]]
+    ];
+
+    charts.forEach((item, idx)=>{
+      const col = idx % 4;
+      const row = Math.floor(idx / 4);
+      const x = 36 + col*(boxW+boxGap);
+      const yy = row === 0 ? row1Y : row2Y;
+      doc.setDrawColor(220,228,236);
+      doc.setFillColor(255,255,255);
+      doc.roundedRect(x, yy, boxW, boxH, 12, 12, 'FD');
+      doc.setTextColor(11,28,52);
+      doc.setFontSize(7.6);
+      doc.setFont('helvetica','bold');
+      doc.text(item[0], x+8, yy+13, {maxWidth: boxW-16});
+
+      const imgX = x + 8;
+      const imgY = yy + 26;
+      doc.addImage(item[1].url, 'PNG', imgX, imgY, donutSize, donutSize, undefined, 'FAST');
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(6.7);
+      doc.setTextColor(71,85,105);
+      const txtX = imgX + donutSize + 8;
+      // Texto de detalle con control de salto de línea para evitar que se remonte.
+      const detailMaxW = boxW - donutSize - 26;
+      let textY = yy + 38;
+      item[2].forEach((line)=>{
+        const parts = doc.splitTextToSize(String(line), detailMaxW);
+        parts.forEach((part)=>{
+          doc.text(part, txtX, textY, {maxWidth: detailMaxW});
+          textY += 8.6;
+        });
+        textY += 2.4;
+      });
+    });
+
+    const signY = H - 58;
+    if(firmaMeta){
+      try{
+        const boxWsig = 118, boxHsig = 34;
+        const r = Math.min(boxWsig/firmaMeta.width, boxHsig/firmaMeta.height);
+        const drawW = firmaMeta.width * r;
+        const drawH = firmaMeta.height * r;
+        doc.setTextColor(100,116,139);
+        doc.setFontSize(7.8);
+        doc.text('Firma electrónica', 36, signY-4);
+        doc.addImage(firmaMeta.src, 'PNG', 36, signY, drawW, drawH, undefined, 'FAST');
+      }catch(_){
+        doc.setDrawColor(100,116,139);
+        doc.line(36, signY+26, 146, signY+26);
+        doc.setTextColor(100,116,139);
+        doc.setFontSize(7.8);
+        doc.text('Firma electrónica', 36, signY+38);
+      }
+    }else{
+      doc.setDrawColor(100,116,139);
+      doc.line(36, signY+26, 146, signY+26);
+      doc.setTextColor(100,116,139);
+      doc.setFontSize(7.8);
+      doc.text('Firma electrónica', 36, signY+38);
+    }
+
+    // Segunda hoja: tendencia mensual integral y tabla CMO del mes actual.
+    const trendRowsPdf = buildMonthlyTrendRows();
+    const cmoRowsPdf = getCmoMonthRows();
+    const trendImg = await makePdfTrendChart(trendRowsPdf);
+    const cmoChartImg = await makePdfCmoProductionChart(cmoRowsPdf);
+    doc.addPage('a4','landscape');
+    doc.setFillColor(6,29,53);
+    doc.rect(0,0,W,58,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(15);
+    doc.text('DGP — TENDENCIA MENSUAL INTEGRAL Y CMO', 36, 24);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8.5);
+    doc.text(`Mes: ${today().slice(0,7)}   |   Corte: ${today()}   |   Generado: ${stampLong()}`, 36, 42);
+    if(logoMeta){
+      try{
+        const boxW2 = 82, boxH2 = 40;
+        const r2 = Math.min(boxW2/logoMeta.width, boxH2/logoMeta.height);
+        const drawW2 = logoMeta.width * r2;
+        const drawH2 = logoMeta.height * r2;
+        doc.addImage(logoMeta.src, 'PNG', W-36-drawW2, 9+(boxH2-drawH2)/2, drawW2, drawH2, undefined, 'FAST');
+      }catch(_){ }
+    }
+
+    const halfY = H/2;
+    doc.setTextColor(6,29,53);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('Tendencia mensual integral', 36, 76);
+    doc.setDrawColor(220,228,236);
+    doc.setFillColor(255,255,255);
+    doc.roundedRect(32, 88, W-64, halfY-102, 12, 12, 'FD');
+    doc.addImage(trendImg, 'PNG', 44, 94, W-88, halfY-118, undefined, 'FAST');
+
+    doc.setDrawColor(210,220,230);
+    doc.line(32, halfY, W-32, halfY);
+    doc.setTextColor(6,29,53);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('CMO — Libras procesadas y costo de producción', 36, halfY+20);
+    doc.setDrawColor(220,228,236);
+    doc.setFillColor(255,255,255);
+    const cmoBoxY = halfY + 28;
+    const cmoBoxH = H - cmoBoxY - 24;
+    doc.roundedRect(32, cmoBoxY, W-64, cmoBoxH, 12, 12, 'FD');
+    const cmoImgX = 46;
+    const cmoImgY = cmoBoxY + 8;
+    const cmoImgW = W - 92;
+    const cmoImgH = cmoBoxH - 16;
+    doc.addImage(cmoChartImg, 'PNG', cmoImgX, cmoImgY, cmoImgW, cmoImgH, undefined, 'FAST');
+
+    doc.save(`DGP_Dashboard_Gerencial_${today()}.pdf`);
+  }
+})();
+</script>
+</body>
+</html>
