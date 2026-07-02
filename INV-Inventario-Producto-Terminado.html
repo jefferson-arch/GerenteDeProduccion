@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link href="favicon.ico?v=1" rel="icon"/>
+  <link href="favicon-32.png?v=1" rel="icon" sizes="32x32" type="image/png"/>
+  <link href="favicon-16.png?v=1" rel="icon" sizes="16x16" type="image/png"/>
+  <link href="apple-touch-icon.png?v=1" rel="apple-touch-icon" sizes="180x180"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Oceantreasure | Inventario Producto Terminado</title>
+  <style>
+    :root{
+      --navy:#102946;
+      --navy2:#08192e;
+      --blue:#1d5d96;
+      --gold:#b8892e;
+      --gold2:#dfc172;
+      --paper:#fffdfa;
+      --paper2:#f8fbff;
+      --ink:#17263b;
+      --muted:#6b7a90;
+      --line:rgba(16,41,70,.14);
+      --danger:#b91c1c;
+      --ok:#126a3a;
+      --warn:#9a6217;
+      --shadow:0 24px 60px rgba(16,41,70,.13);
+      --shadow2:0 14px 34px rgba(16,41,70,.10);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{min-height:100%;font-family:"Times New Roman",Times,serif;font-size:14px;color:var(--ink)}
+    body{margin:0;background:linear-gradient(135deg,#fbf8f0 0%,#eef6fb 48%,#fffefa 100%);overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(90deg,rgba(255,252,246,.96),rgba(255,252,246,.84),rgba(241,247,252,.94)),url("./bg.jpg?v=1");background-size:cover;background-position:center;z-index:-2;filter:saturate(.72) contrast(1.02) brightness(1.16);transform:scale(1.025)}
+    body::after{content:"";position:fixed;inset:-20%;background:radial-gradient(circle at 8% 12%,rgba(223,193,114,.30),transparent 25%),radial-gradient(circle at 88% 16%,rgba(29,93,150,.13),transparent 25%),radial-gradient(circle at 48% 100%,rgba(16,41,70,.10),transparent 34%);z-index:-1;pointer-events:none}
+    button,input,select{font-family:"Times New Roman",Times,serif;font-size:14px}
+    .hidden{display:none!important}
+    .login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+    .login-card{width:min(440px,100%);border-radius:30px;padding:30px;background:linear-gradient(150deg,rgba(255,255,255,.96),rgba(248,244,235,.90));border:1px solid rgba(16,41,70,.12);box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .login-card::before{content:"";position:absolute;inset:0 0 auto;height:7px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--gold))}
+    .login-logo{display:grid;place-items:center;width:150px;height:84px;margin:0 auto 8px;border-radius:24px;background:linear-gradient(110deg,#08192e,#17385f);box-shadow:0 18px 34px rgba(16,41,70,.20)}
+    .login-logo img{width:122px;height:68px;object-fit:contain;display:block}
+    .login-title{text-align:center;margin:12px 0 4px;color:var(--navy);font-size:18px;text-transform:uppercase;letter-spacing:.14em;font-weight:700}
+    .login-subtitle{text-align:center;margin:0 0 24px;color:var(--muted);line-height:1.35}
+    .field{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+    .field label{color:var(--navy);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+    .field input{height:44px;border-radius:14px;border:1px solid rgba(16,41,70,.18);padding:0 13px;background:#fff;color:var(--ink);outline:none;box-shadow:inset 0 1px 0 rgba(16,41,70,.04)}
+    .field input:focus{border-color:rgba(184,137,46,.60);box-shadow:0 0 0 3px rgba(223,193,114,.18)}
+    .primary-btn,.secondary-btn,.danger-btn{border:0;border-radius:999px;min-height:40px;padding:10px 18px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .2s ease,filter .2s ease,box-shadow .2s ease}
+    .primary-btn{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;box-shadow:0 12px 22px rgba(29,93,150,.22)}
+    .secondary-btn{background:rgba(255,255,255,.88);color:var(--navy);border:1px solid rgba(16,41,70,.16)}
+    .danger-btn{background:rgba(185,28,28,.10);color:var(--danger);border:1px solid rgba(185,28,28,.24)}
+    .primary-btn:hover,.secondary-btn:hover,.danger-btn:hover{transform:translateY(-1px);filter:brightness(1.04)}
+    .full{width:100%}
+    .msg{margin-top:14px;min-height:22px;text-align:center;color:var(--danger);font-weight:700;line-height:1.35}
+    .shell{width:min(1860px,calc(100% - 32px));margin:0 auto;padding:18px 0 28px}
+    .hero{min-height:102px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px 24px;border-radius:30px;background:linear-gradient(110deg,#08192e 0%,#0c2846 44%,#16385e 72%,#0e213b 100%);box-shadow:0 24px 60px rgba(5,16,31,.28);position:relative;overflow:hidden;color:white}
+    .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 22%,rgba(255,255,255,.08),transparent 24%),radial-gradient(circle at 86% 20%,rgba(223,193,114,.16),transparent 16%),linear-gradient(90deg,rgba(255,255,255,.04),transparent 40%,rgba(223,193,114,.10) 100%);pointer-events:none}
+    .brand{display:flex;align-items:center;gap:18px;position:relative;z-index:1;min-width:0}
+    .brand-mark{width:118px;height:70px;display:grid;place-items:center;overflow:hidden;flex:0 0 auto}
+    .brand-mark img{width:110px;height:62px;object-fit:contain;display:block}
+    .eyebrow{margin:0 0 6px;color:var(--gold2);font-weight:700;letter-spacing:.28em;text-transform:uppercase;font-size:15px}
+    h1{margin:0;color:#f6fbff;font-size:17px;line-height:1.18;letter-spacing:.12em;text-transform:uppercase}
+    .session-box{position:relative;z-index:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;color:#f6fbff}
+    .session-pill{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.08);font-weight:700;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .toolbar{margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid rgba(16,41,70,.10);border-radius:20px;background:rgba(255,255,255,.76);box-shadow:0 10px 25px rgba(16,41,70,.07);backdrop-filter:blur(14px);flex-wrap:wrap}
+    .toolbar-title{color:var(--navy);font-weight:700;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
+    .toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .filters{display:grid;grid-template-columns:1.25fr repeat(4, minmax(120px, .75fr));gap:10px;margin:0 0 12px}
+    .filter-card{background:rgba(255,255,255,.82);border:1px solid rgba(16,41,70,.11);border-radius:18px;padding:10px 12px;box-shadow:0 10px 25px rgba(16,41,70,.06)}
+    .filter-card label{display:block;color:var(--navy);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:12px;margin-bottom:6px}
+    .filter-card input,.filter-card select{width:100%;height:38px;border-radius:12px;border:1px solid rgba(16,41,70,.16);padding:0 10px;background:#fff;color:var(--ink);outline:none}
+    .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+    .kpi{border-radius:20px;border:1px solid rgba(16,41,70,.11);background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(250,248,242,.84));box-shadow:var(--shadow2);padding:13px 14px;position:relative;overflow:hidden}
+    .kpi::before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--gold))}
+    .kpi span{display:block;margin-bottom:6px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:12px}
+    .kpi strong{display:block;color:var(--navy);font-size:20px;line-height:1}
+    .panel{border-radius:24px;border:1px solid rgba(16,41,70,.12);background:rgba(255,255,255,.88);box-shadow:var(--shadow2);overflow:hidden}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(16,41,70,.10);background:linear-gradient(90deg,rgba(255,255,255,.96),rgba(248,251,255,.90))}
+    .panel-title{font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--navy)}
+    .panel-note{color:var(--muted);font-weight:700;text-align:right}
+    .table-wrap{overflow:auto;max-height:calc(100vh - 380px)}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:1420px}
+    thead th{position:sticky;top:0;z-index:2;background:#102946;color:#fff;text-align:left;text-transform:uppercase;letter-spacing:.06em;font-size:12px;padding:11px 10px;border-right:1px solid rgba(255,255,255,.12);white-space:nowrap}
+    tbody td{padding:10px;border-bottom:1px solid rgba(16,41,70,.09);border-right:1px solid rgba(16,41,70,.06);vertical-align:middle;white-space:nowrap}
+    tbody tr:nth-child(even){background:rgba(248,251,255,.72)}
+    tbody tr:hover{background:rgba(223,193,114,.16)}
+    .num{text-align:right;font-variant-numeric:tabular-nums}
+    .stock-ok{color:var(--ok);font-weight:700}
+    .stock-zero{color:var(--warn);font-weight:700}
+    .stock-neg{color:var(--danger);font-weight:700}
+    .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:12px;border:1px solid transparent}
+    .badge.ok{background:rgba(18,106,58,.09);color:var(--ok);border-color:rgba(18,106,58,.18)}
+    .badge.zero{background:rgba(154,98,23,.10);color:var(--warn);border-color:rgba(154,98,23,.18)}
+    .badge.neg{background:rgba(185,28,28,.09);color:var(--danger);border-color:rgba(185,28,28,.18)}
+    .statusbar{margin:10px 0 0;color:var(--muted);font-weight:700;line-height:1.35}
+    .toast{position:fixed;right:18px;bottom:18px;width:min(420px,calc(100% - 36px));padding:14px 16px;border-radius:18px;background:#fff;border:1px solid rgba(16,41,70,.14);box-shadow:var(--shadow);color:var(--ink);z-index:20;display:none;line-height:1.35}
+    .toast.show{display:block;animation:fadeUp .22s ease both}
+    .toast strong{display:block;color:var(--navy);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em}
+    .loading{position:fixed;inset:0;background:rgba(255,252,246,.70);backdrop-filter:blur(16px);display:none;place-items:center;z-index:15}
+    .loading.show{display:grid}
+    .loading-card{width:min(360px,calc(100% - 40px));border-radius:26px;padding:26px;text-align:center;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(248,244,235,.90));border:1px solid rgba(16,41,70,.12);box-shadow:var(--shadow);color:var(--navy);font-weight:700;letter-spacing:.10em;text-transform:uppercase}
+    .orb{width:54px;height:54px;border-radius:999px;margin:0 auto 14px;border:4px solid rgba(16,41,70,.12);border-top-color:var(--gold);animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:1200px){.filters{grid-template-columns:1fr 1fr 1fr}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.table-wrap{max-height:none}}
+    @media(max-width:760px){.shell{width:min(100% - 20px,680px);padding:12px 0 20px}.hero{align-items:flex-start;flex-direction:column;border-radius:24px}.brand-mark{width:96px;height:58px}.brand-mark img{width:90px;height:50px}.eyebrow{font-size:13px;letter-spacing:.18em}h1{font-size:14px;letter-spacing:.08em}.filters{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.panel-head{align-items:flex-start;flex-direction:column}.panel-note{text-align:left}.toolbar{align-items:flex-start;flex-direction:column}.toolbar-actions{width:100%}.toolbar-actions button{flex:1}.session-box{justify-content:flex-start}.session-pill{max-width:100%}}
+  </style>
+</head>
+<body>
+  <section class="login-wrap" id="loginScreen">
+    <form class="login-card" id="loginForm" autocomplete="on">
+      <div class="login-logo"><img alt="Oceantreasure" src="./logo_pdf_blanco.png?v=1"/></div>
+      <h2 class="login-title">Inventario</h2>
+      <p class="login-subtitle">Acceso restringido para control de producto terminado, ingresos desde SLM y bajas por embarques QR.</p>
+      <div class="field">
+        <label for="email">Usuario</label>
+        <input id="email" type="email" autocomplete="username" placeholder="usuario@oceantreasure.local" required/>
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input id="password" type="password" autocomplete="current-password" required/>
+      </div>
+      <button class="primary-btn full" id="loginBtn" type="submit">Ingresar</button>
+      <div class="msg" id="loginMsg"></div>
+    </form>
+  </section>
+
+  <main class="hidden" id="appScreen">
+    <div class="shell">
+      <section class="hero">
+        <div class="brand">
+          <div class="brand-mark"><img alt="Oceantreasure" src="./logo_pdf_blanco.png?v=1"/></div>
+          <div>
+            <p class="eyebrow">Oceantreasure S.A.</p>
+            <h1>Inventario de Producto Terminado</h1>
+          </div>
+        </div>
+        <div class="session-box">
+          <span class="session-pill" id="userEmail">Usuario</span>
+          <button class="secondary-btn" id="goHomeBtn" type="button">Portal</button>
+          <button class="danger-btn" id="logoutBtn" type="button">Salir</button>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="toolbar-title">Stock actualizado según SLM y QR</div>
+        <div class="toolbar-actions">
+          <button class="secondary-btn" id="refreshBtn" type="button">Actualizar</button>
+          <button class="secondary-btn" id="exportBtn" type="button">Exportar Excel</button>
+        </div>
+      </div>
+
+      <section class="filters" aria-label="Filtros de inventario">
+        <div class="filter-card">
+          <label for="searchInput">Buscar</label>
+          <input id="searchInput" type="search" placeholder="Cliente, consignatario, marca, talla o secuencial"/>
+        </div>
+        <div class="filter-card">
+          <label for="clienteFilter">Cliente</label>
+          <select id="clienteFilter"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-card">
+          <label for="consignatarioFilter">Consignatario</label>
+          <select id="consignatarioFilter"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-card">
+          <label for="claseFilter">Clase</label>
+          <select id="claseFilter"><option value="">Todas</option></select>
+        </div>
+        <div class="filter-card">
+          <label for="stockFilter">Estado</label>
+          <select id="stockFilter">
+            <option value="">Todos</option>
+            <option value="stock">Con stock</option>
+            <option value="cero">Stock cero</option>
+            <option value="negativo">Stock negativo</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="kpis">
+        <div class="kpi"><span>Ingresado SLM</span><strong id="kpiCajas">0,0 cajas</strong></div>
+        <div class="kpi"><span>Masters ingresados</span><strong id="kpiMastersIn">0,0</strong></div>
+        <div class="kpi"><span>Embarcado QR</span><strong id="kpiMastersOut">0,0 masters</strong></div>
+        <div class="kpi"><span>Stock disponible</span><strong id="kpiStockMasters">0,0 masters</strong></div>
+        <div class="kpi"><span>Registros visibles</span><strong id="kpiRows">0</strong></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Detalle de inventario</div>
+          <div class="panel-note" id="sourceNote">Esperando carga de datos...</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Consignatario</th>
+                <th>Marca</th>
+                <th>Clase</th>
+                <th>Talla</th>
+                <th>Lote</th>
+                <th>Secuencial</th>
+                <th class="num">Cajas SLM</th>
+                <th class="num">Masters SLM</th>
+                <th class="num">Masters QR</th>
+                <th class="num">Stock cajas</th>
+                <th class="num">Stock masters</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="13">Inicie sesión para consultar el inventario.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <div class="statusbar" id="statusbar"></div>
+    </div>
+  </main>
+
+  <div class="loading" id="loading"><div class="loading-card"><div class="orb"></div>Validando inventario</div></div>
+  <div class="toast" id="toast"><strong id="toastTitle">Aviso</strong><span id="toastMsg"></span></div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMoLkSnnLowMagRNL7O6ttPo1FXd1URac",
+      authDomain: "oceantreasure-app.firebaseapp.com",
+      projectId: "oceantreasure-app",
+      storageBucket: "oceantreasure-app.firebasestorage.app",
+      messagingSenderId: "553014659258",
+      appId: "1:553014659258:web:cfc30844a88433b7b79a83",
+      measurementId: "G-HMMQKJY8NJ"
+    };
+
+    const ALLOWED_EMAILS = [
+      "jeffersonfigueroa@oceantreasure.local",
+      "victoriacajias@oceantreasure.local",
+      "alejandrasalas@oceantreasure.local",
+      "lisbethmurillo@oceantreasure.local",
+      "ceciliamorocho@oceantreasure.local",
+      "ericktorres@oceantreasure.local",
+      "juliorevelo@oceantreasure.local",
+      "aaronaguilar@oceantreasure.local",
+      "julissaescobar@oceantreasure.local",
+      "gerenciageneral@oceantreasure.local",
+      "vanesapacheco@oceantreasure.local",
+      "milenalmeida@oceantreasure.local"
+    ];
+
+    // Candidatos para SLM: el módulo intenta leerlos sin romper si alguno no existe o no tiene permisos.
+    // Cuando confirmes el nombre exacto de la colección SLM, puedes dejar solo esa línea para acelerar la carga.
+    // Mapeo real confirmado desde SLM:
+    // SLM guarda las liquidaciones de máquina en slp_liquidaciones_pago.
+    // La pantalla DATOS guarda lo visible en formInputs.lineRows: talla, empaque e invA/invB/invC.
+    const SLM_COLLECTIONS = [
+      "slp_liquidaciones_pago"
+    ];
+
+    const QR_CONTAINERS_COLLECTION = "qr_export_contenedores";
+    const QR_CARTONS_COLLECTION = "qr_export_cartones_asignados";
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+
+    let inventoryRows = [];
+    let rawDiagnostics = { slm: [], qr: [], warnings: [] };
+
+    const $ = (id) => document.getElementById(id);
+    const loginScreen = $("loginScreen");
+    const appScreen = $("appScreen");
+    const loading = $("loading");
+    const tbody = $("tbody");
+
+    function showLoading(show){ loading.classList.toggle("show", !!show); }
+    function showToast(title, msg){
+      $("toastTitle").textContent = title;
+      $("toastMsg").textContent = msg;
+      const box = $("toast");
+      box.classList.add("show");
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => box.classList.remove("show"), 6500);
+    }
+
+    function normalizeEmail(email){ return String(email || "").trim().toLowerCase(); }
+    function isAllowed(email){ return ALLOWED_EMAILS.includes(normalizeEmail(email)); }
+    function cleanText(v){
+      const s = String(v ?? "").replace(/\s+/g," ").trim();
+      return s || "-";
+    }
+    function normKey(k){
+      return String(k || "")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^a-zA-Z0-9]/g,"")
+        .toLowerCase();
+    }
+    function normalizeForCompare(v){
+      return String(v ?? "")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/\s+/g," ").trim().toUpperCase();
+    }
+    function toNumber(v){
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+      if (v == null) return 0;
+      let s = String(v).trim();
+      if (!s) return 0;
+      s = s.replace(/[^0-9,.-]/g, "");
+      if (s.includes(",") && s.includes(".")) s = s.replace(/\./g, "").replace(",", ".");
+      else if (s.includes(",")) s = s.replace(",", ".");
+      const n = Number(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function fmt(n, decimals=1){
+      return Number(n || 0).toLocaleString("es-EC", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    }
+    function fmtInt(n){ return Number(n || 0).toLocaleString("es-EC", { maximumFractionDigits: 0 }); }
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+    }
+
+    function deepValues(obj){
+      const out = {};
+      function walk(current, prefix){
+        if (!current || typeof current !== "object" || current instanceof Date) return;
+        Object.keys(current).forEach(k => {
+          const val = current[k];
+          const key = prefix ? `${prefix}.${k}` : k;
+          out[normKey(k)] = val;
+          out[normKey(key)] = val;
+          if (val && typeof val === "object" && !Array.isArray(val) && !(val instanceof Date) && !(val && typeof val.toDate === "function")) {
+            walk(val, key);
+          }
+        });
+      }
+      walk(obj, "");
+      return out;
+    }
+
+    function pick(obj, aliases, fallback=""){
+      const flat = deepValues(obj || {});
+      for (const alias of aliases){
+        const key = normKey(alias);
+        if (Object.prototype.hasOwnProperty.call(flat, key)) {
+          const val = flat[key];
+          if (val !== undefined && val !== null && String(val).trim() !== "") return val;
+        }
+      }
+      return fallback;
+    }
+
+    function mergeHeaderWithDetails(doc){
+      const data = doc.data ? doc.data() : doc;
+      const id = doc.id || data.id || "";
+      const detailKeys = ["detalle", "detalles", "items", "lineas", "líneas", "filas", "productos", "registros", "cartones", "liquidaciones", "datos", "tallas"];
+      const rows = [];
+      for (const key of detailKeys){
+        const arr = data[key];
+        if (Array.isArray(arr) && arr.length){
+          arr.forEach((item, idx) => rows.push({ ...data, ...item, _docId:id, _rowIndex:idx }));
+        }
+      }
+      if (!rows.length) rows.push({ ...data, _docId:id, _rowIndex:0 });
+      return rows;
+    }
+
+    function secuencialKeyValue(v){
+      const raw = normalizeForCompare(v || "");
+      if (!raw || raw === "-") return "";
+      const digits = raw.replace(/\D+/g, "");
+      const normalizedDigits = digits ? (digits.replace(/^0+/, "") || "0") : "";
+      return normalizedDigits || raw.replace(/[^A-Z0-9]/g, "");
+    }
+
+    function hasSecuencial(row){
+      return !!secuencialKeyValue(row?.secuencial);
+    }
+
+    function makeInventoryKey(row){
+      // REGLA PRINCIPAL INVENTARIO:
+      // El secuencial es el recurso maestro para cruzar SLM vs LECTOR QR.
+      // El lote se conserva solo como dato informativo en pantalla, pero NO forma parte de la llave.
+      // Para evitar sumas ilógicas, el detalle se cruza por cliente, consignatario, clase y talla.
+      // La MARCA queda visible como dato informativo, pero NO gobierna el cruce porque puede variar entre SLM y QR.
+      return [
+        secuencialKeyValue(row.secuencial) || "SIN_SECUENCIAL",
+        normalizeForCompare(row.cliente || "-"),
+        normalizeForCompare(row.consignatario || "-"),
+        normalizeForCompare(row.clase || "-"),
+        normalizeForCompare(row.talla || "-")
+      ].join("|");
+    }
+
+    function isBlankValue(v){
+      return v === undefined || v === null || String(v).trim() === "" || String(v).trim() === "-";
+    }
+
+    function firstClean(...values){
+      for (const v of values){
+        if (!isBlankValue(v)) return cleanText(v);
+      }
+      return "-";
+    }
+
+    function valueFromCatalogLike(v){
+      if (v && typeof v === "object") {
+        return firstClean(v.nombre, v.name, v.valor, v.value, v.descripcion, v.label, v.id);
+      }
+      return cleanText(v || "");
+    }
+
+    function parseEmpaqueValue(emp){
+      // SLM presenta el empaque como: CLIENTE | CONSIGNATARIO | MARCA | OC.
+      // En Firestore puede venir como objeto normalizado o como texto heredado.
+      // Esta función impide que una segunda fila de la misma talla se mezcle con la primera.
+      if (!emp) return {};
+
+      if (typeof emp === "object" && !Array.isArray(emp)) {
+        const cliente = valueFromCatalogLike(emp.cliente || emp.customer || emp.client || emp.nombreCliente || emp.importador);
+        const consignatario = valueFromCatalogLike(emp.consignatario || emp.consignee || emp.destinatario || emp.clienteFinal);
+        const marca = valueFromCatalogLike(emp.marca || emp.brand || emp.marcaEmpaque);
+        const ordenCompra = valueFromCatalogLike(emp.ordenCompra || emp.oc || emp.orden || emp.po);
+        return {
+          cliente: isBlankValue(cliente) ? "" : cleanText(cliente),
+          consignatario: isBlankValue(consignatario) ? "" : cleanText(consignatario),
+          marca: isBlankValue(marca) ? "" : cleanText(marca),
+          ordenCompra: isBlankValue(ordenCompra) ? "" : cleanText(ordenCompra),
+          raw: [cliente, consignatario, marca, ordenCompra].filter(x => !isBlankValue(x)).map(cleanText).join(" | ")
+        };
+      }
+
+      const raw = cleanText(emp);
+      if (isBlankValue(raw) || raw === "-") return {};
+      const parts = raw.split(/\s*\|\s*/).map(x => cleanText(x)).filter(x => !isBlankValue(x) && x !== "-");
+      return {
+        cliente: parts[0] || "",
+        consignatario: parts[1] || "",
+        marca: parts[2] || "",
+        ordenCompra: parts[3] || "",
+        raw
+      };
+    }
+
+    function canonClase(v){
+      const t = normalizeForCompare(v);
+      if (!t || t === "-") return "-";
+      if (t === "A" || t.includes("CLASE A") || t.includes("CLASS A")) return "A";
+      if (t === "B" || t.includes("CLASE B") || t.includes("CLASS B")) return "B";
+      if (t === "C" || t.includes("CLASE C") || t.includes("CLASS C")) return "C";
+      return cleanText(v);
+    }
+
+    function isSlmLiquidacionDoc(data, docId=""){
+      const origin = normalizeForCompare(data?.origenSistema || data?.sistema || data?.source || "");
+      const type = normalizeForCompare(data?.tipoLiquidacion || data?.tipo || data?.tipoRegistro || "");
+      const id = normalizeForCompare(docId);
+      const hasClassRows = ["classA", "classB", "classC"].some(k => Array.isArray(data?.[k]?.rows) && data[k].rows.length);
+      return origin === "SLM" || type === "INVENTARIO_SLM" || id.startsWith("SLM_LIQ_") || hasClassRows;
+    }
+
+    function headerBase(data, docId=""){
+      const h = data?.header || {};
+      return {
+        _docId:docId,
+        liquidacionNo:data?.liquidacionNo || h?.liquidacionNo || "",
+        proveedor:data?.proveedor || h?.proveedor || "",
+        lote:data?.lote || h?.lote || "",
+        secuencial:data?.secuencial || h?.secuencial || "",
+        estatusTabla:data?.estatusTabla || data?.formInputs?.estatusTabla || h?.estatusTabla || "",
+        header:h
+      };
+    }
+
+    function extractRowsFromSlmClass(data, className, docId){
+      const block = data?.[className] || {};
+      const rows = Array.isArray(block.rows) ? block.rows : [];
+      const base = headerBase(data, docId);
+      const classKey = className === "classA" ? "A" : className === "classB" ? "B" : "C";
+      return rows.map((r, idx) => ({
+        ...base,
+        ...r,
+        classKey:r?.classKey || classKey,
+        clase:r?.classKey || classKey,
+        talla:r?.talla || "",
+        qty:r?.qty,
+        cajas:r?.qty,
+        empaque:r?.empaque || {},
+        _docId:docId,
+        _rowIndex:`${className}_${idx}`
+      }));
+    }
+
+    function extractRowsFromSlmLineRows(data, docId){
+      const lineRows = data?.formInputs?.lineRows || data?.lineRows || [];
+      if (!Array.isArray(lineRows) || !lineRows.length) return [];
+      const base = headerBase(data, docId);
+      const rows = [];
+
+      // MUY IMPORTANTE:
+      // En SLM una misma talla puede repetirse dentro del mismo secuencial con distinto empaque.
+      // Ejemplo real: SEC. 5029 / 21-25:
+      //   SCARPA | STELLAR | KING  = 17.608 cajas
+      //   CRISS  | HONGBAO | KEVIN =    452 cajas
+      // Si Inventario solo lee la talla y el secuencial, suma 18.060 y genera un stock falso.
+      // Por eso se cruza cada lineRow con su rowId dentro de classA/classB/classC para tomar
+      // el empaque exacto de esa fila y separar correctamente cliente/consignatario/marca.
+      const classRowsByRowId = new Map();
+      const classRowsByTalla = new Map();
+      [
+        ["classA", "A"],
+        ["classB", "B"],
+        ["classC", "C"]
+      ].forEach(([className, classKey]) => {
+        const blockRows = Array.isArray(data?.[className]?.rows) ? data[className].rows : [];
+        blockRows.forEach((cr, crIdx) => {
+          const enriched = { ...cr, classKey, _className:className, _classRowIndex:crIdx };
+          if (cr?.rowId) classRowsByRowId.set(`${String(cr.rowId)}|${classKey}`, enriched);
+          const tallaKey = `${normalizeForCompare(cr?.talla || "-")}|${classKey}`;
+          if (!classRowsByTalla.has(tallaKey)) classRowsByTalla.set(tallaKey, []);
+          classRowsByTalla.get(tallaKey).push(enriched);
+        });
+      });
+      const classTallaCursor = new Map();
+
+      const hasEmpaqueData = (emp) => !!(emp && (emp.cliente || emp.consignatario || emp.marca || emp.ordenCompra || emp.raw));
+
+      lineRows.forEach((r, idx) => {
+        const candidates = [
+          { classKey:"A", qty:r?.invA },
+          { classKey:"B", qty:r?.invB },
+          { classKey:"C", qty:r?.invC }
+        ];
+        candidates.forEach(c => {
+          const qty = toNumber(c.qty);
+          if (qty <= 0) return;
+
+          let matchedClassRow = null;
+          if (r?.id) matchedClassRow = classRowsByRowId.get(`${String(r.id)}|${c.classKey}`) || null;
+          if (!matchedClassRow) {
+            const tallaKey = `${normalizeForCompare(r?.talla || "-")}|${c.classKey}`;
+            const arr = classRowsByTalla.get(tallaKey) || [];
+            const cursor = classTallaCursor.get(tallaKey) || 0;
+            matchedClassRow = arr[cursor] || null;
+            classTallaCursor.set(tallaKey, cursor + 1);
+          }
+
+          const empFromClass = parseEmpaqueValue(matchedClassRow?.empaque || matchedClassRow?.empaqueInfo || matchedClassRow?.empaqueTexto || matchedClassRow?.empaqueDisplay || matchedClassRow?.clienteConsignatarioMarca);
+          const empFromLine = parseEmpaqueValue(r?.empaque || r?.empaqueInfo || r?.empaqueTexto || r?.empaqueDisplay || r?.clienteConsignatarioMarca);
+          const empParsed = hasEmpaqueData(empFromClass) ? empFromClass : empFromLine;
+
+          rows.push({
+            ...base,
+            ...r,
+            classKey:c.classKey,
+            clase:c.classKey,
+            qty,
+            cajas:qty,
+            empaque:empParsed,
+            cliente:empParsed.cliente || matchedClassRow?.cliente || r?.cliente || r?.clienteEmpaque || "",
+            consignatario:empParsed.consignatario || matchedClassRow?.consignatario || r?.consignatario || r?.consignatarioEmpaque || "",
+            marca:empParsed.marca || matchedClassRow?.marca || r?.marca || r?.marcaEmpaque || "",
+            _isSlmLineRow:true,
+            _matchedClassRowId:matchedClassRow?.rowId || "",
+            _empaqueRaw:empParsed.raw || "",
+            _docId:docId,
+            _rowIndex:`lineRows_${idx}_${c.classKey}`
+          });
+        });
+      });
+      return rows;
+    }
+
+    function extractSlmRowsFromDoc(doc){
+      const data = doc.data ? (doc.data() || {}) : (doc || {});
+      const docId = doc.id || data.id || "";
+      if (!isSlmLiquidacionDoc(data, docId)) return [];
+
+      // FUENTE OFICIAL PARA INVENTARIO:
+      // La pantalla DATOS de SLM trabaja con formInputs.lineRows.
+      // Ahí están las cantidades visibles por talla, clase y empaque: invA, invB e invC.
+      // classA/classB/classC pueden quedar como snapshot de liquidación/PDF y no siempre reflejan
+      // la última cantidad visible en DATOS. Por eso Inventario debe tomar primero lineRows.
+      let rows = extractRowsFromSlmLineRows(data, docId);
+
+      // Respaldo para liquidaciones antiguas que no tengan formInputs.lineRows.
+      if (!rows.length) {
+        rows = [
+          ...extractRowsFromSlmClass(data, "classA", docId),
+          ...extractRowsFromSlmClass(data, "classB", docId),
+          ...extractRowsFromSlmClass(data, "classC", docId)
+        ];
+      }
+
+      if (!rows.length && toNumber(data.totalCajas) > 0) rows = [{ ...headerBase(data, docId), ...data, cajas:data.totalCajas, qty:data.totalCajas, _docId:docId, _rowIndex:0 }];
+      return rows;
+    }
+
+    function getDimensions(src){
+      const emp = parseEmpaqueValue(src?.empaque || src?._empaqueRaw || src?.empaqueInfo || src?.empaqueTexto || src?.empaqueDisplay || src?.clienteConsignatarioMarca);
+      const h = src?.header || {};
+
+      // En SLM lineRows, cliente/consignatario/marca pertenecen a la fila, no al encabezado.
+      // Si la fila no tiene empaque, se queda sin esa dimensión para no sumar otra fila por error.
+      const strictLineRow = !!src?._isSlmLineRow;
+      const cliente = strictLineRow
+        ? firstClean(emp.cliente, src.cliente, pick(src, ["empaque.cliente", "cliente", "client", "nombreCliente", "clienteNombre", "customer", "exportacion.cliente"]))
+        : firstClean(emp.cliente, src.cliente, h.cliente, pick(src, ["empaque.cliente", "cliente", "client", "nombreCliente", "clienteNombre", "customer", "exportacion.cliente"]));
+      const consignatario = strictLineRow
+        ? firstClean(emp.consignatario, src.consignatario, pick(src, ["empaque.consignatario", "consignatario", "consignee", "destinatario", "clienteFinal", "exportacion.consignatario"]))
+        : firstClean(emp.consignatario, src.consignatario, h.consignatario, pick(src, ["empaque.consignatario", "consignatario", "consignee", "destinatario", "clienteFinal", "exportacion.consignatario"]));
+      const marca = strictLineRow
+        ? firstClean(emp.marca, src.marca, pick(src, ["empaque.marca", "marca", "brand", "marcaEmpaque", "marca_embarque", "exportacion.marca"]))
+        : firstClean(emp.marca, src.marca, h.marca, pick(src, ["empaque.marca", "marca", "brand", "marcaEmpaque", "marca_embarque", "exportacion.marca"]));
+
+      return {
+        cliente,
+        consignatario,
+        marca,
+        clase: canonClase(firstClean(src.classKey, src.clase, h.clase, pick(src, ["classKey", "clase", "class", "clasificacion", "tipoClase", "claseProducto"]))),
+        talla: firstClean(src.talla, h.talla, pick(src, ["talla", "size", "calibre", "tallaProducto", "tallaPromedio"])),
+        lote: firstClean(src.lote, h.lote, pick(src, ["lote", "lot", "loteProducto", "numeroLote", "numLote"])),
+        secuencial: firstClean(src.secuencial, h.secuencial, pick(src, ["secuencial", "secuencialMP", "secuencial_mp", "secuencia", "secuenciaMp", "numSecuencial", "numeroSecuencial", "secuencialSCRM"]))
+      };
+    }
+
+    function getSlmCajas(src){
+      return toNumber(pick(src, [
+        "qty", "cajas", "cantidadCajas", "cantidad_cajas", "totalCajas", "cajasTotal", "numCajas", "nCajas",
+        "unidades", "cantidad", "cantidadEmpacada", "cajasLiquidadas"
+      ], 0));
+    }
+
+    function getQrMasters(src){
+      let qty = toNumber(pick(src, [
+        "cartones", "cantidadCartones", "cantidad_cartones", "totalCartones", "masters", "cantidadMasters",
+        "cantidad_master", "master", "cantidad", "cartonesEmbarcados"
+      ], 0));
+      if (!qty) {
+        const codigo = pick(src, ["codigo", "qr", "barcode", "etiqueta", "qrCode", "codigoQr", "codigoBarras"], "");
+        qty = codigo ? 1 : 0;
+      }
+      return qty;
+    }
+
+    function liquidacionSeqFromNo(v){
+      const digits = String(v ?? "").replace(/\D+/g, "");
+      const n = Number(digits || 0);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function firestoreMs(v){
+      if (!v) return 0;
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+      if (typeof v === "string") {
+        const d = new Date(v);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+      }
+      if (v instanceof Date) return isNaN(v.getTime()) ? 0 : v.getTime();
+      if (typeof v.toMillis === "function") {
+        const n = v.toMillis();
+        return Number.isFinite(n) ? n : 0;
+      }
+      if (typeof v.toDate === "function") {
+        const d = v.toDate();
+        return d && !isNaN(d.getTime()) ? d.getTime() : 0;
+      }
+      if (typeof v.seconds === "number") return v.seconds * 1000;
+      return 0;
+    }
+
+    function normalizarEstatusSlm(valor){
+      const txt = normalizeForCompare(valor || "COLA");
+      if (txt.includes("SOBRANTE") && txt.includes("ENTERO")) return "SOBRANTE DE ENTERO";
+      if (txt.includes("ENTERO")) return "ENTERO";
+      if (txt.includes("PYD") || txt.includes("P&D") || txt.includes("P Y D")) return "PYD";
+      return "COLA";
+    }
+
+    function slmDocStatus(data){
+      const h = data?.header || {};
+      return normalizarEstatusSlm(data?.estatusTabla || data?.formInputs?.estatusTabla || h?.estatusTabla || data?.tipoProceso || "COLA");
+    }
+
+    function isSlmDocInactive(data){
+      const estado = normalizeForCompare(firstClean(data?.estado, data?.status, data?.estadoRegistro, data?.estadoLiquidacion, data?.header?.estado));
+      return estado.includes("ANULADO") || estado.includes("ELIMINADO") || estado.includes("CANCELADO");
+    }
+
+    function slmDocSortScore(doc){
+      const data = doc.data ? (doc.data() || {}) : (doc || {});
+      const h = data?.header || {};
+      const seq = toNumber(data?.liquidacionSeq || h?.liquidacionSeq || liquidacionSeqFromNo(data?.liquidacionNo || h?.liquidacionNo || doc.id));
+      const ms = Math.max(
+        firestoreMs(data?.updatedAt), firestoreMs(data?.createdAt), firestoreMs(data?.closedAt), firestoreMs(data?.stamp),
+        firestoreMs(data?.updatedAtMs), firestoreMs(data?.createdAtMs), firestoreMs(data?.fechaCreacionIso), firestoreMs(h?.updatedAt), firestoreMs(h?.createdAt)
+      );
+      const cerrado = !!(
+        data?.candadoCerrado || h?.candadoCerrado ||
+        data?.pdfHabilitado || h?.pdfHabilitado ||
+        normalizeForCompare(data?.estadoCandado || h?.estadoCandado) === "CERRADO"
+      );
+      return { seq, ms, cerrado: cerrado ? 1 : 0 };
+    }
+
+    function isNewerSlmDoc(candidate, current){
+      if (!current) return true;
+      const a = slmDocSortScore(candidate);
+      const b = slmDocSortScore(current);
+      // Para inventario se prefiere una liquidación cerrada/PDF habilitado antes que un borrador
+      // o una reapertura parcial del mismo secuencial y estatus. Si ninguna está cerrada,
+      // recién se usa el número de liquidación y la fecha de actualización como desempate.
+      if (a.cerrado !== b.cerrado) return a.cerrado > b.cerrado;
+      if (a.seq !== b.seq) return a.seq > b.seq;
+      if (a.ms !== b.ms) return a.ms > b.ms;
+      return false;
+    }
+
+    function selectLatestSlmDocsBySecuencialEstatus(docs){
+      const selected = new Map();
+      (docs || []).forEach(doc => {
+        const data = doc.data ? (doc.data() || {}) : (doc || {});
+        const docId = doc.id || data.id || "";
+        if (String(docId || "").startsWith("__")) return;
+        if (!isSlmLiquidacionDoc(data, docId)) return;
+        if (isSlmDocInactive(data)) return;
+        const base = headerBase(data, docId);
+        const sec = secuencialKeyValue(base.secuencial || data?.secuencial || data?.header?.secuencial);
+        if (!sec) return;
+        const key = `${sec}|${slmDocStatus(data)}`;
+        const prev = selected.get(key);
+        if (isNewerSlmDoc(doc, prev)) selected.set(key, doc);
+      });
+      return Array.from(selected.values());
+    }
+
+    async function readCollection(collectionName){
+      try{
+        const snap = await db.collection(collectionName).get();
+        return { ok:true, collectionName, size:snap.size, docs:snap.docs };
+      }catch(err){
+        return { ok:false, collectionName, size:0, docs:[], error:err && err.message ? err.message : String(err) };
+      }
+    }
+
+    async function loadSlmRows(){
+      const responses = await Promise.all(SLM_COLLECTIONS.map(readCollection));
+      rawDiagnostics.slm = responses.map(r => ({ collectionName:r.collectionName, ok:r.ok, size:r.size, error:r.error || "" }));
+      const usable = [];
+      responses.forEach(resp => {
+        if (!resp.ok || !resp.docs.length) return;
+        const selectedDocs = selectLatestSlmDocsBySecuencialEstatus(resp.docs);
+        resp.latestDocs = selectedDocs.length;
+        selectedDocs.forEach(doc => {
+          extractSlmRowsFromDoc(doc).forEach(row => {
+            const dims = getDimensions(row);
+            const cajas = getSlmCajas(row);
+            const hasIdentity = hasSecuencial(dims);
+            if (hasIdentity && cajas > 0) {
+              usable.push({
+                ...dims,
+                cajasIngreso:cajas,
+                mastersIngreso:cajas / 10,
+                sourceCollection:resp.collectionName,
+                sourceDoc:doc.id,
+                liquidacionNo:row.liquidacionNo || ""
+              });
+            }
+          });
+        });
+      });
+      return usable;
+    }
+
+    async function loadQrRows(){
+      const [containersResp, cartonsResp] = await Promise.all([readCollection(QR_CONTAINERS_COLLECTION), readCollection(QR_CARTONS_COLLECTION)]);
+      rawDiagnostics.qr = [
+        { collectionName:containersResp.collectionName, ok:containersResp.ok, size:containersResp.size, error:containersResp.error || "" },
+        { collectionName:cartonsResp.collectionName, ok:cartonsResp.ok, size:cartonsResp.size, error:cartonsResp.error || "" }
+      ];
+
+      const containers = new Map();
+      if (containersResp.ok) {
+        containersResp.docs.forEach(doc => {
+          const data = doc.data() || {};
+          const keys = [doc.id, data.id, data.contenedorId, data.containerId, data.numeroContenedor, data.contenedor].filter(Boolean);
+          keys.forEach(k => containers.set(String(k), { ...data, _docId:doc.id }));
+        });
+      }
+
+      const rows = [];
+      if (cartonsResp.ok) {
+        cartonsResp.docs.forEach(doc => {
+          const raw = { idUnico:doc.id, ...(doc.data() || {}) };
+          if (normalizeForCompare(raw.estado || "ACTIVO") !== "ACTIVO") return;
+          const contId = raw.contenedorId || raw.containerId || raw.idContenedor || raw.contenedor || raw.numeroContenedor || "";
+          const header = contId && containers.has(String(contId)) ? containers.get(String(contId)) : {};
+          const merged = { ...header, ...raw, _docId:doc.id };
+          const dims = getDimensions(merged);
+          const hasIdentity = hasSecuencial(dims);
+          if (hasIdentity) rows.push({ ...dims, mastersEmbarcados:1, sourceCollection:cartonsResp.collectionName, sourceDoc:doc.id });
+        });
+      }
+
+      // Respaldo legacy: si no hay índice de cartones, leer cartones embebidos dentro del contenedor.
+      // Se usa solo cuando qr_export_cartones_asignados no devolvió movimientos para evitar duplicar bajas.
+      if (!rows.length && containersResp.ok) {
+        containersResp.docs.forEach(doc => {
+          const cont = { id:doc.id, ...(doc.data() || {}) };
+          if (normalizeForCompare(cont.estado) === "ANULADO") return;
+          (cont.filas || []).forEach(fila => {
+            (fila.cartones || []).forEach((carton, idx) => {
+              const merged = { ...cont, ...carton, filaNumero:fila.numero || "", _docId:doc.id, _rowIndex:idx };
+              const dims = getDimensions(merged);
+              const hasIdentity = hasSecuencial(dims);
+              if (hasIdentity) rows.push({ ...dims, mastersEmbarcados:1, sourceCollection:containersResp.collectionName, sourceDoc:doc.id });
+            });
+          });
+        });
+      }
+      return rows;
+    }
+
+    function createItemFromDims(dims){
+      return {
+        ...dims,
+        key:makeInventoryKey(dims),
+        cajasIngreso:0,
+        mastersIngreso:0,
+        mastersEmbarcados:0,
+        stockCajas:0,
+        stockMasters:0,
+        sources:new Set()
+      };
+    }
+
+    function findMatchingItem(items, movement){
+      // Cruce por SECUENCIAL como recurso principal.
+      // El lote NO participa. Cliente, consignatario, clase y talla se usan para no mezclar líneas distintas.
+      // La marca NO participa porque puede cambiar o venir con variantes, pero se conserva visible.
+      const secMov = secuencialKeyValue(movement.secuencial);
+      if (!secMov) return null;
+      const candidates = [];
+      for (const item of items.values()){
+        const secItem = secuencialKeyValue(item.secuencial);
+        if (!secItem || secItem !== secMov) continue;
+
+        const fields = ["cliente", "consignatario", "clase", "talla"];
+        let compatible = true;
+        for (const f of fields){
+          const movVal = normalizeForCompare(movement[f] || "");
+          const itemVal = normalizeForCompare(item[f] || "");
+          if (movVal && movVal !== "-" && itemVal && itemVal !== "-" && movVal !== itemVal) {
+            compatible = false;
+            break;
+          }
+        }
+        if (compatible) candidates.push(item);
+      }
+      return candidates.length === 1 ? candidates[0] : null;
+    }
+
+    function mergeDisplayValue(current, incoming){
+      const a = cleanText(current || "");
+      const b = cleanText(incoming || "");
+      if (isBlankValue(a) || a === "-") return b || "-";
+      if (isBlankValue(b) || b === "-") return a || "-";
+      const parts = a.split(" / ").map(x => x.trim()).filter(Boolean);
+      const exists = parts.some(x => normalizeForCompare(x) === normalizeForCompare(b));
+      if (!exists) parts.push(b);
+      return parts.join(" / ");
+    }
+
+    function improveMissingDims(target, source){
+      ["cliente", "consignatario", "clase", "talla", "secuencial"].forEach(f => {
+        if ((isBlankValue(target[f]) || target[f] === "-") && !isBlankValue(source[f])) target[f] = source[f];
+      });
+      ["marca", "lote"].forEach(f => {
+        if (!isBlankValue(source[f])) target[f] = mergeDisplayValue(target[f], source[f]);
+      });
+    }
+
+    function buildInventory(slmRows, qrRows){
+      const map = new Map();
+      slmRows.forEach(row => {
+        const key = makeInventoryKey(row);
+        if (!map.has(key)) map.set(key, createItemFromDims(row));
+        const item = map.get(key);
+        improveMissingDims(item, row);
+        item.cajasIngreso += row.cajasIngreso;
+        item.mastersIngreso += row.mastersIngreso;
+        item.sources.add(`SLM:${row.sourceCollection}`);
+      });
+
+      qrRows.forEach(row => {
+        const key = makeInventoryKey(row);
+        let item = map.get(key);
+        if (!item) item = findMatchingItem(map, row);
+        if (!item) {
+          item = createItemFromDims(row);
+          map.set(item.key, item);
+        }
+        improveMissingDims(item, row);
+        item.mastersEmbarcados += row.mastersEmbarcados;
+        item.sources.add(`QR:${row.sourceCollection}`);
+      });
+
+      return Array.from(map.values()).map(item => {
+        item.stockMasters = item.mastersIngreso - item.mastersEmbarcados;
+        item.stockCajas = item.stockMasters * 10;
+        item.sourceText = Array.from(item.sources).join(" | ");
+        return item;
+      }).sort((a,b) =>
+        normalizeForCompare(a.cliente).localeCompare(normalizeForCompare(b.cliente)) ||
+        normalizeForCompare(a.consignatario).localeCompare(normalizeForCompare(b.consignatario)) ||
+        normalizeForCompare(a.marca).localeCompare(normalizeForCompare(b.marca)) ||
+        normalizeForCompare(a.lote).localeCompare(normalizeForCompare(b.lote)) ||
+        normalizeForCompare(a.secuencial).localeCompare(normalizeForCompare(b.secuencial)) ||
+        normalizeForCompare(a.clase).localeCompare(normalizeForCompare(b.clase)) ||
+        normalizeForCompare(a.talla).localeCompare(normalizeForCompare(b.talla))
+      );
+    }
+
+    async function refreshInventory(){
+      showLoading(true);
+      rawDiagnostics = { slm: [], qr: [], warnings: [] };
+      try{
+        const [slmRows, qrRows] = await Promise.all([loadSlmRows(), loadQrRows()]);
+        inventoryRows = buildInventory(slmRows, qrRows);
+        fillFilters(inventoryRows);
+        render();
+        updateSourceNote(slmRows.length, qrRows.length);
+        if (!slmRows.length) showToast("Revisar SLM", "No se encontraron ingresos de SLM con secuencial en slp_liquidaciones_pago. Revisa que las liquidaciones SLM tengan secuencial y formInputs.lineRows con invA/invB/invC.");
+        const qrDenied = rawDiagnostics.qr.some(x => !x.ok && /permission|permiso|Missing or insufficient permissions/i.test(x.error));
+        if (qrDenied) showToast("Reglas de Firestore", "El usuario inició sesión, pero las reglas actuales no le permiten leer una o más colecciones QR. Aplique el ajuste de reglas del módulo de inventario.");
+      }catch(err){
+        console.error(err);
+        showToast("Error", err && err.message ? err.message : String(err));
+      }finally{
+        showLoading(false);
+      }
+    }
+
+    function updateSourceNote(slmCount, qrCount){
+      const slmOk = rawDiagnostics.slm.filter(x => x.ok && x.size).map(x => `${x.collectionName} (${x.size})`);
+      const qrOk = rawDiagnostics.qr.filter(x => x.ok).map(x => `${x.collectionName} (${x.size})`);
+      $("sourceNote").textContent = `SLM filas: ${fmtInt(slmCount)} | QR filas: ${fmtInt(qrCount)}`;
+      const failed = [...rawDiagnostics.slm, ...rawDiagnostics.qr].filter(x => !x.ok).map(x => `${x.collectionName}: ${x.error}`);
+      $("statusbar").textContent = `Colecciones usadas: ${[...slmOk, ...qrOk].join(" | ") || "sin datos"}${failed.length ? " · Avisos: " + failed.slice(0,4).join(" · ") : ""}`;
+    }
+
+    function fillFilters(rows){
+      const current = {
+        cliente: $("clienteFilter").value,
+        consignatario: $("consignatarioFilter").value,
+        clase: $("claseFilter").value
+      };
+      fillSelect("clienteFilter", rows.map(r => r.cliente), "Todos");
+      fillSelect("consignatarioFilter", rows.map(r => r.consignatario), "Todos");
+      fillSelect("claseFilter", rows.map(r => r.clase), "Todas");
+      $("clienteFilter").value = current.cliente;
+      $("consignatarioFilter").value = current.consignatario;
+      $("claseFilter").value = current.clase;
+    }
+
+    function fillSelect(id, values, label){
+      const el = $(id);
+      const unique = Array.from(new Set(values.filter(v => v && v !== "-"))).sort((a,b) => normalizeForCompare(a).localeCompare(normalizeForCompare(b)));
+      el.innerHTML = `<option value="">${label}</option>` + unique.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    }
+
+    function getFilteredRows(){
+      const q = normalizeForCompare($("searchInput").value);
+      const cliente = normalizeForCompare($("clienteFilter").value);
+      const consignatario = normalizeForCompare($("consignatarioFilter").value);
+      const clase = normalizeForCompare($("claseFilter").value);
+      const status = $("stockFilter").value;
+      return inventoryRows.filter(r => {
+        const haystack = normalizeForCompare([r.cliente,r.consignatario,r.marca,r.clase,r.talla,r.lote,r.secuencial].join(" "));
+        if (q && !haystack.includes(q)) return false;
+        if (cliente && normalizeForCompare(r.cliente) !== cliente) return false;
+        if (consignatario && normalizeForCompare(r.consignatario) !== consignatario) return false;
+        if (clase && normalizeForCompare(r.clase) !== clase) return false;
+        if (status === "stock" && !(r.stockMasters > 0)) return false;
+        if (status === "cero" && Math.abs(r.stockMasters) > 0.0001) return false;
+        if (status === "negativo" && !(r.stockMasters < 0)) return false;
+        return true;
+      });
+    }
+
+    function statusBadge(stock){
+      if (stock < -0.0001) return `<span class="badge neg">Negativo</span>`;
+      if (Math.abs(stock) <= 0.0001) return `<span class="badge zero">Cero</span>`;
+      return `<span class="badge ok">Disponible</span>`;
+    }
+
+    function stockClass(stock){
+      if (stock < -0.0001) return "stock-neg";
+      if (Math.abs(stock) <= 0.0001) return "stock-zero";
+      return "stock-ok";
+    }
+
+    function render(){
+      const rows = getFilteredRows();
+      const totals = rows.reduce((acc,r) => {
+        acc.cajas += r.cajasIngreso;
+        acc.mastersIn += r.mastersIngreso;
+        acc.mastersOut += r.mastersEmbarcados;
+        acc.stockMasters += r.stockMasters;
+        return acc;
+      }, { cajas:0, mastersIn:0, mastersOut:0, stockMasters:0 });
+
+      $("kpiCajas").textContent = `${fmt(totals.cajas)} cajas`;
+      $("kpiMastersIn").textContent = fmt(totals.mastersIn);
+      $("kpiMastersOut").textContent = `${fmt(totals.mastersOut)} masters`;
+      $("kpiStockMasters").textContent = `${fmt(totals.stockMasters)} masters`;
+      $("kpiRows").textContent = fmtInt(rows.length);
+
+      if (!rows.length){
+        tbody.innerHTML = `<tr><td colspan="13">No hay registros para los filtros seleccionados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(r => `
+        <tr title="${escapeHtml(r.sourceText || "")}">
+          <td>${escapeHtml(r.cliente)}</td>
+          <td>${escapeHtml(r.consignatario)}</td>
+          <td>${escapeHtml(r.marca)}</td>
+          <td>${escapeHtml(r.clase)}</td>
+          <td>${escapeHtml(r.talla)}</td>
+          <td>${escapeHtml(r.lote)}</td>
+          <td>${escapeHtml(r.secuencial)}</td>
+          <td class="num">${fmt(r.cajasIngreso)}</td>
+          <td class="num">${fmt(r.mastersIngreso)}</td>
+          <td class="num">${fmt(r.mastersEmbarcados)}</td>
+          <td class="num ${stockClass(r.stockMasters)}">${fmt(r.stockCajas)}</td>
+          <td class="num ${stockClass(r.stockMasters)}">${fmt(r.stockMasters)}</td>
+          <td>${statusBadge(r.stockMasters)}</td>
+        </tr>`).join("");
+    }
+
+    function exportCsv(){
+      const rows = getFilteredRows();
+      const headers = ["Cliente","Consignatario","Marca","Clase","Talla","Lote","Secuencial","Cajas SLM","Masters SLM","Masters QR","Stock cajas","Stock masters","Estado"];
+      const body = rows.map(r => [
+        r.cliente,r.consignatario,r.marca,r.clase,r.talla,r.lote,r.secuencial,
+        fmt(r.cajasIngreso),fmt(r.mastersIngreso),fmt(r.mastersEmbarcados),fmt(r.stockCajas),fmt(r.stockMasters),
+        r.stockMasters < -0.0001 ? "NEGATIVO" : Math.abs(r.stockMasters) <= 0.0001 ? "CERO" : "DISPONIBLE"
+      ]);
+      const csv = [headers, ...body].map(row => row.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(";")).join("\r\n");
+      const blob = new Blob(["\ufeff" + csv], { type:"text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0,19).replace(/[T:]/g,"-");
+      a.href = url;
+      a.download = `Inventario_Producto_Terminado_${stamp}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    $("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = normalizeEmail($("email").value);
+      const password = $("password").value;
+      $("loginMsg").textContent = "";
+      if (!isAllowed(email)) {
+        $("loginMsg").textContent = "Usuario no autorizado para Inventario.";
+        return;
+      }
+      $("loginBtn").disabled = true;
+      try{
+        await auth.signInWithEmailAndPassword(email, password);
+      }catch(err){
+        $("loginMsg").textContent = "Usuario o contraseña incorrectos.";
+      }finally{
+        $("loginBtn").disabled = false;
+      }
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user){
+        loginScreen.classList.remove("hidden");
+        appScreen.classList.add("hidden");
+        return;
+      }
+      const email = normalizeEmail(user.email);
+      if (!isAllowed(email)){
+        await auth.signOut();
+        $("loginMsg").textContent = "Usuario autenticado, pero no autorizado para Inventario.";
+        return;
+      }
+      $("userEmail").textContent = email;
+      loginScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
+      refreshInventory();
+    });
+
+    $("logoutBtn").addEventListener("click", () => auth.signOut());
+    $("goHomeBtn").addEventListener("click", () => window.location.href = "./index.html?v=" + Date.now());
+    $("refreshBtn").addEventListener("click", refreshInventory);
+    $("exportBtn").addEventListener("click", exportCsv);
+    ["searchInput","clienteFilter","consignatarioFilter","claseFilter","stockFilter"].forEach(id => $(id).addEventListener("input", render));
+    ["clienteFilter","consignatarioFilter","claseFilter","stockFilter"].forEach(id => $(id).addEventListener("change", render));
+  </script>
+</body>
+</html>
