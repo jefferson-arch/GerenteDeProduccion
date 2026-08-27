@@ -3866,11 +3866,11 @@ const firebaseConfig = {
 if(!window.React || !window.ReactDOM){ window.__SLM_SHOW_BOOT_ERROR && window.__SLM_SHOW_BOOT_ERROR('No cargó React/ReactDOM. Revisa conexión o CDN.'); } else {
 const { useEffect, useMemo, useRef, useState } = React;
 const ADMIN_EMAIL = "jeffersonfigueroa@oceantreasure.local";
-const ACCOUNTING_EMAILS = ["ericktorres@oceantreasure.local", "ceciliamorocho@oceantreasure.local", "lisbethmurillo@oceantreasure.local"];
-const PRICE_LIST_EMAILS = ["ceciliamorocho@oceantreasure.local", "lisbethmurillo@oceantreasure.local", ADMIN_EMAIL];
+const ACCOUNTING_EMAILS = ["ericktorres@oceantreasure.local", "ceciliamorocho@oceantreasure.local", "antoniorivero@oceantreasure.local", "lisbethmurillo@oceantreasure.local"];
+const PRICE_LIST_EMAILS = ["ceciliamorocho@oceantreasure.local", "antoniorivero@oceantreasure.local", "lisbethmurillo@oceantreasure.local", ADMIN_EMAIL];
 const CONGELACION_EMAILS = ["juangavilanez@oceantreasure.local", "wintermontiel@oceantreasure.local", "juliorevelo@oceantreasure.local", "aaronaguilar@oceantreasure.local", "rafaelnunez@oceantreasure.local", ADMIN_EMAIL];
 const SLM_TUNEL_RELEASE_ONLY_EMAILS = ["juliorevelo@oceantreasure.local", "aaronaguilar@oceantreasure.local", "rafaelnunez@oceantreasure.local"];
-const SLM_TUNEL_HISTORY_ONLY_EMAILS = ["lisbethmurillo@oceantreasure.local", "ericktorres@oceantreasure.local"];
+const SLM_TUNEL_HISTORY_ONLY_EMAILS = ["lisbethmurillo@oceantreasure.local", "antoniorivero@oceantreasure.local", "ericktorres@oceantreasure.local"];
 const isAccountingEmail = (email) => ACCOUNTING_EMAILS.includes(String(email || "").trim().toLowerCase());
 const isPriceListEmail = (email) => PRICE_LIST_EMAILS.includes(String(email || "").trim().toLowerCase());
 const isCongelacionEmail = (email) => CONGELACION_EMAILS.includes(String(email || "").trim().toLowerCase());
